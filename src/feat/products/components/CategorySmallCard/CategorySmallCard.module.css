@@ -1,0 +1,398 @@
+/* CategorySmallCard — Gallery Style (Dribbble-inspired) */
+
+/* ─── Link Wrapper ─────────────────────────────────────────────── */
+.linkWrapper {
+    display: flex;
+    flex-direction: column;
+    /* Fill parent flex slot (cardSlot) */
+    flex: 1;
+    width: 100%;
+    /* Also enforce aspect-ratio for standalone usage */
+    aspect-ratio: 4 / 5;
+    text-decoration: none;
+    position: relative;
+}
+
+/* ─── Outer Wrapper ─────────────────────────────────────────────── */
+.wrapper {
+    /* Fill the linkWrapper or cardSlot */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    position: relative;
+    /* transition for blur + scale managed here */
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+                filter 0.4s ease,
+                opacity 0.4s ease;
+}
+
+/* When inside a linkWrapper, wrapper fills it fully */
+.linkWrapper .wrapper {
+    height: 100%;
+    aspect-ratio: unset;
+}
+
+/* ─── Base Card ─────────────────────────────────────────────────── */
+.card {
+    /* Fill the flex wrapper */
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    position: relative;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    background: #111;
+    cursor: pointer;
+    transition: box-shadow 0.4s ease, border-radius 0.3s ease;
+}
+
+@media (min-width: 1024px) {
+    .card {
+        border-radius: 1.5rem;
+    }
+}
+
+/* ─── Active State (hovered / center card) ──────────────────────── */
+.wrapper.active {
+    transform: scale(1.06);
+    filter: none;
+    opacity: 1;
+    z-index: 20;
+}
+
+.wrapper.active .card {
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(255,255,255,0.15);
+}
+
+/* ─── Blurred (inactive sibling) ────────────────────────────────── */
+.wrapper.blurred {
+    filter: blur(2.5px);
+    opacity: 0.55;
+    transform: scale(0.97);
+    z-index: 1;
+}
+
+/* ─── Disabled ──────────────────────────────────────────────────── */
+.wrapper.disabled {
+    filter: grayscale(80%) blur(1px);
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ─── Image Container ───────────────────────────────────────────── */
+.imageContainer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.wrapper.active .image,
+.card:hover .image {
+    transform: scale(1.07);
+}
+
+/* ─── Dark Gradient Overlay ─────────────────────────────────────── */
+.overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    /* Stronger gradient for always-visible text readability */
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.88) 0%,
+        rgba(0, 0, 0, 0.45) 45%,
+        rgba(0, 0, 0, 0.05) 100%
+    );
+    transition: background 0.4s ease;
+}
+
+.wrapper.active .overlay {
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.75) 0%,
+        rgba(0, 0, 0, 0.3) 40%,
+        rgba(0, 0, 0, 0) 100%
+    );
+}
+
+/* ─── Content Panel (always visible) ───────────────────────────── */
+.content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1.25rem 1.5rem;
+    /* Always visible — NO slide-in / translate */
+    transform: none;
+    transition: padding 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .content {
+        padding: 1.5rem 1.5rem 1.75rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .content {
+        padding: 1.75rem 1.75rem 2rem;
+    }
+}
+
+/* ─── Title ─────────────────────────────────────────────────────── */
+.title {
+    color: #ffffff;
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0 0 0.4rem 0;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    font-size: 1.15rem;
+    transition: transform 0.3s ease;
+}
+
+@media (min-width: 640px) {
+    .title {
+        font-size: 1.35rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .title {
+        font-size: 1.6rem;
+    }
+}
+
+.wrapper.active .title {
+    transform: translateY(-2px);
+}
+
+/* ─── Description ───────────────────────────────────────────────── */
+.description {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    margin: 0 0 0.85rem 0;
+    font-weight: 400;
+    /* Always visible */
+    opacity: 1;
+    max-height: none;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.3s ease;
+}
+
+@media (min-width: 640px) {
+    .description {
+        font-size: 0.875rem;
+    }
+}
+
+/* ─── Action Button ─────────────────────────────────────────────── */
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #ffffff;
+    background: hsl(var(--primary));
+    padding: 0.45rem 1rem;
+    border-radius: 9999px;
+    align-self: flex-start;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    /* Always visible */
+    opacity: 1;
+    transform: none;
+    transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.actionBtn:hover {
+    background: hsl(var(--primary) / 0.85);
+    transform: translateY(-1px) scale(1.04);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Zoom Hint Overlay (on hover) ─────────────────────────────── */
+.zoomHint {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 15;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.wrapper.active .zoomHint,
+.card:hover .zoomHint {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ─── Zoom Modal Backdrop ───────────────────────────────────────── */
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: fadeInBackdrop 0.25s ease;
+}
+
+@keyframes fadeInBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ─── Zoom Modal Card ───────────────────────────────────────────── */
+.modalCard {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 1.75rem;
+    overflow: hidden;
+    background: #111;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+    animation: scaleInModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleInModal {
+    from { transform: scale(0.75); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modalImageWrap {
+    width: 100%;
+    aspect-ratio: 4/5;
+    position: relative;
+    overflow: hidden;
+}
+
+.modalImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modalOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.85) 0%,
+        rgba(0,0,0,0.2) 50%,
+        rgba(0,0,0,0) 100%
+    );
+}
+
+.modalContent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem;
+    z-index: 5;
+}
+
+.modalTitle {
+    color: #fff;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.modalDescription {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 1.25rem 0;
+}
+
+.modalBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: hsl(var(--primary));
+    color: #fff;
+    font-weight: 700;
+    padding: 0.65rem 1.5rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modalBtn:hover {
+    background: hsl(var(--primary) / 0.85);
+    transform: scale(1.04);
+}
+
+.modalClose {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.modalClose:hover {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.1) rotate(90deg);
+}

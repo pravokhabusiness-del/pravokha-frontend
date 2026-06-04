@@ -1,0 +1,33 @@
+.container {
+    position: relative;
+    overflow: hidden;
+}
+
+.scrollContainer {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+    padding-bottom: 1rem;
+}
+
+.scrollContainer::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+.carouselItem {
+    flex: 0 0 auto;
+    width: 280px;
+    scroll-snap-align: start;
+}
+
+@media (max-width: 640px) {
+    .carouselItem {
+        width: 200px;
+    }
+}
