@@ -157,7 +157,9 @@ export function ProductCard({ product }: ProductCardProps) {
                 colorHex: firstVariant.colorHex,
                 size: firstAvailableSize.size,
                 price: product.discountPrice || product.price,
-                image: firstVariant.images[0],
+                image: (firstVariant.images && firstVariant.images.length > 0)
+                    ? firstVariant.images[0]
+                    : 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image',
                 maxStock: firstAvailableSize.stock,
                 sellerId: product.sellerId,
             });
@@ -195,7 +197,10 @@ export function ProductCard({ product }: ProductCardProps) {
         >
             <div className={styles.imageContainer}>
                 <img
-                    src={getMediaUrl(selectedVariant.images[0])}
+                    src={(selectedVariant?.images && selectedVariant.images.length > 0 && selectedVariant.images[0])
+                        ? getMediaUrl(selectedVariant.images[0])
+                        : 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image'
+                    }
                     alt={product.title}
                     className={styles.image}
                     loading="lazy"

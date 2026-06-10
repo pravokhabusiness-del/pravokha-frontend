@@ -110,7 +110,9 @@ export function HomePage() {
                         id: v.id,
                         colorName: v.colorName,
                         colorHex: v.colorHex,
-                        images: v.images,
+                        images: (v.images && Array.isArray(v.images) && v.images.length > 0)
+                            ? v.images
+                            : ['https://placehold.co/600x600/e2e8f0/64748b?text=No+Image'],
                         sizes: (v.sizes || []).map((s: any) => ({
                             size: s.size,
                             stock: s.stock,
