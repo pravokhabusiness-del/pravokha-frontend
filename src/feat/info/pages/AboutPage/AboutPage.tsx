@@ -54,11 +54,11 @@ export default function AboutPage() {
                 {/* Main Models Image placed right under Section 1 title */}
                 <div className="w-full max-w-4xl mx-auto mb-12 relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-[#4AA3A0] to-[#E17B5A] rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
-                    <div className="relative bg-card rounded-2xl overflow-hidden shadow-xl aspect-[16/9] md:aspect-[21/9]">
+                    <div className="relative bg-card rounded-2xl overflow-hidden shadow-xl">
                         <img
                             src={aboutModels}
                             alt="Pravokha clothing models showcasing modern, flowing fashion styles"
-                            className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700"
+                            className="w-full h-auto block transform scale-100 group-hover:scale-105 transition-transform duration-700"
                         />
                     </div>
                 </div>
