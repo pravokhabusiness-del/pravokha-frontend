@@ -14,7 +14,7 @@ export function GoogleAnalytics() {
 
     useEffect(() => {
         // Fetch ID from backend public config
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/home/config`)
+        fetch(`${import.meta.env.VITE_API_URL || 'https://pravokha-backend.onrender.com/api'}/home/config`)
             .then(res => res.json())
             .then(data => {
                 if (data.success && data.config?.googleAnalyticsId) {

@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = import.meta.env.VITE_API_URL || "https://pravokha-backend.onrender.com/api";
 
 if (!import.meta.env.VITE_API_URL) {
-    console.warn('VITE_API_URL is not defined. Falling back to relative URLs. If your backend is running on a different origin, set VITE_API_URL to the backend URL (e.g. http://localhost:3000)');
+    console.warn('VITE_API_URL is not defined. Falling back to production URL (https://pravokha-backend.onrender.com/api). If your backend is running on a different origin, set VITE_API_URL to the backend URL.');
 }
 
 export const apiClient = axios.create({
