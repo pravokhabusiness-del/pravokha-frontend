@@ -10,7 +10,7 @@ export function getMediaUrl(path: string | null | undefined) {
   if (path.startsWith("http")) return path;
 
   // Get base URL from API_URL (strip /api)
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://pravokha-backend.onrender.com/api';
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://pravokha-api-ard4h8dhbgdmc4ec.southindia-01.azurewebsites.net/api';
   const baseUrl = apiUrl.replace(/\/api$/, '');
 
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
