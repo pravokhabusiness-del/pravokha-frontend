@@ -103,12 +103,21 @@ export function CategoryCarousel({
     /* ── Scroll Pill into view when index changes ──────────── */
     useEffect(() => {
         if (!pillsRef.current) return;
-        const activePill = pillsRef.current.querySelector(`[data-index="${currentIndex}"]`);
+        const activePill = pillsRef.current.querySelector(`[data-index="${currentIndex}"]`) as HTMLElement;
         if (activePill) {
-            activePill.scrollIntoView({
+            const container = pillsRef.current;
+            const containerWidth = container.clientWidth;
+            const pillWidth = activePill.clientWidth;
+
+            const pillRect = activePill.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const pillLeft = pillRect.left - containerRect.left + container.scrollLeft;
+            const targetScrollLeft = pillLeft - (containerWidth / 2) + (pillWidth / 2);
+
+            container.scrollTo({
+                left: targetScrollLeft,
                 behavior: "smooth",
-                inline: "center",
-                block: "nearest",
             });
         }
     }, [currentIndex]);
