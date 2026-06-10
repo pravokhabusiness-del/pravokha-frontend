@@ -48,7 +48,14 @@ const getFallbackImage = (slug: string) => {
         shorts: shortsImg,
         "mens-collection": categoryMenImg,
         "womens-collection": categoryWomenImg,
-        "kids-collection": categoryKidsImg
+        "kids-collection": categoryKidsImg,
+        electronics: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80",
+        fashion: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&auto=format&fit=crop&q=80",
+        beauty: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80",
+        books: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&auto=format&fit=crop&q=80",
+        "home-kitchen": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&auto=format&fit=crop&q=80",
+        "home-and-kitchen": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&auto=format&fit=crop&q=80",
+        "home-&-kitchen": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&auto=format&fit=crop&q=80"
     };
     return images[slug] || categoryMenImg; // Default to Men's image if no match found
 };
