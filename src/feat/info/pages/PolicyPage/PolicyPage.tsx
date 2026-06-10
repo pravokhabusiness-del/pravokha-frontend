@@ -7,6 +7,9 @@ import {
     Info, Calendar, Phone, Mail, MapPin, Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import privacyBg from "@/assets/privacy-bg.png";
+import termsBg from "@/assets/terms-bg.png";
+import paymentBg from "@/assets/payment-bg.png";
 
 interface PolicyPageProps {
     type: "privacy" | "terms" | "security" | "cancellation" | "shipping" | "sitemap" | "grievance" | "epr" | "infringement" | "payments" | "corporate" | "press" | "stories" | "careers";
@@ -24,6 +27,21 @@ export default function PolicyPage({ type }: PolicyPageProps) {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [pathname]);
+
+    const getBgImage = () => {
+        switch (type) {
+            case "privacy":
+                return privacyBg;
+            case "terms":
+                return termsBg;
+            case "payments":
+                return paymentBg;
+            default:
+                return null;
+        }
+    };
+
+    const bgImage = getBgImage();
 
     const getContent = () => {
         switch (type) {
@@ -242,8 +260,15 @@ export default function PolicyPage({ type }: PolicyPageProps) {
     return (
         <div className="min-h-screen bg-background">
             {/* Hero Section */}
-            <div className="bg-muted py-8 sm:py-12 border-b">
-                <div className="container px-4 mx-auto max-w-4xl text-center space-y-3 sm:space-y-4">
+            <div className="bg-muted py-8 sm:py-12 border-b relative overflow-hidden">
+                {bgImage && (
+                    <img 
+                        src={bgImage} 
+                        alt="" 
+                        className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay pointer-events-none" 
+                    />
+                )}
+                <div className="container px-4 mx-auto max-w-4xl text-center space-y-3 sm:space-y-4 relative z-10">
                     <div className="flex justify-center mb-4 sm:mb-6">
                         <div className="p-3 sm:p-4 bg-background rounded-full shadow-sm">
                             {data.icon || <Info className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />}

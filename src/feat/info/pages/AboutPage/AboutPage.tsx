@@ -4,6 +4,7 @@ import { Button } from "@/ui/Button";
 import { ArrowLeft, Award, Compass, Leaf, Zap } from "lucide-react";
 import aboutModels from "@/assets/about-models.png";
 import aboutFactory from "@/assets/about-factory.png";
+import aboutBg from "@/assets/about-bg.png";
 
 export default function AboutPage() {
     useEffect(() => {
@@ -14,6 +15,12 @@ export default function AboutPage() {
         <div className="min-h-screen bg-background overflow-hidden">
             {/* Hero Section */}
             <div className="relative bg-gradient-to-br from-[#4AA3A0]/10 via-background to-[#E17B5A]/10 py-20 md:py-32 border-b border-border">
+                {/* Background image overlay */}
+                <img 
+                    src={aboutBg} 
+                    alt="" 
+                    className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay pointer-events-none" 
+                />
                 {/* Floating blur designs */}
                 <div className="absolute top-1/4 -left-20 w-72 h-72 bg-[#4AA3A0]/15 rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-[#E17B5A]/15 rounded-full blur-3xl pointer-events-none" />
