@@ -112,7 +112,7 @@ export default function AboutPage() {
                     </div>
 
                     {/* Pillars Lists */}
-                    <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="flex gap-4 p-6 bg-card border rounded-xl hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                             <div className="p-3 bg-[#4AA3A0]/10 text-primary rounded-lg h-fit">
                                 <Award className="h-6 w-6" />
