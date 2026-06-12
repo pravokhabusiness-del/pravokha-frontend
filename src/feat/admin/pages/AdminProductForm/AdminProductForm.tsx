@@ -27,7 +27,7 @@ import { apiClient } from "@/infra/api/apiClient";
 import { useAuth } from "@/core/context/AuthContext";
 import { useAdmin } from "@/core/context/AdminContext";
 import { Badge } from "@/ui/Badge";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { CategoryInput } from "@/feat/products/components/CategoryInput";
 import { Separator } from "@/ui/Separator";
 import { ScrollArea } from "@/ui/ScrollArea";
@@ -1183,7 +1183,7 @@ export default function AdminProductForm() {
                                                                     {/* Existing Images */}
                                                                     {existing.map((src, i) => (
                                                                         <div key={`exist-${color.id}-${i}`} className="aspect-square rounded-2xl overflow-hidden border border-border/50 relative group bg-background shadow-sm">
-                                                                            <img src={src} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
+                                                                            <img src={getMediaUrl(src)} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
                                                                             <div className="absolute inset-x-0 bottom-0 top-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                                                 <button onClick={() => removeImage(i, 'existing', color.id)} className="p-2 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all hover:scale-110 shadow-xl">
                                                                                     <Trash2 className="h-4 w-4" />
@@ -1196,7 +1196,7 @@ export default function AdminProductForm() {
                                                                     {/* New Previews */}
                                                                     {previews.map((src, i) => (
                                                                         <div key={`new-${color.id}-${i}`} className="aspect-square rounded-2xl overflow-hidden border border-primary/30 relative group bg-background shadow-lg shadow-primary/5">
-                                                                            <img src={src} className="w-full h-full object-cover" />
+                                                                            <img src={getMediaUrl(src)} className="w-full h-full object-cover" />
                                                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                                                 <button onClick={() => removeImage(i, 'new', color.id)} className="p-2 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all hover:scale-110 shadow-xl">
                                                                                     <Trash2 className="h-4 w-4" />
@@ -1245,7 +1245,7 @@ export default function AdminProductForm() {
                                             : null;
 
                                         return previewImage ? (
-                                            <img src={previewImage} className="w-full h-full object-cover" />
+                                            <img src={getMediaUrl(previewImage)} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-muted-foreground grayscale opacity-30">
                                                 <ImageIcon className="h-12 w-12" />
@@ -1272,7 +1272,7 @@ export default function AdminProductForm() {
                                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide py-1">
                                             {allImages.slice(0, 10).map((src, idx) => (
                                                 <div key={idx} className="w-12 h-12 min-w-[3rem] rounded-xl overflow-hidden border border-border/40 hover:border-primary/50 transition-colors shadow-sm cursor-pointer opacity-70 hover:opacity-100">
-                                                    <img src={src} className="w-full h-full object-cover" />
+                                                    <img src={getMediaUrl(src)} className="w-full h-full object-cover" />
                                                 </div>
                                             ))}
                                             {allImages.length > 10 && (

@@ -2,6 +2,7 @@ import { Check, FileText, DollarSign, Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { ProductFormData } from "./types";
+import { getMediaUrl } from "@/lib/utils";
 
 
 interface ReviewStepProps {
@@ -133,7 +134,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                     <div className="grid grid-cols-4 gap-2">
                         {allImages.slice(0, 4).map((url, i) => (
                             <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border/60 group relative">
-                                <img src={url} alt="Variant preview" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                <img src={getMediaUrl(url)} alt="Variant preview" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                 {i === 3 && allImages.length > 4 && (
                                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-xs font-black">
                                         +{allImages.length - 4}

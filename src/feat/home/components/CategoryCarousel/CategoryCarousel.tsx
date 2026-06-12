@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CategorySmallCard } from "@/feat/products/components/CategorySmallCard";
+import { getMediaUrl } from "@/lib/utils";
 import styles from "./CategoryCarousel.module.css";
 
 interface Category {
@@ -302,9 +303,11 @@ export function CategoryCarousel({
                                 title={category.name}
                                 description={category.description || "Explore our premium selection"}
                                 image={
-                                    category.image ||
-                                    category.image_url ||
-                                    getFallbackImage(category.slug)
+                                    getMediaUrl(
+                                        category.image ||
+                                        category.image_url ||
+                                        getFallbackImage(category.slug)
+                                    )
                                 }
                                 link={`/products?category=${category.slug}`}
                                 disabled={!isCategoryActive(category.status)}

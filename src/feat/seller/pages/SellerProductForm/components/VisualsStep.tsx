@@ -2,7 +2,7 @@ import React from "react";
 import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
 import { Package, Upload, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { ProductFormData } from "./types";
 
 interface VisualsStepProps {
@@ -99,7 +99,7 @@ export const VisualsStep: React.FC<VisualsStepProps> = ({
                                         {/* Existing Images */}
                                         {existing.map((src, i) => (
                                             <div key={`exist-${color.id}-${i}`} className="relative group aspect-[4/5] rounded-xl overflow-hidden shadow-sm border bg-white">
-                                                <img src={src} className="w-full h-full object-cover" />
+                                                <img src={getMediaUrl(src)} className="w-full h-full object-cover" />
                                                 <button
                                                     onClick={() => removeImage(i, 'existing', color.id)}
                                                     className={cn(
@@ -117,7 +117,7 @@ export const VisualsStep: React.FC<VisualsStepProps> = ({
                                         {/* New Previews */}
                                         {previews.map((src, i) => (
                                             <div key={`new-${color.id}-${i}`} className="relative group aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-primary/30 bg-white">
-                                                <img src={src} className="w-full h-full object-cover" />
+                                                <img src={getMediaUrl(src)} className="w-full h-full object-cover" />
                                                 <button
                                                     onClick={() => removeImage(i, 'new', color.id)}
                                                     className="absolute top-2 right-2 bg-white/90 hover:bg-destructive hover:text-white text-gray-600 p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all"
