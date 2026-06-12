@@ -6,7 +6,7 @@ import { ScrollArea } from "@/ui/ScrollArea";
 import { Separator } from "@/ui/Separator";
 import { Link } from "react-router-dom";
 import styles from "./CartDrawer.module.css";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 
 export function CartDrawer() {
     const { items, removeFromCart, updateQuantity, cartTotal, isCartOpen, setIsCartOpen, cartCount, clearCart } = useCart();
@@ -49,7 +49,7 @@ export function CartDrawer() {
                                     <div key={`${item.productId}-${item.variantId}-${item.size}`} className={styles.item}>
                                         <div className={styles.itemImageContainer}>
                                             <img
-                                                src={item.image}
+                                                src={getMediaUrl(item.image)}
                                                 alt={item.title}
                                                 className={styles.itemImage}
                                             />

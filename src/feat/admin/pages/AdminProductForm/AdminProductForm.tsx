@@ -446,10 +446,9 @@ export default function AdminProductForm() {
             newErrors.category = "Category is required.";
         }
 
-        // Optional subcategory validation - only if subcategories exist for this category
-        const subcategoriesForCat = dbSubcategories.filter(s => s.category_id === formData.selectedCategoryId);
-        if (subcategoriesForCat.length > 0 && !formData.selectedSubcategoryId) {
-            newErrors.subcategory = "Please select a subcategory for better organization.";
+        // Subcategory validation - products can only be published to subcategories, not top-level categories.
+        if (formData.published && !formData.selectedSubcategoryId) {
+            newErrors.subcategory = "Please select a subcategory. Products can only be published to subcategories.";
         }
 
         if (formData.selectedColors.length === 0) {

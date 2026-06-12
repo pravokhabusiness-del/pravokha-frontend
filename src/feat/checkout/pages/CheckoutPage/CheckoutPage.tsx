@@ -13,7 +13,7 @@ import { PaymentMethods } from "@/feat/checkout/components/PaymentMethods";
 import { ProcessingOverlay } from "@/feat/checkout/components/ProcessingOverlay";
 import { toast } from "@/shared/hook/use-toast";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { emailClient } from "@/lib/services/email/EmailClient";
 import { Shield } from "lucide-react";
 import { razorpayService } from "@/services/razorpayService";
@@ -52,7 +52,7 @@ export function CheckoutPage() {
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [processingStep, setProcessingStep] = useState<'contacting' | 'verifying' | 'confirming' | 'success'>('contacting');
-    const [settings, setSettings] = useState({ taxRate: 18, shippingFee: 0, freeShippingThreshold: 1999 });
+    const [settings, setSettings] = useState({ taxRate: 18, shippingFee: 0, freeShippingThreshold: 1000 });
     const [orderCount, setOrderCount] = useState(0);
 
     // FIX #10: Coupon & Discount state
@@ -128,7 +128,7 @@ export function CheckoutPage() {
                 setSettings({
                     taxRate: response.data.settings.taxRate,
                     shippingFee: response.data.settings.shippingFee,
-                    freeShippingThreshold: response.data.settings.freeShippingThreshold || 1999
+                    freeShippingThreshold: response.data.settings.freeShippingThreshold || 1000
                 });
             }
         } catch (error) {
@@ -514,7 +514,7 @@ export function CheckoutPage() {
                                         onClick={() => navigate(`/product/${item.productId}`)}
                                     >
                                         <img
-                                            src={item.image}
+                                            src={getMediaUrl(item.image)}
                                             alt={item.title}
                                             className="w-16 h-16 object-cover rounded border group-hover:scale-105 transition-transform"
                                         />

@@ -36,6 +36,7 @@ import {
 import { toast } from "@/shared/hook/use-toast";
 import { ArrowLeft, Package, Truck, MapPin, Calendar, CreditCard, User, Trash2, RotateCcw, XCircle } from "lucide-react";
 import { format } from "date-fns";
+import { getMediaUrl } from "@/lib/utils";
 
 interface Order {
   id: string;
@@ -445,7 +446,7 @@ export default function AdminOrders() {
                       <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
                         <div className="h-16 w-16 bg-muted rounded overflow-hidden flex-shrink-0">
                           {item.image ? (
-                            <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+                            <img src={getMediaUrl(item.image)} alt={item.title} className="h-full w-full object-cover" />
                           ) : (
                             <Package className="h-8 w-8 m-auto text-muted-foreground" />
                           )}

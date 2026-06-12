@@ -53,7 +53,7 @@ import { format, subDays } from "date-fns";
 import { generateInvoicePDF } from "@/shared/util/invoiceGenerator";
 import { useNavigate } from "react-router-dom";
 import { AdminSkeleton } from "@/feat/admin/components/AdminSkeleton";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { NoResultsFound } from "@/feat/admin/components/NoResultsFound";
 import {
   AreaChart,
@@ -1138,7 +1138,7 @@ export default function AdminPayments() {
                             <div className="h-16 w-16 rounded-lg bg-white overflow-hidden border shadow-sm shrink-0">
                               {item.product?.variants?.[0]?.images?.[0] || item.image ? (
                                 <img
-                                  src={item.product?.variants?.[0]?.images?.[0] || item.image}
+                                  src={getMediaUrl(item.product?.variants?.[0]?.images?.[0] || item.image)}
                                   alt={item.title}
                                   className="h-full w-full object-cover"
                                 />

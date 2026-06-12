@@ -140,6 +140,8 @@ export default function SellerSettings() {
   const [profileBio, setProfileBio] = useState("");
   const [profileDob, setProfileDob] = useState("");
   const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [profileNameTouched, setProfileNameTouched] = useState(false);
+  const [profileSubmitted, setProfileSubmitted] = useState(false);
 
   const form = useForm<SellerProfile>({
     resolver: zodResolver(formSchema),
@@ -167,6 +169,7 @@ export default function SellerSettings() {
   // --- HANDLERS ---
 
   const handleProfileSave = async () => {
+    setProfileSubmitted(true);
     // 1. Validate with Zod
     const validationResult = profileUpdateSchema.safeParse({
       name: profileName,
@@ -733,11 +736,14 @@ export default function SellerSettings() {
                               <Label className="responsive-label text-muted-foreground">Full name</Label>
                               <Input
                                 value={profileName}
-                                onChange={(e) => setProfileName(e.target.value)}
+                                onChange={(e) => {
+                                  setProfileName(e.target.value);
+                                  setProfileNameTouched(true);
+                                }}
                                 placeholder="E.g. John Doe"
                                 className={cn(
                                   "h-11 rounded-xl",
-                                  profileName.trim() === "" && "border-red-500 focus-visible:ring-red-500"
+                                  (profileNameTouched || profileSubmitted) && profileName.trim() === "" && "border-red-500 focus-visible:ring-red-500"
                                 )}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
@@ -796,7 +802,7 @@ export default function SellerSettings() {
                               value={profileBio}
                               onChange={(e) => setProfileBio(e.target.value)}
                               placeholder="Tell admins a bit about yourself..."
-                              className="rounded-xl min-h-[100px] bg-background focus:ring-primary/20"
+                              className="rounded-xl min-h-[100px] bg-background focus:ring-primary/20 resize-none"
                             />
                             <p className="text-[10px] text-muted-foreground italic">This information helps us personalize your seller experience.</p>
                           </div>
@@ -1145,7 +1151,7 @@ export default function SellerSettings() {
                                 placeholder="Example: We accept returns within 7 days of delivery if the item is unused..."
                                 {...field}
                                 rows={6}
-                                className="responsive-body"
+                                className="responsive-body resize-none"
                               />
                             </FormControl>
                             <FormMessage className="text-red-500" />

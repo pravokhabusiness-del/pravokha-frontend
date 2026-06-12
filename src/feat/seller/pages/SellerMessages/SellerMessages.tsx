@@ -8,7 +8,7 @@ import { useNotifications, Notification } from "@/shared/hook/useNotifications";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDistanceToNow, format } from "date-fns";
 import { apiClient } from "@/infra/api/apiClient";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import {
   Search,
   Filter,
@@ -144,7 +144,7 @@ export default function SellerMessages() {
               >
                 <div className="w-16 h-16 rounded-xl border overflow-hidden bg-background flex-shrink-0 group-hover:scale-105 transition-transform">
                   {item.image ? (
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                    <img src={getMediaUrl(item.image)} alt={item.title} className="w-full h-full object-cover" />
                   ) : (
                     <Package className="h-6 w-6 text-muted-foreground m-auto mt-5" />
                   )}
