@@ -385,49 +385,80 @@ export function HomePage() {
                 <ComboOfferBanner />
             </section>
 
-            {/* Features */}
-            <section className={`w-full ${layout.sectionSpacing} bg-muted/70 px-4 sm:px-6 lg:px-8`}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full mx-auto">
-                    <Card className="p-4 sm:p-6 text-center hover:shadow-xl transition-all duration-300 group h-full flex flex-col justify-center items-center">
-                        <TrendingUp className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mx-auto mb-3 sm:mb-4 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-                        <h3 className="text-lg sm:text-xl font-semibold mb-2">Latest Trends</h3>
-                        <p className="text-sm sm:text-base text-muted-foreground">Stay ahead with our curated collection of the season's hottest styles</p>
-                    </Card>
-                    <Card className="p-4 sm:p-6 text-center hover:shadow-xl transition-all duration-300 group h-full flex flex-col justify-center items-center">
-                        <Zap className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mx-auto mb-3 sm:mb-4 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-                        <h3 className="text-lg sm:text-xl font-semibold mb-2">Fast Delivery</h3>
-                        <p className="text-sm sm:text-base text-muted-foreground">Lightning-fast shipping to get your order to you in record time</p>
-                    </Card>
-                    <Card className="p-4 sm:p-6 text-center hover:shadow-xl transition-all duration-300 group h-full flex flex-col justify-center items-center">
-                        <Shield className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mx-auto mb-3 sm:mb-4 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-                        <h3 className="text-lg sm:text-xl font-semibold mb-2">Quality Assured</h3>
-                        <p className="text-sm sm:text-base text-muted-foreground">Premium quality guaranteed on every product with our satisfaction promise</p>
-                    </Card>
+            {/* Features Section */}
+            <section className={`w-full ${layout.sectionSpacing} px-4 sm:px-6 lg:px-8 relative overflow-hidden py-16 md:py-24 bg-gradient-to-br from-[#4AA3A0]/5 via-background to-[#E17B5A]/5 border-y border-border/40`}>
+                {/* Floating blur designs */}
+                <div className="absolute top-1/4 -left-20 w-72 h-72 bg-[#4AA3A0]/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-[#E17B5A]/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="max-w-7xl mx-auto space-y-12">
+                    <div className="text-center space-y-3">
+                        <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-semibold text-xs tracking-wider uppercase">
+                            Our Promises
+                        </span>
+                        <h2 className={`${typography.responsiveH2} font-bold tracking-tight`}>Why Shop With Pravokha?</h2>
+                        <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
+                            Experience the best in premium fabrics, lightning-fast logistics, and curated trends.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full">
+                        <Card className="p-6 sm:p-8 text-center bg-card/60 backdrop-blur-sm border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-primary/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
+                            <div className="p-4 bg-[#4AA3A0]/10 text-primary rounded-2xl mb-4 group-hover:scale-115 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
+                                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8" />
+                            </div>
+                            <h3 className="text-lg sm:text-xl font-bold mb-2">Latest Trends</h3>
+                            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Stay ahead with our curated collection of the season's hottest styles, updated weekly.</p>
+                        </Card>
+                        <Card className="p-6 sm:p-8 text-center bg-card/60 backdrop-blur-sm border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-[#E17B5A]/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
+                            <div className="p-4 bg-[#E17B5A]/10 text-[#E17B5A] rounded-2xl mb-4 group-hover:scale-115 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
+                                <Zap className="h-6 w-6 sm:h-8 sm:w-8" />
+                            </div>
+                            <h3 className="text-lg sm:text-xl font-bold mb-2">Fastest Delivery</h3>
+                            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Lightning-fast processing and shipping to get your favorite garments to you in record time.</p>
+                        </Card>
+                        <Card className="p-6 sm:p-8 text-center bg-card/60 backdrop-blur-sm border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-primary/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
+                            <div className="p-4 bg-[#4AA3A0]/10 text-primary rounded-2xl mb-4 group-hover:scale-115 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
+                                <Shield className="h-6 w-6 sm:h-8 sm:w-8" />
+                            </div>
+                            <h3 className="text-lg sm:text-xl font-bold mb-2">Quality Assured</h3>
+                            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Premium quality guaranteed on every product, manufactured ethically in India's textile capital.</p>
+                        </Card>
+                    </div>
                 </div>
             </section>
 
             {/* CTA Section */}
-            <section className={`w-full py-12 sm:py-16 text-center px-4 sm:px-6 lg:px-8`}>
-                <div className="w-full mx-auto space-y-4 sm:space-y-6">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
-                        Ready to Upgrade Your Wardrobe?
-                    </h2>
-                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-4xl mx-auto px-4">
-                        Join thousands of satisfied customers worldwide and discover your perfect style today
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-4 sm:pt-6 w-full max-w-xs sm:max-w-none mx-auto">
-                        <Link to="/products" className="w-full sm:w-auto">
-                            <Button size="lg" className="w-full sm:w-[200px] h-11 sm:h-12 text-sm sm:text-base group hover:scale-105 transition-transform">
-                                Shop Now
-                                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
-                            </Button>
-                        </Link>
-                        <Link to="/learn-more" className="w-full sm:w-auto">
-                            <Button size="lg" variant="outline" className="w-full sm:w-[200px] h-11 sm:h-12 text-sm sm:text-base group hover:scale-105 transition-transform">
-                                Learn More
-                                <Info className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
-                            </Button>
-                        </Link>
+            <section className={`w-full py-16 sm:py-24 text-center px-4 sm:px-6 lg:px-8`}>
+                <div className="max-w-5xl mx-auto relative group overflow-hidden bg-gradient-to-br from-[#4AA3A0] to-[#E17B5A] text-white rounded-[32px] p-8 md:p-16 shadow-2xl transition-all duration-500 hover:shadow-primary/20 hover:scale-[1.01]">
+                    {/* Visual accent rings */}
+                    <div className="absolute -top-10 -left-10 w-40 h-40 border-4 border-white/10 rounded-full pointer-events-none" />
+                    <div className="absolute -bottom-10 -right-10 w-60 h-60 border-4 border-white/10 rounded-full pointer-events-none" />
+                    
+                    <div className="relative z-10 space-y-6 max-w-2xl mx-auto">
+                        <span className="inline-block px-3 py-1 rounded-full bg-white/15 text-white font-bold text-xs tracking-wider uppercase mb-2">
+                            Elevate Your Style
+                        </span>
+                        <h2 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight tracking-tight">
+                            Ready to Upgrade Your Wardrobe?
+                        </h2>
+                        <p className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed">
+                            Join thousands of satisfied customers styling their everyday life with Pravokha. Discover pieces built for ultimate comfort and fit.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-6 w-full max-w-md mx-auto">
+                            <Link to="/products" className="flex-1">
+                                <Button size="lg" className="w-full bg-white text-[#4AA3A0] hover:bg-white/90 font-bold px-8 shadow-xl transition duration-300 h-12 rounded-xl">
+                                    Shop Collection
+                                    <ArrowRight className="ml-2 h-5 w-5" />
+                                </Button>
+                            </Link>
+                            <Link to="/learn-more" className="flex-1">
+                                <Button size="lg" variant="outline" className="w-full border-white/40 text-white hover:bg-white/10 hover:text-white font-bold px-8 transition duration-300 h-12 rounded-xl">
+                                    Learn More
+                                    <Info className="ml-2 h-5 w-5" />
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
