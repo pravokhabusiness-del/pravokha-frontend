@@ -5,7 +5,7 @@
     width: 100%;
     background: hsl(var(--background));
     border-radius: 1.5rem;
-    padding: 2.5rem 1.5rem 3.5rem;
+    padding: 2.5rem 1rem 3.5rem;
     box-shadow: 
         0 10px 40px -10px rgba(0, 0, 0, 0.08),
         0 1px 3px rgba(0, 0, 0, 0.05),
@@ -14,6 +14,20 @@
     overflow: hidden;
     margin-top: 1rem;
     margin-bottom: 2rem;
+
+    /* Desktop Responsive Tokens */
+    --coverflow-left-translate: -128%;
+    --coverflow-right-translate: 28%;
+    --coverflow-far-left-translate: -195%;
+    --coverflow-far-right-translate: 95%;
+    --coverflow-hidden-left-translate: -340%;
+    --coverflow-hidden-right-translate: 240%;
+    --coverflow-side-scale: 0.88;
+    --coverflow-far-scale: 0.72;
+    --coverflow-active-scale: 1.08;
+    --coverflow-hidden-scale: 0.5;
+    --coverflow-card-width: 220px;
+    --coverflow-height: 380px;
 }
 
 :global(.dark) .containerCard {
@@ -31,7 +45,7 @@
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 50%;
-    display: flex;
+    display: none; /* Hide on mobile by default */
     align-items: center;
     justify-content: center;
     background: hsl(var(--background));
@@ -70,10 +84,31 @@
     cursor: not-allowed;
 }
 
+@media (max-width: 640px) {
+    .containerCard {
+        /* Mobile Coverflow Tuning */
+        --coverflow-card-width: 170px;
+        --coverflow-height: 290px;
+        --coverflow-left-translate: -105%;
+        --coverflow-right-translate: 5%;
+        --coverflow-side-scale: 0.78;
+        --coverflow-active-scale: 1.02;
+        --coverflow-far-left-translate: -155%;
+        --coverflow-far-right-translate: 55%;
+        --coverflow-far-scale: 0.6;
+        --coverflow-hidden-left-translate: -220%;
+        --coverflow-hidden-right-translate: 120%;
+    }
+}
+
 @media (min-width: 768px) {
     .containerCard {
         padding: 3rem 2.5rem 4rem;
         border-radius: 2rem;
+    }
+    .topArrowLeft,
+    .topArrowRight {
+        display: flex; /* Restore on desktop */
     }
     .topArrowLeft {
         left: 2.5rem;
@@ -213,7 +248,7 @@
 .showcaseArea {
     position: relative;
     width: 100%;
-    height: 380px;
+    height: var(--coverflow-height, 380px);
     perspective: 1000px;
     overflow: hidden;
     margin: 0 auto;
@@ -235,7 +270,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 220px;
+    width: var(--coverflow-card-width, 220px);
     aspect-ratio: 4 / 5;
     transition: all 0.65s cubic-bezier(0.23, 1, 0.32, 1);
     will-change: transform, opacity, filter;

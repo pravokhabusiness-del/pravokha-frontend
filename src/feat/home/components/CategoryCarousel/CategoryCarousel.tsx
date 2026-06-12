@@ -136,7 +136,7 @@ export function CategoryCarousel({
             return {
                 zIndex: 0,
                 opacity: 0,
-                transform: `translate(${offset > 0 ? '240%' : '-340%'}, -50%) scale(0.5)`,
+                transform: `translate(${offset > 0 ? 'var(--coverflow-hidden-right-translate, 240%)' : 'var(--coverflow-hidden-left-translate, -340%)'}, -50%) scale(var(--coverflow-hidden-scale, 0.5))`,
                 pointerEvents: 'none' as const,
             };
         }
@@ -146,7 +146,7 @@ export function CategoryCarousel({
             return {
                 zIndex: 30,
                 opacity: 1,
-                transform: 'translate(-50%, -50%) scale(1.08)',
+                transform: 'translate(-50%, -50%) scale(var(--coverflow-active-scale, 1.08))',
                 filter: 'none',
             };
         }
@@ -156,7 +156,7 @@ export function CategoryCarousel({
             return {
                 zIndex: 20,
                 opacity: 0.85,
-                transform: 'translate(-128%, -50%) scale(0.88)',
+                transform: 'translate(var(--coverflow-left-translate, -128%), -50%) scale(var(--coverflow-side-scale, 0.88))',
             };
         }
 
@@ -165,7 +165,7 @@ export function CategoryCarousel({
             return {
                 zIndex: 20,
                 opacity: 0.85,
-                transform: 'translate(28%, -50%) scale(0.88)',
+                transform: 'translate(var(--coverflow-right-translate, 28%), -50%) scale(var(--coverflow-side-scale, 0.88))',
             };
         }
 
@@ -174,7 +174,7 @@ export function CategoryCarousel({
             return {
                 zIndex: 10,
                 opacity: 0.45,
-                transform: 'translate(-195%, -50%) scale(0.72)',
+                transform: 'translate(var(--coverflow-far-left-translate, -195%), -50%) scale(var(--coverflow-far-scale, 0.72))',
             };
         }
 
@@ -183,7 +183,7 @@ export function CategoryCarousel({
             return {
                 zIndex: 10,
                 opacity: 0.45,
-                transform: 'translate(95%, -50%) scale(0.72)',
+                transform: 'translate(var(--coverflow-far-right-translate, 95%), -50%) scale(var(--coverflow-far-scale, 0.72))',
             };
         }
 
