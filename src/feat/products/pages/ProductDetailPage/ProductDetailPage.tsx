@@ -16,7 +16,7 @@ import { InteractiveStarRating } from "@/shared/ui/InteractiveStarRating";
 import { apiClient } from "@/infra/api/apiClient";
 import { useRecentlyViewed } from "@/shared/hook/useRecentlyViewed";
 import { useAuth } from "@/core/context/AuthContext";
-import { getMediaUrl } from "@/lib/utils";
+import { getMediaUrl, cn } from "@/lib/utils";
 import React, { Suspense, useMemo } from "react";
 
 // Lazy-load heavy components for Performance Guardrails (Perfect 10)
@@ -720,10 +720,10 @@ export function ProductDetailPage() {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                        <div className="grid grid-cols-2 gap-3 pt-4 lg:flex lg:flex-row">
                             <Button
                                 size="lg"
-                                className="flex-1 gap-2 hover:scale-105 transition-transform gsap-slide-left"
+                                className="col-span-2 sm:col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform gsap-slide-left"
                                 onClick={handleAddToCart}
                             >
                                 Add to Cart
@@ -731,7 +731,7 @@ export function ProductDetailPage() {
                             <Button
                                 size="lg"
                                 variant="secondary"
-                                className="flex-1 hover:scale-105 transition-transform gsap-slide-right"
+                                className="col-span-2 sm:col-span-1 lg:flex-1 hover:scale-105 transition-transform gsap-slide-right"
                                 onClick={handleBuyNow}
                             >
                                 Buy Now
@@ -739,18 +739,20 @@ export function ProductDetailPage() {
                             <Button
                                 size="lg"
                                 variant="outline"
-                                className="gap-2 hover:scale-105 transition-transform"
+                                className="col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform justify-center"
                                 onClick={handleShare}
                                 aria-label="Share product"
                             >
                                 <Share2 className="h-5 w-5" />
-                                <span className="hidden sm:inline">Share</span>
+                                <span>Share</span>
                             </Button>
                             <Button
                                 size="lg"
                                 variant={isInWishlist ? "default" : "outline"}
-                                className={`gap-2 hover:scale-105 transition-transform group gsap-scale-in ${isInWishlist ? "bg-red-500 hover:bg-red-600 text-white border-red-500" : ""
-                                    }`}
+                                className={cn(
+                                    "col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform group justify-center gsap-scale-in",
+                                    isInWishlist && "bg-red-500 hover:bg-red-600 text-white border-red-500"
+                                )}
                                 onClick={async () => {
                                     if (!product) return;
 
@@ -799,10 +801,10 @@ export function ProductDetailPage() {
                                 }}
                             >
                                 <Heart
-                                    className={`h-5 w-5 transition-colors ${isInWishlist
-                                        ? "fill-white text-white"
-                                        : "group-hover:fill-red-500 group-hover:text-red-500"
-                                        }`}
+                                    className={cn(
+                                        "h-5 w-5 transition-colors",
+                                        isInWishlist ? "fill-white text-white" : "group-hover:fill-red-500 group-hover:text-red-500"
+                                    )}
                                 />
                                 {isInWishlist ? "In Wishlist" : "Wishlist"}
                             </Button>

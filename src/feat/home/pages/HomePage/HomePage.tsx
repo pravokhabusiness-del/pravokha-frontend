@@ -353,7 +353,7 @@ export function HomePage() {
                                         type="button"
                                         className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 capitalize ${
                                             collectionTab === tab
-                                                ? "bg-foreground text-background shadow-md scale-105"
+                                                ? "bg-foreground text-background shadow-md"
                                                 : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                                         }`}
                                         onClick={() => setCollectionTab(tab)}
