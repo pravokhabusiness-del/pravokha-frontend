@@ -17,3 +17,22 @@ export function getMediaUrl(path: string | null | undefined) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   return `${baseUrl}${normalizedPath}`;
 }
+
+export function getProductFallbackImage(title: string, category?: string) {
+  const name = (title || "").toLowerCase();
+  const cat = (category || "").toLowerCase();
+
+  if (name.includes("beauty") || cat.includes("beauty")) {
+    return "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80";
+  }
+  if (name.includes("book") || cat.includes("book") || cat.includes("books")) {
+    return "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&auto=format&fit=crop&q=80";
+  }
+  if (name.includes("electr") || cat.includes("electr") || cat.includes("gadget")) {
+    return "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80";
+  }
+  if (name.includes("kitchen") || name.includes("home") || cat.includes("kitchen") || cat.includes("home")) {
+    return "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=600&auto=format&fit=crop&q=80";
+  }
+  return "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&auto=format&fit=crop&q=80";
+}

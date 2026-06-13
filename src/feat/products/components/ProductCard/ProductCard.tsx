@@ -10,7 +10,7 @@ import { Product } from "@/data/products";
 import { apiClient } from "@/infra/api/apiClient";
 import { toast } from "@/shared/hook/use-toast";
 import styles from "./ProductCard.module.css";
-import { cn, getMediaUrl } from "@/lib/utils";
+import { cn, getMediaUrl, getProductFallbackImage } from "@/lib/utils";
 import { useAuth } from "@/core/context/AuthContext";
 import { useRecentlyViewed } from "@/shared/hook/useRecentlyViewed";
 import { InteractiveStarRating } from "@/shared/ui/InteractiveStarRating";
@@ -178,25 +178,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
     const p = product as any;
     const isVerified = p.isVerified || p.is_verified;
-
-    const getProductFallbackImage = (title: string, category: string) => {
-        const name = (title || "").toLowerCase();
-        const cat = (category || "").toLowerCase();
-
-        if (name.includes("beauty") || cat.includes("beauty")) {
-            return "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80";
-        }
-        if (name.includes("book") || cat.includes("book") || cat.includes("books")) {
-            return "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&auto=format&fit=crop&q=80";
-        }
-        if (name.includes("electr") || cat.includes("electr") || cat.includes("gadget")) {
-            return "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80";
-        }
-        if (name.includes("kitchen") || name.includes("home") || cat.includes("kitchen") || cat.includes("home")) {
-            return "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=600&auto=format&fit=crop&q=80";
-        }
-        return "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&auto=format&fit=crop&q=80";
-    };
 
     const imageUrl = (selectedVariant?.images && selectedVariant.images.length > 0 && selectedVariant.images[0])
         ? getMediaUrl(selectedVariant.images[0])

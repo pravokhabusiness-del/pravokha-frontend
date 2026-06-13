@@ -6,10 +6,13 @@ import { ScrollArea } from "@/ui/ScrollArea";
 import { Separator } from "@/ui/Separator";
 import { Link } from "react-router-dom";
 import styles from "./CartDrawer.module.css";
-import { cn, getMediaUrl } from "@/lib/utils";
+import { cn, getMediaUrl, getProductFallbackImage } from "@/lib/utils";
 
 export function CartDrawer() {
     const { items, removeFromCart, updateQuantity, cartTotal, isCartOpen, setIsCartOpen, cartCount, clearCart } = useCart();
+    
+    const shippingFee = cartTotal >= 999 ? 0 : 99;
+    const finalTotal = cartTotal + shippingFee;
 
     return (
         <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
@@ -49,7 +52,12 @@ export function CartDrawer() {
                                     <div key={`${item.productId}-${item.variantId}-${item.size}`} className={styles.item}>
                                         <div className={styles.itemImageContainer}>
                                             <img
-                                                src={getMediaUrl(item.image)}
+                                                src={(() => {
+                                                    const imgUrl = getMediaUrl(item.image);
+                                                    return (!imgUrl || imgUrl.includes("No+Image") || imgUrl.includes("placeholder"))
+                                                        ? getProductFallbackImage(item.title)
+                                                        : imgUrl;
+                                                })()}
                                                 alt={item.title}
                                                 className={styles.itemImage}
                                             />
@@ -136,12 +144,16 @@ export function CartDrawer() {
                                 </div>
                                 <div className={styles.summaryRow}>
                                     <span className={styles.summaryLabel}>Shipping</span>
-                                    <span className={styles.freeShipping}>Free</span>
+                                    {shippingFee === 0 ? (
+                                        <span className={styles.freeShipping}>Free</span>
+                                    ) : (
+                                        <span>₹{shippingFee}</span>
+                                    )}
                                 </div>
                                 <Separator />
                                 <div className={styles.totalRow}>
                                     <span>Total</span>
-                                    <span>₹{cartTotal}</span>
+                                    <span>₹{finalTotal}</span>
                                 </div>
                             </div>
 
