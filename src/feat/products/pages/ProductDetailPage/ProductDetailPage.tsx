@@ -16,7 +16,7 @@ import { InteractiveStarRating } from "@/shared/ui/InteractiveStarRating";
 import { apiClient } from "@/infra/api/apiClient";
 import { useRecentlyViewed } from "@/shared/hook/useRecentlyViewed";
 import { useAuth } from "@/core/context/AuthContext";
-import { getMediaUrl, cn } from "@/lib/utils";
+import { getMediaUrl, cn, getProductFallbackImage } from "@/lib/utils";
 import React, { Suspense, useMemo } from "react";
 
 // Lazy-load heavy components for Performance Guardrails (Perfect 10)
@@ -493,6 +493,13 @@ export function ProductDetailPage() {
         navigate("/checkout");
     };
 
+    const getDisplayImage = (img: string) => {
+        const url = getMediaUrl(img);
+        return (!url || url.includes("No+Image") || url.includes("placeholder"))
+            ? getProductFallbackImage(product?.title || "", product?.category)
+            : url;
+    };
+
     return (
         <div className="min-h-screen flex flex-col">
             <div className="w-full max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -512,7 +519,7 @@ export function ProductDetailPage() {
                                 className="cursor-pointer w-full h-full overflow-hidden"
                             >
                                 <img
-                                    src={getMediaUrl(selectedVariant.images[mainImage])}
+                                    src={getDisplayImage(selectedVariant.images[mainImage])}
                                     alt={product.title}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     loading="eager"
@@ -539,7 +546,7 @@ export function ProductDetailPage() {
                                     className={`aspect-square overflow-hidden rounded-lg border-2 transition-all gsap-scale-in ${mainImage === idx ? "border-primary" : "border-border hover:border-primary/50"
                                         }`}
                                 >
-                                    <img src={getMediaUrl(image)} alt={`${product.title} ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                                    <img src={getDisplayImage(image)} alt={`${product.title} ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
                                 </button>
                             ))}
                         </div>
@@ -1022,7 +1029,7 @@ export function ProductDetailPage() {
             </div>
 
             <ImageViewer
-                images={selectedVariant.images}
+                images={selectedVariant.images.map((img: string) => getDisplayImage(img))}
                 currentIndex={mainImage}
                 open={imageViewerOpen}
                 onClose={() => setImageViewerOpen(false)}
