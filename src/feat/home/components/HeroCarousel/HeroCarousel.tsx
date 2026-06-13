@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/ui/Button";
 import { apiClient } from "@/infra/api/apiClient";
-import hero1 from "@/assets/hero-premium-tees.jpg";
-import hero2 from "@/assets/hero-2.jpg";
-import hero3 from "@/assets/hero-3.jpg";
+import hero1 from "@/assets/hero-premium-tees.png";
+import hero2 from "@/assets/hero-2.png";
+import hero3 from "@/assets/hero-3.png";
 import { Link } from "react-router-dom";
 import styles from "./HeroCarousel.module.css";
 import { cn } from "@/lib/utils";
