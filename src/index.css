@@ -83,11 +83,11 @@
     --info-light: 210 100% 95%;
 
     /* Borders & Inputs */
-    --border: 215 15% 85%;
+    --border: 215 15% 78%;
     /* Soft grey border */
     --input: 0 0% 100%;
     /* White inputs */
-    --input-border: 215 15% 70%;
+    --input-border: 215 15% 75%;
     /* Darker input border for visibility */
     --ring: 180 45% 45%;
     /* Focus ring - matches primary */

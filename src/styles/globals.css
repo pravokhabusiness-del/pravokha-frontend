@@ -26,8 +26,8 @@
     --muted: 215 15% 92%;
     --muted-foreground: 215 15% 45%;
 
-    --border: 215 15% 85%;
-    --input-border: 215 15% 80%;
+    --border: 215 15% 78%;
+    --input-border: 215 15% 75%;
     --ring: 180 45% 45%;
 
     --destructive: 0 70% 55%;
@@ -234,4 +234,20 @@ nav[class*="navbar"] {
     ::-webkit-scrollbar-track { background: hsl(var(--muted) / 0.4); }
     ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
+}
+
+/* ============================================================================
+   UNIVERSAL DIALOG / BOX BORDER STYLES
+   ============================================================================ */
+/* Ensure all dialogue boxes, alerts, cards, sheets, and popovers have a consistent 1.5px solid border */
+[role="dialog"],
+[role="alertdialog"],
+.card,
+[class*="Card"],
+[class*="DialogContent"],
+[class*="AlertDialogContent"],
+[class*="SheetContent"],
+[class*="PopoverContent"],
+[class*="DropdownMenuContent"] {
+    border: 1.5px solid hsl(var(--border)) !important;
 }
