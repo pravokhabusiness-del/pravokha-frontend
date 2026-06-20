@@ -475,7 +475,13 @@ export default function SellerProductForm() {
             else if (formData.title.length < 3) newErrors.title = "Title must be at least 3 characters.";
 
             if (!formData.selectedCategoryId) newErrors.category = "Please select a category.";
-            if (!formData.selectedSubcategoryId) newErrors.subcategory = "Please select a subcategory.";
+            // Only require subcategory if there are subcategories for the selected category
+            const hasSubcategories = dbSubcategories.some(
+                s => s.categoryId === formData.selectedCategoryId || s.parentId === formData.selectedCategoryId
+            );
+            if (hasSubcategories && !formData.selectedSubcategoryId) {
+                newErrors.subcategory = "Please select a subcategory.";
+            }
 
             if (!formData.description.trim()) newErrors.description = "Product description is required.";
             else if (formData.description.length < 10) newErrors.description = "Description should be at least 10 characters.";

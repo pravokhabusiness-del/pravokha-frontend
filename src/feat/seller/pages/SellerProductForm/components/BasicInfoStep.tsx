@@ -134,7 +134,12 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
                 )}
             </div>
 
-            {formData.selectedCategoryId && (
+            {formData.selectedCategoryId && (() => {
+                const categorySubcategories = dbSubcategories.filter(
+                    sub => sub.categoryId === formData.selectedCategoryId
+                );
+                if (categorySubcategories.length === 0) return null;
+                return (
                 <div className="grid gap-2">
                     <Label className={cn(errors.subcategory ? "text-destructive" : "")}>
                         Subcategory *
@@ -151,12 +156,9 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
                             <SelectValue placeholder="Select a subcategory" />
                         </SelectTrigger>
                         <SelectContent>
-                            {dbSubcategories
-                                .filter(sub => (sub.categoryId === formData.selectedCategoryId))
-                                .map(sub => (
-                                    <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
-                                ))
-                            }
+                            {categorySubcategories.map(sub => (
+                                <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                     {errors.subcategory && (
@@ -170,7 +172,8 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
                         </motion.p>
                     )}
                 </div>
-            )}
+                );
+            })()}
             {/* Review Categories Configuration */}
             <div className="grid gap-2">
                 <div className="flex items-center justify-between">

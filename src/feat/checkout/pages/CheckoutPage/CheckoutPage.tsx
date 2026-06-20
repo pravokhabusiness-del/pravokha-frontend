@@ -246,6 +246,7 @@ export function CheckoutPage() {
             variantId: item.variantId,
             color: item.colorName,
             size: item.size,
+            sellerId: item.sellerId,
         }));
 
         if (paymentMethod === 'cod') {
