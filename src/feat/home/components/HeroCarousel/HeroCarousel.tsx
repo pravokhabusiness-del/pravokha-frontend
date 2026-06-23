@@ -140,9 +140,7 @@ export function HeroCarousel() {
                 {slides.map((s, i) => (
                     <div key={s.id || i} className={cn(styles.slide, i === currentSlide && styles.slideActive)} aria-hidden={i !== currentSlide}>
                         <div className={styles.imageContainer}>
-                            {/* Blurred background image to handle any aspect ratio mismatch nicely */}
-                            <img src={s.image} alt="" className={styles.imageBlurBg} aria-hidden="true" />
-                            {/* Contained foreground image that is never cropped */}
+                            {/* Single cover-fit image — fills the 16:9 container edge-to-edge, no blur sides */}
                             <img src={s.image} alt={s.title} className={styles.imageMain} loading={i === 0 ? "eager" : "lazy"} />
                             <div className={cn(styles.overlay, s.isCombo && styles.overlayCombo, s.isWhatsApp && styles.overlayWhatsApp)} />
                         </div>
