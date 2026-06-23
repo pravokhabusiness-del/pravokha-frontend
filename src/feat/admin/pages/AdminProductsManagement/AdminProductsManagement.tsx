@@ -500,14 +500,20 @@ export default function AdminProductsManagement() {
                         {filteredProducts.map((product) => (
                           <TableRow key={product.id} className="border-border/50 hover:bg-muted/30 transition-colors group">
                             <TableCell>
-                              <div className="w-12 h-12 rounded-xl bg-muted overflow-hidden border border-border/50 shadow-sm transition-transform group-hover:scale-105">
-                                {product.variants?.[0]?.images?.[0] ? (
-                                  <img src={product.variants[0].images[0]} className="w-full h-full object-cover" />
-                                ) : product.variants?.[0]?.images?.[0] ? (
-                                  <img src={product.variants[0].images[0]} className="w-full h-full object-cover" />
-                                ) : (
-                                  <Package className="w-full h-full p-3 text-muted-foreground/50" />
-                                )}
+                              <div className="w-12 h-12 rounded-xl bg-muted overflow-hidden border border-border/50 shadow-sm transition-transform group-hover:scale-105 flex items-center justify-center">
+                                {(() => {
+                                  const img = product.variants?.[0]?.images?.[0];
+                                  return img ? (
+                                    <img
+                                      src={img}
+                                      alt={product.title}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                    />
+                                  ) : (
+                                    <Package className="w-6 h-6 p-0 text-muted-foreground/50" />
+                                  );
+                                })()}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -603,9 +609,9 @@ export default function AdminProductsManagement() {
                       <div className="flex p-4 gap-4">
                         <div className="h-24 w-24 min-w-[6rem] rounded-xl bg-muted overflow-hidden border border-border/50 shadow-inner relative">
                           {(() => {
-                            const image = product.variants?.[0]?.images?.[0] || product.variants?.[0]?.images?.[0];
+                            const image = product.variants?.[0]?.images?.[0];
                             return image ? (
-                              <img src={image} className="w-full h-full object-cover" loading="lazy" />
+                              <img src={image} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                             ) : (
                               <div className="flex items-center justify-center h-full w-full bg-muted/50">
                                 <Package className="h-8 w-8 text-muted-foreground/30" />
@@ -697,9 +703,9 @@ export default function AdminProductsManagement() {
                   >
                     <div className="aspect-[4/5] bg-muted relative overflow-hidden">
                       {(() => {
-                        const image = product.variants?.[0]?.images?.[0] || product.variants?.[0]?.images?.[0];
+                        const image = product.variants?.[0]?.images?.[0];
                         return image ? (
-                          <img src={image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                          <img src={image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={product.title} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center grayscale opacity-20">
                             <Package className="h-12 w-12" />
