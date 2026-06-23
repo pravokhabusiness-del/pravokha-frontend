@@ -1,13 +1,13 @@
-/* Textarea Component Styles — FIX #4: visible border */
+/* Textarea Component Styles — visible borders in both light & dark modes */
 .textarea {
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
     resize: vertical;
-    border-color: hsl(var(--border));
+    border-color: hsl(215 15% 65%);
     border-width: 1.5px;
 }
 
 .textarea:hover:not(:disabled) {
-    border-color: hsl(var(--muted-foreground) / 0.6);
+    border-color: hsl(215 15% 50%);
 }
 
 .textarea:focus {

@@ -207,28 +207,8 @@ export function CategoryCarousel({
             onMouseEnter={() => setIsContainerHovered(true)}
             onMouseLeave={() => setIsContainerHovered(false)}
         >
-            {/* 1. Explicit Top-Left / Top-Right Corner Navigation Arrows */}
-            <button
-                className={styles.topArrowLeft}
-                onClick={goPrev}
-                disabled={!canGoPrev}
-                aria-label="Previous category"
-            >
-                <ChevronLeft size={22} strokeWidth={2.5} />
-            </button>
-
-            <button
-                className={styles.topArrowRight}
-                onClick={goNext}
-                disabled={!canGoNext}
-                aria-label="Next category"
-            >
-                <ChevronRight size={22} strokeWidth={2.5} />
-            </button>
-
             {/* 2. Premium Header Section (Dribbble Layout Alignment) */}
             <div className={styles.headerSection}>
-                <span className={styles.galleryLabel}>GALLERY</span>
                 <h3 className={styles.mainTitle}>Shop by Category</h3>
                 <p className={styles.subTitle}>
                     See the world through our curated collections: premium clothing tailored for everyday comfort and bold self-expression.

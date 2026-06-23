@@ -93,11 +93,29 @@ export function ProductsPage() {
         }
     };
 
+    // Sync URL parameters to state
+    useEffect(() => {
+        if (categoryParam) {
+            if (categoryParam === "all") {
+                setSelectedCategories([]);
+            } else {
+                setSelectedCategories([categoryParam]);
+            }
+        } else {
+            setSelectedCategories([]);
+        }
+        if (subcategoryParam) {
+            setSelectedSubcategories([subcategoryParam]);
+        } else {
+            setSelectedSubcategories([]);
+        }
+    }, [categoryParam, subcategoryParam]);
+
     // Fetch products from database with server-side filters
     const { products, loading, error } = useProducts({
         search: searchQuery || undefined,
-        category: selectedCategories.length > 0 ? selectedCategories[0] : (categoryParam !== "all" ? categoryParam : undefined), // Currently taking first category
-        subcategory: selectedSubcategories.length > 0 ? selectedSubcategories[0] : (subcategoryParam || undefined),
+        category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+        subcategory: selectedSubcategories.length > 0 ? selectedSubcategories[0] : undefined,
         sort: getBackendSort(sortBy),
         minPrice: priceRange[0],
         maxPrice: priceRange[1],
@@ -111,24 +129,37 @@ export function ProductsPage() {
     // Unified Toggle Functions
     const toggleCategory = (categoryId: string, isDesktop: boolean) => {
         if (isDesktop) {
-            setSelectedCategories(prev =>
-                prev.includes(categoryId) ? prev.filter(c => c !== categoryId) : [...prev, categoryId]
-            );
+            const nextCategories = selectedCategories.includes(categoryId) ? [] : [categoryId];
+            setSelectedCategories(nextCategories);
+            const newParams = new URLSearchParams(searchParams);
+            if (nextCategories.length > 0) {
+                newParams.set("category", nextCategories[0]);
+            } else {
+                newParams.delete("category");
+            }
+            newParams.delete("subcategory");
+            setSearchParams(newParams);
         } else {
             setTempCategories(prev =>
-                prev.includes(categoryId) ? prev.filter(c => c !== categoryId) : [...prev, categoryId]
+                prev.includes(categoryId) ? prev.filter(c => c !== categoryId) : [categoryId]
             );
         }
     };
 
     const toggleSubcategory = (subcategoryId: string, isDesktop: boolean) => {
         if (isDesktop) {
-            setSelectedSubcategories(prev =>
-                prev.includes(subcategoryId) ? prev.filter(s => s !== subcategoryId) : [...prev, subcategoryId]
-            );
+            const nextSubcategories = selectedSubcategories.includes(subcategoryId) ? [] : [subcategoryId];
+            setSelectedSubcategories(nextSubcategories);
+            const newParams = new URLSearchParams(searchParams);
+            if (nextSubcategories.length > 0) {
+                newParams.set("subcategory", nextSubcategories[0]);
+            } else {
+                newParams.delete("subcategory");
+            }
+            setSearchParams(newParams);
         } else {
             setTempSubcategories(prev =>
-                prev.includes(subcategoryId) ? prev.filter(s => s !== subcategoryId) : [...prev, subcategoryId]
+                prev.includes(subcategoryId) ? prev.filter(s => s !== subcategoryId) : [subcategoryId]
             );
         }
     };
@@ -140,6 +171,19 @@ export function ProductsPage() {
         setMinDiscount(tempMinDiscount);
         setMinRating(tempMinRating);
         setIsFilterOpen(false);
+
+        const newParams = new URLSearchParams(searchParams);
+        if (tempCategories.length > 0) {
+            newParams.set("category", tempCategories[0]);
+        } else {
+            newParams.delete("category");
+        }
+        if (tempSubcategories.length > 0) {
+            newParams.set("subcategory", tempSubcategories[0]);
+        } else {
+            newParams.delete("subcategory");
+        }
+        setSearchParams(newParams);
     };
 
     const clearFilters = () => {
@@ -236,13 +280,19 @@ export function ProductsPage() {
                                 <Select
                                     value={selectedCategories.length === 1 ? selectedCategories[0] : "all"}
                                     onValueChange={(value) => {
+                                        const newParams = new URLSearchParams(searchParams);
                                         if (value === "all") {
                                             setSelectedCategories([]);
                                             setTempCategories([]);
+                                            newParams.delete("category");
+                                            newParams.delete("subcategory");
                                         } else {
                                             setSelectedCategories([value]);
                                             setTempCategories([value]);
+                                            newParams.set("category", value);
+                                            newParams.delete("subcategory");
                                         }
+                                        setSearchParams(newParams);
                                     }}
                                 >
                                     <SelectTrigger className="w-full md:w-[140px] whitespace-nowrap text-[10px] sm:text-sm h-8 sm:h-10 px-2 sm:px-3">

@@ -180,17 +180,11 @@ export function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
                 </div>
 
-                {/* 3. "Shop by Category" Section Skeleton - Aspect Ratio Mirrored */}
                 {/* 3. "Shop by Category" Section Skeleton - Coverflow Aspect & Stacked Layout Mirrored */}
                 <section className={`w-full ${layout.sectionSpacing} px-4 sm:px-6 lg:px-8`}>
                     <div className={categoryStyles.containerCard}>
-                        {/* Top corner arrows simulation */}
-                        <div className={`${categoryStyles.topArrowLeft} opacity-30 pointer-events-none`} />
-                        <div className={`${categoryStyles.topArrowRight} opacity-30 pointer-events-none`} />
-
                         {/* Header section */}
                         <div className={categoryStyles.headerSection}>
-                            <span className={categoryStyles.galleryLabel}>GALLERY</span>
                             <h3 className={categoryStyles.mainTitle}>Shop by Category</h3>
                             <p className={categoryStyles.subTitle}>
                                 See the world through our curated collections: premium clothing tailored for everyday comfort and bold self-expression.
