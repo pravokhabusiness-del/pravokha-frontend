@@ -253,22 +253,22 @@ export function Navbar() {
             )}
             
             {/* Topbar for Socials */}
-            <div className="bg-[#4AA3A0] border-b border-[#3d8d8a] flex justify-between items-center px-4 py-1.5 text-xs">
+            <div className="bg-[#112a29] border-b border-[#183d3b] flex justify-between items-center px-4 py-1.5 text-xs">
                 <div className="text-white/90 font-medium hidden sm:block tracking-wide">
                     ✦ Elevate Your Style with Pravokha
                 </div>
                 <div className="flex items-center gap-4 ml-auto">
-                    <a href="https://wa.me/917339232817?text=Hello,%20I%20have%20an%20inquiry" target="_blank" rel="noopener noreferrer" className="group text-white/80 hover:text-white transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1">
-                        <FaWhatsapp className="h-3.5 w-3.5 text-green-300 group-hover:text-white transition-colors duration-300" /> <span className="hidden sm:inline">WhatsApp</span>
+                    <a href="https://wa.me/917339232817?text=Hello,%20I%20have%20an%20inquiry" target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#25D366] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
+                        <FaWhatsapp className="h-3.5 w-3.5 transition-colors duration-300" /> <span className="hidden sm:inline">WhatsApp</span>
                     </a>
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="group text-white/80 hover:text-white transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1">
-                        <Facebook className="h-3.5 w-3.5 text-blue-300 group-hover:text-white transition-colors duration-300" /> <span className="hidden sm:inline">Facebook</span>
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#1877F2] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
+                        <Facebook className="h-3.5 w-3.5 transition-colors duration-300" /> <span className="hidden sm:inline">Facebook</span>
                     </a>
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="group text-white/80 hover:text-white transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1">
-                        <Instagram className="h-3.5 w-3.5 text-pink-300 group-hover:text-white transition-colors duration-300" /> <span className="hidden sm:inline">Instagram</span>
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#E4405F] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
+                        <Instagram className="h-3.5 w-3.5 transition-colors duration-300" /> <span className="hidden sm:inline">Instagram</span>
                     </a>
-                    <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="group text-white/80 hover:text-white transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1">
-                        <Youtube className="h-3.5 w-3.5 text-red-300 group-hover:text-white transition-colors duration-300" /> <span className="hidden sm:inline">YouTube</span>
+                    <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#FF0000] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
+                        <Youtube className="h-3.5 w-3.5 transition-colors duration-300" /> <span className="hidden sm:inline">YouTube</span>
                     </a>
                 </div>
             </div>

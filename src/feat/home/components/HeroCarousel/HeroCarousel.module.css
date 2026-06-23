@@ -116,12 +116,12 @@
     display: inline-block;
     width: max-content;
     max-width: 100%;
-    padding: 0.25rem 0.875rem;
+    padding: 0.15rem 0.5rem !important;
     border-radius: 9999px;
     background-color: rgba(16,185,129,0.22);
     color: rgb(52,211,153);
     border: 1px solid rgba(16,185,129,0.35);
-    font-size: 0.7rem;
+    font-size: 0.6rem !important;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -129,7 +129,7 @@
     animation: fadeInSlideRight 0.7s ease-out forwards;
     white-space: nowrap;
 }
-@media (min-width: 640px) { .badge { font-size: 0.75rem; } }
+@media (min-width: 640px) { .badge { font-size: 0.75rem !important; padding: 0.25rem 0.875rem !important; } }
 
 .badgeWhatsApp {
     background-color: rgba(18,140,126,0.28);
@@ -170,13 +170,13 @@
 }
 
 .ctaButton {
-    font-size: 0.8rem;
+    font-size: 0.75rem !important;
     font-weight: 600;
-    padding: 0.6rem 1.25rem;
-    height: auto;
+    padding: 0.4rem 1rem !important;
+    height: 2.25rem !important;
     transition: transform 0.2s, box-shadow 0.2s;
     box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-    border-radius: 9999px;
+    border-radius: 9999px !important;
     background-color: hsl(var(--primary));
     color: white;
     border: none;
@@ -198,10 +198,10 @@
 }
 
 @media (min-width: 640px) {
-    .ctaButton { font-size: 0.95rem; padding: 0.85rem 1.75rem; }
+    .ctaButton { font-size: 0.9rem !important; padding: 0.6rem 1.5rem !important; height: 2.75rem !important; }
 }
 @media (min-width: 768px) {
-    .ctaButton { font-size: 1rem; padding: 1rem 2rem; }
+    .ctaButton { font-size: 1rem !important; padding: 0.75rem 2rem !important; height: 3rem !important; }
 }
 
 /* Arrow Navigation */

@@ -120,12 +120,17 @@
     }
 }
 
-/* ─── Header Section ────────────────────────────────────────────── */
 .headerSection {
     text-align: center;
     max-width: 600px;
     margin: 0 auto 2.5rem;
-    padding: 0 3rem; /* Leave breathing room for top arrows */
+    padding: 0 0.5rem; /* Narrow padding on mobile/tablet when arrows are hidden */
+}
+
+@media (min-width: 768px) {
+    .headerSection {
+        padding: 0 3.5rem; /* Leave room for top arrows on desktop */
+    }
 }
 
 .galleryLabel {

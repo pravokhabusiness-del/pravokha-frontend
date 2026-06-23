@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AdminSkeleton } from "@/feat/admin/components/AdminSkeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAdmin } from "@/core/context/AdminContext";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl, getProductFallbackImage } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -105,7 +105,6 @@ export default function AdminProductsManagement() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,7 +132,7 @@ export default function AdminProductsManagement() {
     if (isAdmin) {
       fetchProducts();
     }
-  }, [isAdmin, currentPage, pageSize]);
+  }, [isAdmin]);
 
   // Update stats based on products
   useEffect(() => {
@@ -141,38 +140,31 @@ export default function AdminProductsManagement() {
       const liveCount = products.filter(p => p.status === 'ACTIVE').length;
       const stock = products.reduce((acc, p) => acc + (p.stock || 0), 0);
       setStats({
-        total: totalCount || products.length,
+        total: products.length,
         active: liveCount,
         draft: products.filter(p => p.status === 'DRAFT').length,
         totalStock: stock,
         published: liveCount
       });
     }
-  }, [products, totalCount]);
+  }, [products]);
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // Calculate pagination for backend if supported, otherwise fetch and slice
-      // Current backend might return all products or support pagination params
-      const { data, headers } = await apiClient.get('/products', {
+      const { data } = await apiClient.get('/products', {
         params: {
-          page: currentPage,
-          limit: pageSize,
+          page: 1,
+          limit: 1000, // Fetch all products for admin client-side management
           role: 'admin' // Ensure admin view to see drafts
         }
       });
 
-      // If backend provides paginated response structure
       if (data && Array.isArray(data.products)) {
         setProducts(data.products);
-        setTotalCount(data.total || 0);
       } else if (Array.isArray(data)) {
-        // Fallback if backend returns simple array
         setProducts(data);
-        setTotalCount(parseInt(headers['x-total-count'] || data.length.toString()));
       }
-
     } catch (err) {
       console.error("Error fetching products:", err);
       toast({ title: "Error", description: "Failed to fetch products catalogue.", variant: "destructive" });
@@ -237,7 +229,19 @@ export default function AdminProductsManagement() {
     });
 
     return filtered;
-  }, [products, searchQuery, categoryFilter, statusFilter, sortBy]);
+  }, [products, searchQuery, categoryFilter, statusFilter, sourceFilter, sortBy]);
+
+  const totalCount = filteredProducts.length;
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredProducts.slice(startIndex, startIndex + pageSize);
+  }, [filteredProducts, currentPage, pageSize]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, categoryFilter, statusFilter, sourceFilter, sortBy]);
 
   const handleExportCSV = () => {
     const headers = ["ID", "SKU", "Name", "Category", "Price", "Stock", "Status", "Created"];
@@ -496,19 +500,20 @@ export default function AdminProductsManagement() {
                           <TableHead className="text-[11px] font-bold tracking-wider text-muted-foreground/60 text-right pr-10">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
-                      <TableBody>
-                        {filteredProducts.map((product) => (
+                       <TableBody>
+                        {paginatedProducts.map((product) => (
                           <TableRow key={product.id} className="border-border/50 hover:bg-muted/30 transition-colors group">
                             <TableCell>
                               <div className="w-12 h-12 rounded-xl bg-muted overflow-hidden border border-border/50 shadow-sm transition-transform group-hover:scale-105 flex items-center justify-center">
                                 {(() => {
-                                  const img = product.variants?.[0]?.images?.[0];
+                                  const rawImg = product.variants?.[0]?.images?.[0];
+                                  const img = getMediaUrl(rawImg);
                                   return img ? (
                                     <img
                                       src={img}
                                       alt={product.title}
                                       className="w-full h-full object-cover"
-                                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                      onError={(e) => { (e.target as HTMLImageElement).src = getProductFallbackImage(product.title, typeof product.category === 'object' ? product.category?.name : product.category); }}
                                     />
                                   ) : (
                                     <Package className="w-6 h-6 p-0 text-muted-foreground/50" />
@@ -603,15 +608,16 @@ export default function AdminProductsManagement() {
                 )}
 
                 {/* Mobile Table View (Cards) */}
-                <div className="block sm:hidden grid grid-cols-1 gap-4 p-4">
-                  {filteredProducts.map((product) => (
+                <div className="sm:hidden grid grid-cols-1 gap-4 p-4">
+                  {paginatedProducts.map((product) => (
                     <div key={product.id} className="flex flex-col bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden group active:scale-[0.98] transition-transform">
                       <div className="flex p-4 gap-4">
                         <div className="h-24 w-24 min-w-[6rem] rounded-xl bg-muted overflow-hidden border border-border/50 shadow-inner relative">
                           {(() => {
-                            const image = product.variants?.[0]?.images?.[0];
+                            const rawImg = product.variants?.[0]?.images?.[0];
+                            const image = getMediaUrl(rawImg);
                             return image ? (
-                              <img src={image} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              <img src={image} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = getProductFallbackImage(product.title, typeof product.category === 'object' ? product.category?.name : product.category); }} />
                             ) : (
                               <div className="flex items-center justify-center h-full w-full bg-muted/50">
                                 <Package className="h-8 w-8 text-muted-foreground/30" />
@@ -695,7 +701,7 @@ export default function AdminProductsManagement() {
                 exit={{ opacity: 0 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-6 p-3 sm:p-6"
               >
-                {filteredProducts.map((product) => (
+                {paginatedProducts.map((product) => (
                   <Card
                     key={product.id}
                     className="group relative overflow-hidden bg-card border-border/60 hover:border-primary/40 transition-all duration-500 rounded-xl shadow-sm cursor-pointer"
@@ -703,9 +709,10 @@ export default function AdminProductsManagement() {
                   >
                     <div className="aspect-[4/5] bg-muted relative overflow-hidden">
                       {(() => {
-                        const image = product.variants?.[0]?.images?.[0];
+                        const rawImg = product.variants?.[0]?.images?.[0];
+                        const image = getMediaUrl(rawImg);
                         return image ? (
-                          <img src={image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={product.title} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          <img src={image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={product.title} onError={(e) => { (e.target as HTMLImageElement).src = getProductFallbackImage(product.title, typeof product.category === 'object' ? product.category?.name : product.category); }} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center grayscale opacity-20">
                             <Package className="h-12 w-12" />

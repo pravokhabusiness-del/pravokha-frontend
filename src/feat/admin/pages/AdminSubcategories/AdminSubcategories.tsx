@@ -223,12 +223,13 @@ export default function AdminSubcategories() {
 
     return (
         <div className="w-full mx-auto py-6 px-4 flex flex-col gap-6">
-            <div className="flex justify-between items-start">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => navigate("/admin/categories")}
+                        className="w-fit"
                     >
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back to Categories
@@ -246,7 +247,7 @@ export default function AdminSubcategories() {
                     if (!open) resetForm();
                 }}>
                     <DialogTrigger asChild>
-                        <Button>
+                        <Button className="w-full sm:w-auto">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Subcategory
                         </Button>

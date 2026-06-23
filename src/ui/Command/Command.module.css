@@ -45,6 +45,11 @@
     outline: none;
 }
 
+.input:focus,
+.input:focus-visible {
+    outline: none !important;
+}
+
 .input::placeholder {
     color: hsl(var(--muted-foreground));
 }
