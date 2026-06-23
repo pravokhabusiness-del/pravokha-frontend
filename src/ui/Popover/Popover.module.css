@@ -3,7 +3,8 @@
 .content {
     backdrop-filter: blur(8px);
     background: hsl(var(--popover) / 0.98);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1.5px solid hsl(215 15% 65%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05);
     transition: all 0.2s ease;
 }
 

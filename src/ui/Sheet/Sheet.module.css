@@ -21,26 +21,28 @@
 /* Side Variants */
 .top {
     inset: 0 0 auto 0;
-    border-bottom: 1px solid hsl(var(--border));
+    border-bottom: 1.5px solid hsl(215 15% 65%);
 }
 
 .bottom {
     inset: auto 0 0 0;
-    border-top: 1px solid hsl(var(--border));
+    border-top: 1.5px solid hsl(215 15% 65%);
 }
 
 .left {
     inset: 0 auto 0 0;
     height: 100%;
     width: 75%;
-    border-right: 1px solid hsl(var(--border));
+    border-right: 1.5px solid hsl(215 15% 65%);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
 }
 
 .right {
     inset: 0 0 0 auto;
     height: 100%;
     width: 75%;
-    border-left: 1px solid hsl(var(--border));
+    border-left: 1.5px solid hsl(215 15% 65%);
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
 }
 
 @media (min-width: 640px) {
