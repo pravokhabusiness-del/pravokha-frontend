@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CategorySmallCard } from "@/feat/products/components/CategorySmallCard";
 import { getMediaUrl } from "@/lib/utils";
 import styles from "./CategoryCarousel.module.css";
@@ -215,17 +214,8 @@ export function CategoryCarousel({
                 </p>
             </div>
 
-            {/* 3. Horizontal Pills Controls Row with Inline Arrow Triggers */}
+            {/* 3. Horizontal Pills Controls Row */}
             <div className={styles.pillsWrapper}>
-                <button
-                    type="button"
-                    className={styles.inlineArrowLeft}
-                    onClick={goPrev}
-                    aria-label="Previous"
-                >
-                    &lt;--
-                </button>
-
                 <div className={styles.pillsTrack} ref={pillsRef}>
                     {categories.map((cat, idx) => (
                         <button
@@ -239,15 +229,6 @@ export function CategoryCarousel({
                         </button>
                     ))}
                 </div>
-
-                <button
-                    type="button"
-                    className={styles.inlineArrowRight}
-                    onClick={goNext}
-                    aria-label="Next"
-                >
-                    --&gt;
-                </button>
             </div>
 
             {/* 4. Beautiful Coverflow Stacked Display Showcase Area */}
