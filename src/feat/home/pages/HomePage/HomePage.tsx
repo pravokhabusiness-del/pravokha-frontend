@@ -27,6 +27,10 @@ import tshirtImg from "@/assets/category-tshirts.jpg";
 import trackpantsImg from "@/assets/category-trackpants.jpg";
 import shortsImg from "@/assets/category-shorts.jpg";
 import { Product } from "@/data/products";
+import wardrobeCta from "@/assets/wardrobe-cta-bg.png";
+import trendsBg from "@/assets/trends-card-bg.png";
+import deliveryBg from "@/assets/delivery-card-bg.png";
+import qualityBg from "@/assets/quality-card-bg.png";
 
 interface Category {
     id: string;
@@ -403,26 +407,38 @@ export function HomePage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full">
-                        <Card className="p-6 sm:p-8 text-center bg-card/60 backdrop-blur-sm border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-primary/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
-                            <div className="p-4 bg-[#4AA3A0]/10 text-primary rounded-2xl mb-4 group-hover:scale-115 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
-                                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8" />
+                        <Card className="relative overflow-hidden text-center border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-primary/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
+                            {/* Background image */}
+                            <img src={trendsBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-10 group-hover:opacity-15 transition-opacity duration-500 pointer-events-none" />
+                            <div className="relative z-10 p-6 sm:p-8 flex flex-col items-center">
+                                <div className="p-4 bg-[#4AA3A0]/10 text-primary rounded-2xl mb-4 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
+                                    <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8" />
+                                </div>
+                                <h3 className="text-lg sm:text-xl font-bold mb-2">Latest Trends</h3>
+                                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Stay ahead with our curated collection of the season's hottest styles, updated weekly.</p>
                             </div>
-                            <h3 className="text-lg sm:text-xl font-bold mb-2">Latest Trends</h3>
-                            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Stay ahead with our curated collection of the season's hottest styles, updated weekly.</p>
                         </Card>
-                        <Card className="p-6 sm:p-8 text-center bg-card/60 backdrop-blur-sm border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-[#E17B5A]/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
-                            <div className="p-4 bg-[#E17B5A]/10 text-[#E17B5A] rounded-2xl mb-4 group-hover:scale-115 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
-                                <Zap className="h-6 w-6 sm:h-8 sm:w-8" />
+                        <Card className="relative overflow-hidden text-center border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-[#E17B5A]/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
+                            {/* Background image */}
+                            <img src={deliveryBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-10 group-hover:opacity-15 transition-opacity duration-500 pointer-events-none" />
+                            <div className="relative z-10 p-6 sm:p-8 flex flex-col items-center">
+                                <div className="p-4 bg-[#E17B5A]/10 text-[#E17B5A] rounded-2xl mb-4 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
+                                    <Zap className="h-6 w-6 sm:h-8 sm:w-8" />
+                                </div>
+                                <h3 className="text-lg sm:text-xl font-bold mb-2">Fastest Delivery</h3>
+                                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Lightning-fast processing and shipping to get your favorite garments to you in record time.</p>
                             </div>
-                            <h3 className="text-lg sm:text-xl font-bold mb-2">Fastest Delivery</h3>
-                            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Lightning-fast processing and shipping to get your favorite garments to you in record time.</p>
                         </Card>
-                        <Card className="p-6 sm:p-8 text-center bg-card/60 backdrop-blur-sm border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-primary/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
-                            <div className="p-4 bg-[#4AA3A0]/10 text-primary rounded-2xl mb-4 group-hover:scale-115 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
-                                <Shield className="h-6 w-6 sm:h-8 sm:w-8" />
+                        <Card className="relative overflow-hidden text-center border-border/40 hover:-translate-y-2 hover:shadow-xl hover:border-primary/20 transition-all duration-500 group h-full flex flex-col justify-center items-center rounded-2xl">
+                            {/* Background image */}
+                            <img src={qualityBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-10 group-hover:opacity-15 transition-opacity duration-500 pointer-events-none" />
+                            <div className="relative z-10 p-6 sm:p-8 flex flex-col items-center">
+                                <div className="p-4 bg-[#4AA3A0]/10 text-primary rounded-2xl mb-4 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 shadow-inner">
+                                    <Shield className="h-6 w-6 sm:h-8 sm:w-8" />
+                                </div>
+                                <h3 className="text-lg sm:text-xl font-bold mb-2">Quality Assured</h3>
+                                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Premium quality guaranteed on every product, manufactured ethically in India's textile capital.</p>
                             </div>
-                            <h3 className="text-lg sm:text-xl font-bold mb-2">Quality Assured</h3>
-                            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Premium quality guaranteed on every product, manufactured ethically in India's textile capital.</p>
                         </Card>
                     </div>
                 </div>
@@ -431,6 +447,12 @@ export function HomePage() {
             {/* CTA Section */}
             <section className={`w-full py-16 sm:py-24 text-center px-4 sm:px-6 lg:px-8`}>
                 <div className="max-w-5xl mx-auto relative group overflow-hidden bg-gradient-to-br from-[#4AA3A0] to-[#E17B5A] text-white rounded-[32px] p-8 md:p-16 shadow-2xl transition-all duration-500 hover:shadow-primary/20 hover:scale-[1.01]">
+                    {/* Background image overlay */}
+                    <img 
+                        src={wardrobeCta} 
+                        alt="" 
+                        className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay pointer-events-none" 
+                    />
                     {/* Visual accent rings */}
                     <div className="absolute -top-10 -left-10 w-40 h-40 border-4 border-white/10 rounded-full pointer-events-none" />
                     <div className="absolute -bottom-10 -right-10 w-60 h-60 border-4 border-white/10 rounded-full pointer-events-none" />
@@ -453,7 +475,8 @@ export function HomePage() {
                                 </Button>
                             </Link>
                             <Link to="/learn-more" className="flex-1">
-                                <Button size="lg" variant="outline" className="w-full border-white/40 text-white hover:bg-white/10 hover:text-white font-bold px-8 transition duration-300 h-12 rounded-xl">
+                                {/* Fixed: solid white bg with dark text for light mode visibility */}
+                                <Button size="lg" className="w-full bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-white hover:text-[#4AA3A0] font-bold px-8 transition-all duration-300 h-12 rounded-xl shadow-lg">
                                     Learn More
                                     <Info className="ml-2 h-5 w-5" />
                                 </Button>

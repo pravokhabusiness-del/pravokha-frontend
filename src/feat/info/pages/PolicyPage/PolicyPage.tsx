@@ -260,7 +260,11 @@ export default function PolicyPage({ type }: PolicyPageProps) {
     return (
         <div className="min-h-screen bg-background">
             {/* Hero Section */}
-            <div className="bg-muted py-8 sm:py-12 border-b relative overflow-hidden">
+            <div className="relative bg-gradient-to-br from-[#4AA3A0]/10 via-background to-[#E17B5A]/10 py-14 sm:py-20 border-b border-border overflow-hidden">
+                {/* Floating blur orbs */}
+                <div className="absolute top-1/4 -left-20 w-72 h-72 bg-[#4AA3A0]/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-[#E17B5A]/15 rounded-full blur-3xl pointer-events-none" />
+
                 {bgImage && (
                     <img 
                         src={bgImage} 
@@ -270,11 +274,14 @@ export default function PolicyPage({ type }: PolicyPageProps) {
                 )}
                 <div className="container px-4 mx-auto max-w-4xl text-center space-y-3 sm:space-y-4 relative z-10">
                     <div className="flex justify-center mb-4 sm:mb-6">
-                        <div className="p-3 sm:p-4 bg-background rounded-full shadow-sm">
+                        <div className="p-4 sm:p-5 bg-primary/10 rounded-2xl shadow-sm border border-primary/20">
                             {data.icon || <Info className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />}
                         </div>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">{data.title}</h1>
+                    <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-semibold text-xs tracking-wider uppercase">
+                        Pravokha Legal
+                    </span>
+                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-foreground via-[#4AA3A0] to-[#E17B5A] bg-clip-text text-transparent py-2">{data.title}</h1>
                     <p className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">{data.subtitle}</p>
                 </div>
             </div>
