@@ -312,7 +312,6 @@ export function CheckoutPage() {
             const orderNumber = nestedOrderNumber || orderResponse.data.orderNumber;
 
             // 2. Load SDK and Open Razorpay Modal
-            console.log("VITE_RAZORPAY_KEY_ID =", import.meta.env.VITE_RAZORPAY_KEY_ID);
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_testforproduction',
                 amount: rzpAmount,
