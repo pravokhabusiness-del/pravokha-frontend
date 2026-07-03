@@ -314,7 +314,7 @@ export function CheckoutPage() {
             // 2. Load SDK and Open Razorpay Modal
             console.log("VITE_RAZORPAY_KEY_ID =", import.meta.env.VITE_RAZORPAY_KEY_ID);
             const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_T98XWIDScV2S3u',
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_testforproduction',
                 amount: rzpAmount,
                 currency: currency,
                 name: "Pravokha Marketplace",
