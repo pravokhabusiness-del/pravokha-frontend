@@ -116,17 +116,19 @@ export default function AdminBanners() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back
-        </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold">Homepage Banners</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Control what users see in the homepage carousel. Changes go live instantly.
-          </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-border/40">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="shrink-0 h-9 rounded-xl border-border/60 bg-card shadow-sm gap-2">
+            <ArrowLeft className="h-4 w-4" /> Back
+          </Button>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Homepage Banners</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Control what users see in the homepage carousel. Changes go live instantly.
+            </p>
+          </div>
         </div>
-        <Button onClick={openCreate} className="gap-2 shrink-0">
+        <Button onClick={openCreate} className="gap-2 w-full md:w-auto shrink-0 h-10 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
           <Plus className="h-4 w-4" /> Add Banner
         </Button>
       </div>

@@ -114,7 +114,7 @@ const UserAccount = lazy(() => import("./feat/user/pages/UserAccount"));
 const UserDashboard = lazy(() => import("./feat/user/pages/UserDashboard"));
 const UserMessages = lazy(() => import("./feat/user/pages/UserMessages"));
 
-const UserSettings = lazy(() => import("./feat/user/pages/UserSettings/UserSettingsPage"));
+const UserSettings = lazy(() => import("./feat/user/pages/UserSettings/UserSettings"));
 const AddressManagement = lazy(() => import("./feat/user/pages/AddressManagement/AddressManagementPage"));
 const UserOrderDetail = lazy(() => import("./feat/user/pages/UserOrderDetail"));
 const AccessDenied = lazy(() => import("./feat/system/pages/AccessDeniedPage"));
@@ -287,7 +287,7 @@ export default function App() {
                           <Route path="/orders/:orderId" element={<NavigateToOrderDetail />} />
                           <Route path="/settings" element={<Navigate to="/user/account/settings" replace />} />
                           <Route path="/account" element={<Navigate to="/user/account" replace />} />
-                          <Route path="/payments" element={<Navigate to="/user/account/settings" replace />} />
+                          <Route path="/payments" element={<Navigate to="/user/account/settings?tab=payment" replace />} />
 
                           {/* Ticket System Routes */}
                           <Route path="/tickets" element={
@@ -631,8 +631,6 @@ export default function App() {
                             </Suspense>
                           } />
 
-                          <Route path="/payment/success" element={<PaymentSuccess />} />
-                          <Route path="/payment/failed" element={<PaymentFailed />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </Suspense>

@@ -8,7 +8,6 @@ import { Input } from "@/ui/Input";
 import { Label } from "@/ui/Label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/Card";
 import { Separator } from "@/ui/Separator";
-import { PaymentMethods } from "@/feat/checkout/components/PaymentMethods";
 
 import { ProcessingOverlay } from "@/feat/checkout/components/ProcessingOverlay";
 import { toast } from "@/shared/hook/use-toast";
@@ -491,13 +490,6 @@ export function CheckoutPage() {
                             </div>
                         </CardContent>
                     </Card>
-
-                    <PaymentMethods
-                        value={paymentMethod}
-                        onChange={setPaymentMethod}
-                        details={paymentDetails}
-                        onDetailsChange={setPaymentDetails}
-                    />
                 </div>
 
                 {/* Order Summary */}

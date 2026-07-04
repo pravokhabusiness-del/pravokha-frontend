@@ -192,7 +192,7 @@ export default function AboutPage() {
                     <p className="text-white/95 mb-8 text-base md:text-lg">
                         Explore our latest releases and find pieces engineered for ultimate style and comfort.
                     </p>
-                    <Button variant="secondary" size="lg" asChild className="bg-white text-foreground hover:bg-white/90 font-bold px-8 shadow-xl transition duration-300">
+                    <Button variant="secondary" size="lg" asChild className="bg-white text-slate-900 hover:bg-white/90 font-bold px-8 shadow-xl transition duration-300">
                         <Link to="/products" className="flex items-center gap-2">
                             👉 Explore Our Latest Collection Now
                         </Link>

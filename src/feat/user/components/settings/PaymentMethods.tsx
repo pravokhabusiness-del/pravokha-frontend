@@ -17,6 +17,7 @@ interface PaymentMethodsProps {
 }
 
 export const PaymentMethods = ({ payments, addPaymentMethod, deletePaymentMethod }: PaymentMethodsProps) => {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -29,8 +30,6 @@ export const PaymentMethods = ({ payments, addPaymentMethod, deletePaymentMethod
   });
 
   const handleSave = async () => {
-    const { toast } = useToast();
-
     // Validation
     if (!form.card_holder_name.trim()) {
       toast({ title: "Error", description: "Card holder name is required", variant: "destructive" });

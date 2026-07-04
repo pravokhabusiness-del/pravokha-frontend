@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   User, Mail, Phone, MapPin, CreditCard, Bell, Shield,
   History, Upload
@@ -31,7 +32,8 @@ export default function UserSettings() {
     addPaymentMethod, deletePaymentMethod, history, orders, paymentHistory
   } = useUserSettings();
 
-  const [activeTab, setActiveTab] = useState("profile");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "profile");
   const { toast } = useToast(); // Ensure useToast is imported or available via hook
   const fileInputRef = useRef<HTMLInputElement>(null);
 
