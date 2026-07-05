@@ -80,7 +80,7 @@
 }
 
 .viewportPopper {
-    height: var(--radix-select-trigger-height);
+    height: auto;
     width: 100%;
     min-width: var(--radix-select-trigger-width);
 }

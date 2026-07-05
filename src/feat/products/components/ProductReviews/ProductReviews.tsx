@@ -270,7 +270,7 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
 
     return (
         <div className="space-y-8">
-            {user ? (
+            {user && user.role === "CUSTOMER" ? (
                 <Card className={styles.formCard}>
                     <h3 className={styles.formTitle}>
                         {editingReview ? "Edit Your Review" : "Write a Review"}
@@ -426,9 +426,13 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                         )}
                     </div>
                 </Card>
+            ) : user ? (
+                <Card className="p-6 text-center border-amber-200/60 bg-amber-500/5 dark:bg-amber-500/10 rounded-2xl">
+                    <p className="text-sm text-amber-600 dark:text-amber-400 font-bold">Logged in as {user.role?.replace('_', ' ')}. Reviews can only be submitted by Customer accounts.</p>
+                </Card>
             ) : (
-                <Card className="p-6 text-center">
-                    <p className="text-muted-foreground">Please sign in to leave a review</p>
+                <Card className="p-6 text-center rounded-2xl">
+                    <p className="text-muted-foreground text-sm font-semibold">Please sign in to leave a review</p>
                 </Card>
             )}
 

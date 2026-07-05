@@ -180,7 +180,7 @@ export default function AdminPayments() {
   const mapTransaction = (order: any): Transaction => ({
     id: order.id,
     order_number: order.orderNumber,
-    total: order.total,
+    total: order.totalAmount ?? order.total ?? 0,
     payment_status: order.paymentStatus?.toLowerCase(),
     order_status: order.status?.toLowerCase(),
     created_at: order.createdAt,
@@ -393,7 +393,7 @@ export default function AdminPayments() {
     try {
       // Calculate values from order data
       const items = transaction.items && Array.isArray(transaction.items) ? transaction.items : [];
-      const subtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+      const subtotal = items.reduce((sum: number, item: any) => sum + ((item.priceAtPurchase ?? item.price ?? 0) * (item.quantity || 1)), 0);
       const shipping = transaction.shipping || 0;
       const tax = transaction.total - subtotal - shipping;
 
@@ -411,7 +411,7 @@ export default function AdminPayments() {
           title: item.title || 'Product',
           variant: item.selectedSize || item.selectedColor || '-',
           quantity: item.quantity || 1,
-          price: item.price || 0
+          price: item.priceAtPurchase ?? item.price ?? 0
         })),
         subtotal: subtotal,
         tax: Math.max(0, tax),

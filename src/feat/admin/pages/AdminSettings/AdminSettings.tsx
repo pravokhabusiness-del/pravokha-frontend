@@ -520,27 +520,7 @@ export default function AdminSettings() {
   ], []);
 
   // Mobile Navigation Dropdown (Visible < XL)
-  const mobileNav = useMemo(() => (
-    <div className="xl:hidden w-full">
-      <Select value={activeTab} onValueChange={setActiveTab}>
-        <SelectTrigger className="w-full h-12 bg-card border-border/60 rounded-xl font-bold px-4 shadow-sm">
-          <SelectValue placeholder="Select settings section" />
-        </SelectTrigger>
-        <SelectContent className="rounded-xl border-border/60">
-          {tabs.map((tab) => (
-            <SelectItem key={tab.id} value={tab.id} className="font-medium py-3">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                  <tab.icon className="h-4 w-4" />
-                </div>
-                {tab.label}
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  ), [activeTab, tabs]);
+  const mobileNav = null;
 
   return (
     <div className="w-full mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
@@ -580,7 +560,28 @@ export default function AdminSettings() {
 
       {mobileNav}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col xl:flex-row gap-8">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col xl:flex-row gap-8 w-full">
+        {/* Mobile Navigation Scrollable Tabs Row (Visible < xl) */}
+        <div className="xl:hidden w-full overflow-x-auto pb-2 scrollbar-none no-scrollbar">
+          <TabsList className="flex w-max justify-start bg-transparent gap-2 h-auto p-0 inline-flex border-none">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  "flex-shrink-0 flex items-center justify-center px-4 py-2.5 rounded-xl border transition-all duration-200 gap-2 text-xs font-bold",
+                  activeTab === tab.id
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-background hover:bg-muted text-muted-foreground border-border/40"
+                )}
+              >
+                <tab.icon className="h-4 w-4" />
+                <span>{tab.label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+
         {/* Sidebar Navigation */}
         <aside className="hidden xl:block xl:w-64 shrink-0 h-full">
           <div className="flex flex-col w-full bg-transparent p-0 border-none gap-2 items-stretch h-full">

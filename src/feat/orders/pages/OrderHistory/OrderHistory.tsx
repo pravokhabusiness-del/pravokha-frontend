@@ -215,7 +215,7 @@ export default function OrderHistory() {
 
       // Calculate subtotal from actual product prices
       const itemsTotal = items.reduce((sum: number, item: any) =>
-        sum + ((item.price || 0) * (item.quantity || 1)), 0
+        sum + (((item.priceAtPurchase || item.price || 0)) * (item.quantity || 1)), 0
       );
 
       // Use values directly from database
@@ -229,7 +229,7 @@ export default function OrderHistory() {
       const invoiceItems = items.map((item: any) => ({
         title: item.title || "Product",
         quantity: item.quantity || 1,
-        price: item.price || 0,
+        price: item.priceAtPurchase || item.price || 0,
         colorName: item.colorName || item.color || "",
         size: item.size || ""
       }));

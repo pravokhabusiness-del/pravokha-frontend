@@ -9,6 +9,8 @@ import { Plus, Edit, Trash2, Upload, ImageIcon, Loader2, ToggleLeft, ToggleRight
 import { Badge } from "@/ui/Badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ui/Dialog";
 import { useNavigate } from "react-router-dom";
+import { getMediaUrl } from "@/lib/utils";
+
 
 interface Banner {
   id: string;
@@ -154,7 +156,7 @@ export default function AdminBanners() {
             <Card key={b.id} className={`transition-opacity ${!b.active ? "opacity-55" : ""}`}>
               <CardContent className="p-3 sm:p-4 flex gap-3 sm:gap-4 items-center">
                 {b.imageUrl ? (
-                  <img src={b.imageUrl} alt={b.title} className="w-20 h-14 sm:w-28 sm:h-18 object-cover rounded-lg flex-shrink-0 border border-border" />
+                  <img src={getMediaUrl(b.imageUrl)} alt={b.title} className="w-20 h-14 sm:w-28 sm:h-18 object-cover rounded-lg flex-shrink-0 border border-border" />
                 ) : (
                   <div className="w-20 h-14 sm:w-28 sm:h-18 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
                     <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
@@ -201,7 +203,7 @@ export default function AdminBanners() {
                 onClick={() => fileRef.current?.click()}
               >
                 {formData.imageUrl ? (
-                  <img src={formData.imageUrl} alt="Preview" className="w-full h-36 object-cover rounded-lg mb-2" />
+                  <img src={getMediaUrl(formData.imageUrl)} alt="Preview" className="w-full h-36 object-cover rounded-lg mb-2" />
                 ) : (
                   <Upload className="h-10 w-10 mx-auto mb-2 text-muted-foreground/50" />
                 )}

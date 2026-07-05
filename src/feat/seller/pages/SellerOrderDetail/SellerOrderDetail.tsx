@@ -133,6 +133,7 @@ export default function SellerOrderDetail() {
       shipping_city: data.shipping_city || data.shippingCity,
       shipping_pincode: data.shipping_pincode || data.shippingPincode,
       payment_method: data.payment_method || data.paymentMethod,
+      total: data.totalAmount ?? data.total ?? 0,
       tax_charge: data.tax_charge || data.taxAmount,
       shipping_charge: data.shipping_charge || data.shippingFee,
       items: Array.isArray(data.items) ? data.items.map((item: any) => {
@@ -210,12 +211,11 @@ export default function SellerOrderDetail() {
     const items = Array.isArray(order?.items) ? order.items : [];
     // listing price = original price field (MRP)
     const listingTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    // selling price = same as listing for now (discount applied at product level)
-    const subtotal = listingTotal;
-    const tax = subtotal * 0.18; // 18% GST
-    const shipping = 50;
+    const total = order?.total || 0;
+    const shipping = order?.shipping_charge || 0;
+    const tax = order?.tax_charge || 0;
+    const subtotal = total - shipping - tax;
     const platformFee = Math.round(subtotal * 0.02 * 100) / 100; // 2% platform fee
-    const total = subtotal + tax + shipping;
     const sellerPayout = total - platformFee - shipping;
     return { listingTotal, subtotal, tax, shipping, platformFee, total, sellerPayout };
   };

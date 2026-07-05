@@ -31,6 +31,10 @@ export default function AdminRoleManagement() {
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 15;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   // CRITICAL: Authentication check to prevent privilege escalation
   useEffect(() => {
@@ -40,8 +44,8 @@ export default function AdminRoleManagement() {
   }, [isAdmin, adminLoading, navigate]);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsers(currentPage);
+  }, [currentPage]);
 
   const mapRoleBackToFront = (role: string | null): string => {
     if (!role) return "user";
@@ -57,11 +61,12 @@ export default function AdminRoleManagement() {
     return role.toUpperCase();
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page = currentPage) => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/users?take=5000');
-
+      const skip = (page - 1) * pageSize;
+      const response = await apiClient.get(`/users?take=${pageSize}&skip=${skip}`);
+ 
       if (response.data.success) {
         const usersWithRoles = (response.data.users as any[]).map(u => ({
           id: u.id,
@@ -70,6 +75,7 @@ export default function AdminRoleManagement() {
           role: mapRoleBackToFront(u.role)
         }));
         setUsers(usersWithRoles);
+        setTotalCount(response.data.count || 0);
       }
     } catch (error: any) {
       console.error("[AdminRoleManagement] Error in fetchUsers:", error);
@@ -94,7 +100,7 @@ export default function AdminRoleManagement() {
           title: "Success",
           description: `User role updated to ${newRole}`,
         });
-        fetchUsers();
+        fetchUsers(currentPage);
       }
     } catch (error: any) {
       console.error("[AdminRoleManagement] Error updating role:", error);
@@ -239,6 +245,36 @@ export default function AdminRoleManagement() {
                 {users.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/10">
                     No users found
+                  </div>
+                )}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between border-t border-border/40 pt-4 mt-4 flex-wrap gap-4">
+                    <p className="text-xs text-muted-foreground font-semibold">
+                      Showing <span className="text-foreground">{Math.min(totalCount, (currentPage - 1) * pageSize + 1)}-{Math.min(totalCount, currentPage * pageSize)}</span> of <span className="text-foreground">{totalCount}</span> users
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        className="h-9 px-3 text-xs font-bold rounded-xl border-border/60 hover:bg-muted/50"
+                      >
+                        Previous
+                      </Button>
+                      <span className="text-xs font-bold text-muted-foreground">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        className="h-9 px-3 text-xs font-bold rounded-xl border-border/60 hover:bg-muted/50"
+                      >
+                        Next
+                      </Button>
+                    </div>
                   </div>
                 )}
               </motion.div>

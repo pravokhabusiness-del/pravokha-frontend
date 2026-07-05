@@ -6,8 +6,9 @@ import hero2 from "@/assets/hero-2.png";
 import hero3 from "@/assets/hero-3.png";
 import { Link } from "react-router-dom";
 import styles from "./HeroCarousel.module.css";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
+
 
 interface Slide {
     image: string;
@@ -59,7 +60,7 @@ export function HeroCarousel() {
 
             if (bannersRes.status === "fulfilled" && bannersRes.value.data.success) {
                 const adminBanners = (bannersRes.value.data.banners || []).map((b: any): Slide => ({
-                    id: b.id, image: b.imageUrl || hero1, title: b.title,
+                    id: b.id, image: getMediaUrl(b.imageUrl) || hero1, title: b.title,
                     description: b.subtitle || "", cta: b.buttonText || "Shop Now",
                     link: b.buttonLink || "/products",
                     isExternal: (b.buttonLink || "").startsWith("http"),

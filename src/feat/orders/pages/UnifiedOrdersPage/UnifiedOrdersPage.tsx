@@ -253,7 +253,10 @@ export default function UnifiedOrdersPage() {
             created_at: order.created_at || order.createdAt || new Date().toISOString(),
             status: (order.order_status || order.status || 'pending').toLowerCase() as any,
             payment_status: (order.payment_status || order.paymentStatus || 'pending').toLowerCase() as any,
-            total: order.total || 0,
+            total: order.totalAmount ?? order.total ?? 0,
+            subtotal: order.subtotal ?? ((order.totalAmount ?? order.total ?? 0) - (order.shippingFee ?? 0) - (order.taxAmount ?? 0)),
+            tax: order.taxAmount ?? order.tax ?? 0,
+            shipping: order.shippingFee ?? order.shipping ?? 0,
             items_count: Array.isArray(order.items) ? order.items.length : (order.items_count || 0),
         }));
     };
@@ -319,7 +322,13 @@ export default function UnifiedOrdersPage() {
                 shippingAddress: order.shipping_address || 'N/A',
                 shippingCity: order.shipping_city || '',
                 shippingPincode: order.shipping_pincode || '',
-                items: order.items || [],
+                items: (order.items || []).map((item: any) => ({
+                    title: item.title || item.product?.title || "Product",
+                    quantity: item.quantity || 1,
+                    price: item.priceAtPurchase ?? item.price ?? 0,
+                    colorName: item.colorName || item.color || "",
+                    size: item.size || ""
+                })),
                 subtotal: order.subtotal || (order.total * 0.82), // Fallback approx
                 tax: order.tax || (order.total * 0.18),
                 shipping: order.shipping || 0,

@@ -67,6 +67,16 @@ export function ProductDetailPage() {
 
     const [selectedVariant, setSelectedVariant] = useState<any>(null);
     const [selectedSize, setSelectedSize] = useState("");
+    const allUniqueSizes = useMemo(() => {
+        if (!product?.variants) return [];
+        const sizesSet = new Set<string>();
+        product.variants.forEach((v: any) => {
+            v.sizes?.forEach((s: any) => {
+                if (s.size) sizesSet.add(s.size);
+            });
+        });
+        return Array.from(sizesSet);
+    }, [product?.variants]);
     const [quantity, setQuantity] = useState(0);
     const [mainImage, setMainImage] = useState(0);
     const [imageViewerOpen, setImageViewerOpen] = useState(false);
@@ -647,26 +657,50 @@ export function ProductDetailPage() {
                                 </Link>
                             </div>
                             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                                {selectedVariant.sizes.map((sizeOption: any) => {
-                                    const isLowStock = sizeOption.stock > 0 && sizeOption.stock < 10;
-                                    const isSelected = selectedSize === sizeOption.size;
+                                {allUniqueSizes.map((size: string) => {
+                                    const sizeOption = selectedVariant.sizes.find((s: any) => s.size === size);
+                                    const currentStock = sizeOption?.stock || 0;
+                                    const isLowStock = currentStock > 0 && currentStock < 10;
+                                    const isSelected = selectedSize === size;
+                                    const isAvailableInAny = product.variants.some((v: any) => v.sizes.some((s: any) => s.size === size && s.stock > 0));
 
                                     return (
-                                        <div key={sizeOption.size} className="relative">
+                                        <div key={size} className="relative">
                                             <Button
                                                 variant={isSelected ? "default" : "outline"}
-                                                disabled={sizeOption.stock === 0}
-                                                onClick={() => setSelectedSize(sizeOption.size)}
-                                                className={`w-full text-xs sm:text-sm hover:scale-110 transition-transform gsap-scale-in ${isSelected ? "bg-primary" : ""}`}
+                                                disabled={!isAvailableInAny}
+                                                onClick={() => {
+                                                    if (currentStock > 0) {
+                                                        setSelectedSize(size);
+                                                    } else {
+                                                        const variantWithStock = product.variants.find((v: any) => 
+                                                            v.sizes.some((s: any) => s.size === size && s.stock > 0)
+                                                        );
+                                                        if (variantWithStock) {
+                                                            setSelectedVariant(variantWithStock);
+                                                            setSelectedSize(size);
+                                                            setMainImage(0);
+                                                            toast({
+                                                                title: `Switched to ${variantWithStock.colorName}`,
+                                                                description: `Size ${size} is available in this color.`,
+                                                            });
+                                                        }
+                                                    }
+                                                }}
+                                                className={cn(
+                                                    `w-full text-xs sm:text-sm hover:scale-110 transition-transform gsap-scale-in`,
+                                                    isSelected ? "bg-primary" : "",
+                                                    currentStock === 0 && isAvailableInAny && "border-dashed border-amber-500 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                                                )}
                                             >
-                                                {sizeOption.size}
+                                                {size}
                                             </Button>
                                             {isLowStock && (
                                                 <Badge
                                                     variant="destructive"
                                                     className="absolute -top-2 -right-2 text-[10px] px-1 py-0 h-4 animate-pulse"
                                                 >
-                                                    {sizeOption.stock}
+                                                    {currentStock}
                                                 </Badge>
                                             )}
                                         </div>
