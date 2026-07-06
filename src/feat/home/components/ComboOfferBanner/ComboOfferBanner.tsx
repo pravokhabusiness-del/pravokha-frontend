@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/ui/Button";
 import { Badge } from "@/ui/Badge";
 import { apiClient } from "@/infra/api/apiClient";
-import { ShoppingBag, Tag, Package, ArrowRight, Zap } from "lucide-react";
+import { ShoppingBag, Package, ArrowRight, Zap } from "lucide-react";
 import styles from "./ComboOfferBanner.module.css";
 import { getMediaUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface ComboProduct {
     id: string;
@@ -57,7 +58,7 @@ export function ComboOfferBanner() {
         if (offers.length <= 1) return;
         const timer = setInterval(() => {
             setActiveIndex(prev => (prev + 1) % offers.length);
-        }, 5000);
+        }, 6000);
         return () => clearInterval(timer);
     }, [offers.length]);
 
@@ -65,124 +66,131 @@ export function ComboOfferBanner() {
 
     const offer = offers[activeIndex];
     const hasProducts = offer.products && offer.products.length > 0;
+    const hasBgImage = !!offer.imageUrl;
 
     return (
-        <div className={styles.card}>
+        <div 
+            className={cn(styles.card, hasBgImage && styles.hasBgImage)}
+            style={offer.imageUrl ? {
+                backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.6) 50%, rgba(0, 0, 0, 0.8) 100%), url(${getMediaUrl(offer.imageUrl)})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            } : undefined}
+        >
             <div className={styles.content}>
-                {/* Header */}
-                <div className={styles.titleGroup}>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <Badge className="bg-amber-500 text-white border-0 text-xs font-bold px-2 py-0.5 animate-pulse">
+                {/* Left Column: Details & CTA */}
+                <div className={styles.leftColumn}>
+                    <div className="flex items-center gap-2 flex-wrap justify-center lg:justify-start">
+                        <Badge className="bg-amber-500 text-white border-0 text-xs font-bold px-2.5 py-0.5 animate-pulse">
                             <Zap className="h-3 w-3 mr-1 inline" />
                             LIMITED OFFER
                         </Badge>
                         {offer.discountPercentage > 0 && (
-                            <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2 py-0.5">
+                            <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2.5 py-0.5">
                                 {offer.discountPercentage}% OFF
                             </Badge>
                         )}
                     </div>
-                    <h2 className={styles.title}>{offer.title}</h2>
-                    <div className={styles.subtitle}>
-                        {offer.originalPrice > 0 && (
-                            <span className="line-through text-muted-foreground text-sm mr-2">
-                                ₹{offer.originalPrice.toLocaleString()}
-                            </span>
-                        )}
-                        Bundle Price
-                        <span className={styles.priceHighlight}>₹{offer.comboPrice.toLocaleString()}</span>
-                    </div>
-                    {offer.description && (
-                        <p className={styles.description}>{offer.description}</p>
-                    )}
-                </div>
 
-                {/* Product Image Thumbnails */}
-                {hasProducts && (
-                    <div className="flex items-center gap-3 py-4 overflow-x-auto">
-                        {offer.products.map((product, idx) => (
-                            <Link
-                                key={product.id}
-                                to={`/product/${product.slug}`}
-                                className="flex-shrink-0 group/prod relative"
-                                title={product.title}
-                            >
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg group-hover/prod:border-primary/60 transition-all duration-200 group-hover/prod:scale-105 bg-muted/50">
-                                    {product.imageUrl ? (
-                                        <img
-                                            src={getMediaUrl(product.imageUrl)}
-                                            alt={product.title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-muted/30">
-                                            <Package className="h-6 w-6 text-muted-foreground/50" />
-                                        </div>
-                                    )}
-                                    {/* Product number badge */}
-                                    <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center shadow">
-                                        {idx + 1}
-                                    </span>
-                                </div>
-                                <p className="text-[10px] font-semibold text-center mt-1.5 max-w-[80px] sm:max-w-[96px] leading-tight line-clamp-2">
-                                    {product.title}
-                                </p>
-                            </Link>
-                        ))}
+                    <div className={styles.titleGroup}>
+                        <h2 className={styles.title}>{offer.title}</h2>
+                        
+                        <div className={styles.priceWrapper}>
+                            {offer.originalPrice > 0 && (
+                                <span className={styles.originalPrice}>
+                                    ₹{offer.originalPrice.toLocaleString()}
+                                </span>
+                            )}
+                            <span className={styles.subtitle}>Bundle Price</span>
+                            <span className={styles.priceHighlight}>₹{offer.comboPrice.toLocaleString()}</span>
+                        </div>
 
-                        {/* Separator + "Add all" hint */}
-                        {offer.products.length > 1 && (
-                            <div className="flex flex-col items-center justify-center flex-shrink-0 ml-2 gap-1">
-                                <div className="w-8 h-0.5 bg-gradient-to-r from-primary/40 to-transparent" />
-                                <Tag className="h-4 w-4 text-primary/60" />
-                                <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-primary/40" />
-                            </div>
+                        {offer.description && (
+                            <p className={styles.description}>{offer.description}</p>
                         )}
                     </div>
-                )}
 
-                {/* CTA Buttons */}
-                <div className={styles.buttonGrid}>
-                    {hasProducts ? (
-                        // Dynamic product links
-                        <>
-                            {offer.products.map((product) => (
-                                <Link key={product.id} to={`/product/${product.slug}`}>
-                                    <Button size="lg" variant="secondary" className="gap-2 w-full">
+                    {/* CTA Buttons */}
+                    <div className={styles.buttonGrid}>
+                        {hasProducts ? (
+                            offer.products.map((product) => (
+                                <Link key={product.id} to={`/product/${product.slug}`} className="w-full sm:w-auto">
+                                    <Button size="lg" variant={hasBgImage ? "default" : "secondary"} className="gap-2 w-full font-bold px-6">
                                         <ShoppingBag className="h-4 w-4" />
-                                        <span className="truncate max-w-[120px]">{product.title}</span>
+                                        <span className="truncate max-w-[150px]">{product.title}</span>
                                         <ArrowRight className="h-3 w-3 flex-shrink-0" />
                                     </Button>
                                 </Link>
-                            ))}
-                        </>
-                    ) : (
-                        // Fallback — link to all products
-                        <Link to="/products">
-                            <Button size="lg" className="gap-2">
-                                <ShoppingBag className="h-5 w-5" />
-                                Shop Now
-                            </Button>
-                        </Link>
-                    )}
+                            ))
+                        ) : (
+                            <Link to="/products" className="w-full sm:w-auto">
+                                <Button size="lg" className="gap-2 w-full font-bold">
+                                    <ShoppingBag className="h-5 w-5" />
+                                    Shop Now
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
-                {/* Offer dot indicators (if multiple offers) */}
-                {offers.length > 1 && (
-                    <div className="flex justify-center gap-1.5 mt-3">
-                        {offers.map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setActiveIndex(i)}
-                                className={`w-1.5 h-1.5 rounded-full transition-all ${i === activeIndex ? 'bg-primary w-4' : 'bg-muted-foreground/30'}`}
-                            />
-                        ))}
+                {/* Right Column: Product Showcase */}
+                {hasProducts && (
+                    <div className={styles.rightColumn}>
+                        <div className="flex items-center gap-2 mb-1 justify-center lg:justify-start">
+                            <Package className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What's Included:</span>
+                        </div>
+                        
+                        <div className={styles.productsContainer}>
+                            {offer.products.map((product, idx) => (
+                                <Link
+                                    key={product.id}
+                                    to={`/product/${product.slug}`}
+                                    className={styles.productCard}
+                                    title={product.title}
+                                >
+                                    <div className={styles.productImageWrapper}>
+                                        {product.imageUrl ? (
+                                            <img
+                                                src={getMediaUrl(product.imageUrl)}
+                                                alt={product.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-muted/30">
+                                                <Package className="h-8 w-8 text-muted-foreground/30" />
+                                            </div>
+                                        )}
+                                        {/* Product number badge */}
+                                        <span className="absolute -top-1.5 -left-1.5 w-6 h-6 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center shadow-md">
+                                            {idx + 1}
+                                        </span>
+                                    </div>
+                                    <p className={styles.productTitle}>
+                                        {product.title}
+                                    </p>
+                                </Link>
+                            ))}
+                        </div>
+
+                        {/* Offer dot indicators (if multiple offers) */}
+                        {offers.length > 1 && (
+                            <div className="flex justify-center lg:justify-start gap-1.5 mt-2">
+                                {offers.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setActiveIndex(i)}
+                                        className={`w-1.5 h-1.5 rounded-full transition-all ${i === activeIndex ? 'bg-primary w-4' : 'bg-muted-foreground/30'}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        <p className={styles.footer}>
+                            *Valid on all colors and sizes | Limited time offer
+                        </p>
                     </div>
                 )}
-
-                <p className={styles.footer}>
-                    *Valid on all colors and sizes | Limited time offer
-                </p>
             </div>
         </div>
     );
