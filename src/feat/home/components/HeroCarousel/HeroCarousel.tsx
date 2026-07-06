@@ -76,7 +76,7 @@ export function HeroCarousel() {
                         if (Array.isArray(ids) && ids.length > 0) productIdsStr = ids.join(",");
                     } catch { /* ignore */ }
                     return {
-                        id: offer.id, image: offer.imageUrl || hero1, title: offer.title,
+                        id: offer.id, image: getMediaUrl(offer.imageUrl) || hero1, title: offer.title,
                         description: offer.description || `Bundle price: ₹${offer.comboPrice}`,
                         cta: "Shop Bundle",
                         link: productIdsStr ? `/products?ids=${productIdsStr}` : `/products?search=${encodeURIComponent(offer.title)}`,

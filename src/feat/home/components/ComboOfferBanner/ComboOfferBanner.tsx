@@ -5,6 +5,7 @@ import { Badge } from "@/ui/Badge";
 import { apiClient } from "@/infra/api/apiClient";
 import { ShoppingBag, Tag, Package, ArrowRight, Zap } from "lucide-react";
 import styles from "./ComboOfferBanner.module.css";
+import { getMediaUrl } from "@/lib/utils";
 
 interface ComboProduct {
     id: string;
@@ -109,7 +110,7 @@ export function ComboOfferBanner() {
                                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg group-hover/prod:border-primary/60 transition-all duration-200 group-hover/prod:scale-105 bg-muted/50">
                                     {product.imageUrl ? (
                                         <img
-                                            src={product.imageUrl}
+                                            src={getMediaUrl(product.imageUrl)}
                                             alt={product.title}
                                             className="w-full h-full object-cover"
                                         />

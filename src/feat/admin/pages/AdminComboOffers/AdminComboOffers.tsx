@@ -19,6 +19,7 @@ import { AdminHeaderSkeleton, AdminListSkeleton, ComboOfferSkeleton } from "@/fe
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/core/context/AuthContext";
+import { getMediaUrl } from "@/lib/utils";
 
 interface ComboProduct {
   id: string;
@@ -451,7 +452,7 @@ export default function AdminComboOffers() {
                     <div className="flex items-center gap-4">
                       {formData.imageUrl ? (
                         <div className="relative h-24 w-24 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-lg group">
-                          <img src={formData.imageUrl} alt="Combo Preview" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                          <img src={getMediaUrl(formData.imageUrl)} alt="Combo Preview" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
                           <button
                             type="button"
                             onClick={() => setFormData(p => ({ ...p, imageUrl: "" }))}
@@ -539,7 +540,7 @@ export default function AdminComboOffers() {
                         >
                           {product.imageUrl ? (
                             <img
-                              src={product.imageUrl}
+                              src={getMediaUrl(product.imageUrl)}
                               alt={product.title}
                               className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-110"
                             />
@@ -575,7 +576,7 @@ export default function AdminComboOffers() {
                   ) : offer.imageUrl ? (
                     // Fallback: single combo image if no product enrichment
                     <img
-                      src={offer.imageUrl}
+                      src={getMediaUrl(offer.imageUrl)}
                       alt={offer.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
