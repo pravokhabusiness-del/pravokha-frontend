@@ -103,7 +103,7 @@ export function ComboOfferBanner() {
                         {offer.products.map((product, idx) => (
                             <Link
                                 key={product.id}
-                                to={`/products/${product.slug}`}
+                                to={`/product/${product.slug}`}
                                 className="flex-shrink-0 group/prod relative"
                                 title={product.title}
                             >
@@ -147,7 +147,7 @@ export function ComboOfferBanner() {
                         // Dynamic product links
                         <>
                             {offer.products.map((product) => (
-                                <Link key={product.id} to={`/products/${product.slug}`}>
+                                <Link key={product.id} to={`/product/${product.slug}`}>
                                     <Button size="lg" variant="secondary" className="gap-2 w-full">
                                         <ShoppingBag className="h-4 w-4" />
                                         <span className="truncate max-w-[120px]">{product.title}</span>

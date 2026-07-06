@@ -531,7 +531,7 @@ export default function AdminComboOffers() {
                       {offer.products.slice(0, 3).map((product, idx) => (
                         <a
                           key={product.id}
-                          href={`/products/${product.slug}`}
+                          href={`/product/${product.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
@@ -628,7 +628,7 @@ export default function AdminComboOffers() {
                       {offer.products.map((p) => (
                         <a
                           key={p.id}
-                          href={`/products/${p.slug}`}
+                          href={`/product/${p.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
