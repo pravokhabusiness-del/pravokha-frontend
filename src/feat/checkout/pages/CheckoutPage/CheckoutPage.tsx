@@ -165,11 +165,56 @@ export function CheckoutPage() {
         : 0;
     const discountedSubtotal = Math.max(0, actualSubtotal - couponDiscountAmount);
 
-    // Enterprise Shipping Logic: Dynamic Fee (Mandatory Shipping Charge)
+    // Advanced Shipping Logic: Dynamic Fee (Mandatory Shipping Charge)
     const shippingPrice = calculatedShippingFee > 0 ? calculatedShippingFee : settings.shippingFee;
 
-    const tax = Math.round((discountedSubtotal + shippingPrice) * (settings.taxRate / 100));
+    // Group items by vendor to calculate tax dynamically matching the backend
+    const vendorGroups = new Map<string, typeof items>();
+    items.forEach(item => {
+        const vId = item.sellerId;
+        if (!vendorGroups.has(vId)) {
+            vendorGroups.set(vId, []);
+        }
+        vendorGroups.get(vId)!.push(item);
+    });
+
+    let remainingDiscount = comboSavings + couponDiscountAmount;
+    let remainingShipping = shippingPrice;
+    let totalTax = 0;
+    
+    const vendorEntries = Array.from(vendorGroups.entries());
+    
+    vendorEntries.forEach(([vId, group], index) => {
+        const vendorSubtotal = group.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        const orderDiscount = Math.min(vendorSubtotal, remainingDiscount);
+        remainingDiscount -= orderDiscount;
+        const adjustedSubtotal = vendorSubtotal - orderDiscount;
+
+        let vendorShipping = 0;
+        const breakdownItem = shippingBreakdown.find(b => b.vendorId === vId);
+        if (breakdownItem) {
+            vendorShipping = breakdownItem.total;
+        } else {
+            if (index === vendorEntries.length - 1) {
+                vendorShipping = remainingShipping;
+            } else {
+                const portion = Math.round((vendorSubtotal / (actualSubtotal || 1)) * shippingPrice);
+                vendorShipping = Math.min(portion, remainingShipping);
+                remainingShipping -= vendorShipping;
+            }
+        }
+
+        const gstRate = adjustedSubtotal < 2500 ? 5 : 18;
+        const vendorTax = Math.round((adjustedSubtotal + vendorShipping) * (gstRate / 100));
+        totalTax += vendorTax;
+    });
+
+    const tax = totalTax;
     const total = discountedSubtotal + shippingPrice + tax;
+    
+    const effectiveGstRate = (discountedSubtotal + shippingPrice) > 0 
+        ? Math.round((tax / (discountedSubtotal + shippingPrice)) * 100) 
+        : 18;
 
     const applyCoupon = async () => {
         if (!couponCode.trim()) { setCouponError("Please enter a coupon code"); return; }
@@ -606,7 +651,7 @@ export function CheckoutPage() {
                                     </div>
                                 )}
                                 <div className="flex justify-between text-sm">
-                                    <span>Tax ({settings.taxRate}%)</span>
+                                    <span>Tax ({effectiveGstRate}%)</span>
                                     <span>₹{tax}</span>
                                 </div>
 

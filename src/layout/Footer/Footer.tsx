@@ -15,6 +15,8 @@ import { useAuth } from "@/core/context/AuthContext";
 import { useCategories } from "@/shared/hook/useCategories";
 import { cn } from "@/lib/utils";
 import styles from "./Footer.module.css";
+import { APP_CONFIG } from "@/core/config/appConfig";
+
 
 const emailSchema = z.string().email("Invalid email address");
 
@@ -82,10 +84,10 @@ export function Footer() {
                         <div className="mt-6">
                             <h4 className="font-semibold mb-2 text-muted-foreground uppercase tracking-wider text-xs">Social:</h4>
                             <div className="flex gap-4">
-                                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Facebook className="h-5 w-5" /></a>
-                                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></a>
-                                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Youtube className="h-5 w-5" /></a>
-                                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Instagram className="h-5 w-5" /></a>
+                                <a href={APP_CONFIG.SOCIAL.FACEBOOK} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Facebook className="h-5 w-5" /></a>
+                                <a href={APP_CONFIG.SOCIAL.TWITTER} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></a>
+                                <a href={APP_CONFIG.SOCIAL.YOUTUBE} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Youtube className="h-5 w-5" /></a>
+                                <a href={APP_CONFIG.SOCIAL.INSTAGRAM} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Instagram className="h-5 w-5" /></a>
                             </div>
                         </div>
                     </div>

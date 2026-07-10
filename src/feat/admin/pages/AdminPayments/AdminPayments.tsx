@@ -111,6 +111,7 @@ interface Transaction {
   payment_method?: string;
   payment_id?: string;
   shipping?: number;
+  tax?: number;
   shipping_address?: any;
   items?: any[];
 }
@@ -189,7 +190,8 @@ export default function AdminPayments() {
     customer_phone: order.customerPhone,
     payment_method: order.paymentMethod,
     payment_id: order.stripeIntentId,
-    shipping: 0, // Backend doesn't explicitly store shipping separately yet
+    shipping: order.shippingFee ?? 0,
+    tax: order.taxAmount ?? 0,
     shipping_address: {
       address: order.shippingAddress,
       city: order.shippingCity,
@@ -395,7 +397,7 @@ export default function AdminPayments() {
       const items = transaction.items && Array.isArray(transaction.items) ? transaction.items : [];
       const subtotal = items.reduce((sum: number, item: any) => sum + ((item.priceAtPurchase ?? item.price ?? 0) * (item.quantity || 1)), 0);
       const shipping = transaction.shipping || 0;
-      const tax = transaction.total - subtotal - shipping;
+      const tax = transaction.tax !== undefined ? transaction.tax : (transaction.total - subtotal - shipping);
 
       // Prepare invoice data matching user invoice format
       const invoiceData = {

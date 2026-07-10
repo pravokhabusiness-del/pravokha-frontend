@@ -12,6 +12,7 @@ export interface ProductFormData {
     selectedSubcategoryId: string;
     price: string;
     discountPrice: string;
+    weight: string;
     stockQuantity: string;
     selectedColors: ColorOption[];
     selectedSizes: string[];

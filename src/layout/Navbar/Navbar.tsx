@@ -79,6 +79,8 @@ import { useCategories } from "@/shared/hook/useCategories";
 import { apiClient } from "@/infra/api/apiClient";
 import { MegaMenu } from "./MegaMenu";
 import { Skeleton } from "@/ui/Skeleton";
+import { APP_CONFIG } from "@/core/config/appConfig";
+
 
 interface SearchResult {
     id: string;
@@ -261,13 +263,13 @@ export function Navbar() {
                     <a href="https://wa.me/917339232817?text=Hello,%20I%20have%20an%20inquiry" target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#25D366] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
                         <FaWhatsapp className="h-3.5 w-3.5 transition-colors duration-300" /> <span className="hidden sm:inline">WhatsApp</span>
                     </a>
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#1877F2] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
+                    <a href={APP_CONFIG.SOCIAL.FACEBOOK} target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#1877F2] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
                         <Facebook className="h-3.5 w-3.5 transition-colors duration-300" /> <span className="hidden sm:inline">Facebook</span>
                     </a>
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#E4405F] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
+                    <a href={APP_CONFIG.SOCIAL.INSTAGRAM} target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#E4405F] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
                         <Instagram className="h-3.5 w-3.5 transition-colors duration-300" /> <span className="hidden sm:inline">Instagram</span>
                     </a>
-                    <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#FF0000] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
+                    <a href={APP_CONFIG.SOCIAL.YOUTUBE} target="_blank" rel="noopener noreferrer" className="group text-white/90 hover:text-[#FF0000] transition-all hover:-translate-y-0.5 duration-300 flex items-center gap-1.5 font-medium">
                         <Youtube className="h-3.5 w-3.5 transition-colors duration-300" /> <span className="hidden sm:inline">YouTube</span>
                     </a>
                 </div>

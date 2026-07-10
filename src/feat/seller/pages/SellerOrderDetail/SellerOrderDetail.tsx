@@ -217,7 +217,8 @@ export default function SellerOrderDetail() {
     const subtotal = total - shipping - tax;
     const platformFee = Math.round(subtotal * 0.02 * 100) / 100; // 2% platform fee
     const sellerPayout = total - platformFee - shipping;
-    return { listingTotal, subtotal, tax, shipping, platformFee, total, sellerPayout };
+    const gstRate = subtotal + shipping > 0 ? Math.round((tax / (subtotal + shipping)) * 100) : 18;
+    return { listingTotal, subtotal, tax, shipping, platformFee, total, sellerPayout, gstRate };
   };
 
   const renderShippingAddress = () => {
@@ -250,7 +251,7 @@ export default function SellerOrderDetail() {
     );
   };
 
-  const { listingTotal, subtotal, tax, shipping, platformFee, total, sellerPayout } = calculatePricing();
+  const { listingTotal, subtotal, tax, shipping, platformFee, total, sellerPayout, gstRate } = calculatePricing();
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!isAdmin && verificationStatus !== 'verified' && user?.role !== 'SUPER_ADMIN') {
@@ -677,7 +678,7 @@ export default function SellerOrderDetail() {
                   <span className="font-medium text-foreground">₹{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex flex-row items-center justify-between text-sm text-muted-foreground w-full">
-                  <span className="pl-3 text-[12px]">Tax (18% GST)</span>
+                  <span className="pl-3 text-[12px]">Tax ({gstRate}% GST)</span>
                   <span className="font-medium text-foreground">₹{tax.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                 </div>
                 <div className="flex flex-row items-center justify-between text-sm text-muted-foreground w-full">

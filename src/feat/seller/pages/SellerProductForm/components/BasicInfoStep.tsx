@@ -241,6 +241,28 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
             </div>
 
             <div className="grid gap-2">
+                <Label className={cn(errors.weight ? "text-destructive" : "")}>Product Weight (in grams) *</Label>
+                <Input
+                    type="number"
+                    value={formData.weight}
+                    onChange={e => {
+                        onChange('weight', e.target.value);
+                        if (errors.weight) setErrors(prev => ({ ...prev, weight: "" }));
+                    }}
+                    placeholder="e.g. 250"
+                    className={cn(errors.weight ? "border-destructive focus-visible:ring-destructive" : "")}
+                />
+                <p className="text-[10px] text-muted-foreground italic">
+                    Weight is required for accurate shipping calculations. An automatic 50g packaging buffer will be added for courier invoicing.
+                </p>
+                {errors.weight && (
+                    <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive font-medium">
+                        {errors.weight}
+                    </motion.p>
+                )}
+            </div>
+
+            <div className="grid gap-2">
                 <div className="flex items-center justify-between">
                     <Label className={cn(errors.description ? "text-destructive" : "")}>Story / Description</Label>
                 </div>

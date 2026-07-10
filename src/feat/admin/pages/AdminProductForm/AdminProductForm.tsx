@@ -61,6 +61,7 @@ interface ProductFormData {
     selectedSubcategoryId: string; // UUID
     price: string;
     discountPrice: string;
+    weight: string;
     stockQuantity: string;
     published: boolean;
     selectedColors: ColorOption[];
@@ -87,6 +88,7 @@ const INITIAL_FORM_DATA: ProductFormData = {
     selectedSubcategoryId: "",
     price: "",
     discountPrice: "",
+    weight: "",
     stockQuantity: "0",
     published: false,
     selectedColors: [],
@@ -271,6 +273,7 @@ export default function AdminProductForm() {
                     selectedSubcategoryId: selectedSubCatId,
                     price: (product.compare_at_price || product.compareAtPrice || product.price || product.base_price || "").toString(),
                     discountPrice: (product.compareAtPrice || product.compare_at_price) ? product.price.toString() : (product.discountPrice || product.discount_price || "").toString(),
+                    weight: product.weight ? Math.round(product.weight * 1000).toString() : "",
                     stockQuantity: totalStock.toString(),
                     published: product.published ?? product.is_published ?? (product.status === 'ACTIVE'),
                     is_verified: product.isVerified ?? product.is_verified ?? false,
@@ -442,6 +445,11 @@ export default function AdminProductForm() {
         if (!formData.price || Number(formData.price) <= 0) {
             newErrors.price = "Price is required and must be greater than 0.";
         }
+        if (!formData.weight) {
+            newErrors.weight = "Product weight is required.";
+        } else if (isNaN(Number(formData.weight)) || Number(formData.weight) <= 0) {
+            newErrors.weight = "Weight must be a positive number.";
+        }
         if (!formData.selectedCategoryId) {
             newErrors.category = "Category is required.";
         }
@@ -559,6 +567,7 @@ export default function AdminProductForm() {
                 categoryId: formData.selectedSubcategoryId || formData.selectedCategoryId, // Most specific ID
                 price: Number(formData.price),
                 discount_price: formData.discountPrice ? Number(formData.discountPrice) : null,
+                weight: Number(formData.weight) / 1000,
                 published: formData.published,
                 is_verified: formData.is_verified,
                 seller_id: user?.id,
@@ -773,6 +782,26 @@ export default function AdminProductForm() {
                                                         className="rounded-xl border-border/50 h-11 font-mono text-sm"
                                                     />
                                                 </div>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label className={cn("text-xs font-bold text-muted-foreground", errors.weight && "text-rose-500")}>Product Weight (in grams) *</Label>
+                                                <Input
+                                                    type="number"
+                                                    value={formData.weight}
+                                                    onChange={e => {
+                                                        handleChange('weight', e.target.value);
+                                                        if (errors.weight) setErrors(prev => ({ ...prev, weight: "" }));
+                                                    }}
+                                                    placeholder="e.g. 250"
+                                                    className={cn(
+                                                        "rounded-xl border-border/50 h-11 text-base focus:ring-2 focus:ring-primary/20",
+                                                        errors.weight && "border-rose-500 bg-rose-500/5 focus:ring-rose-500/20"
+                                                    )}
+                                                />
+                                                <p className="text-[10px] text-muted-foreground font-medium italic">
+                                                    Weight is required for accurate shipping calculations. An automatic 50g packaging buffer will be added.
+                                                </p>
+                                                {errors.weight && <p className="text-[10px] font-bold text-rose-500 animate-in fade-in slide-in-from-top-1">{errors.weight}</p>}
                                             </div>
                                             <div className="grid gap-2">
                                                 <Label className="text-xs font-bold text-muted-foreground">Description</Label>

@@ -57,6 +57,7 @@ const INITIAL_FORM_DATA: ProductFormData = {
     selectedSubcategoryId: "",
     price: "",
     discountPrice: "",
+    weight: "",
     stockQuantity: "0",
     selectedColors: [],
     selectedSizes: [],
@@ -210,7 +211,8 @@ export default function SellerProductForm() {
                     selectedSubcategoryId: selectedSubCatId,
                     price: basePrice?.toString() || "",
                     discountPrice: salePrice?.toString() || "",
-                    stockQuantity: "0",
+                    weight: product.weight ? Math.round(product.weight * 1000).toString() : "",
+                    stockQuantity: totalStock.toString(),
                     selectedColors: colors,
                     selectedSizes: sizes.filter(s => s !== "One Size"), // Remove One Size default
                     sizeStock: sizeStockMap,
@@ -405,6 +407,7 @@ export default function SellerProductForm() {
                 categoryId: formData.selectedSubcategoryId || formData.selectedCategoryId, // Most specific ID
                 price: Number(formData.price),
                 discount_price: formData.discountPrice ? Number(formData.discountPrice) : null,
+                weight: Number(formData.weight) / 1000,
                 published: isPublished,
                 sku: formData.sku,
                 seller_id: user?.id,
@@ -475,6 +478,12 @@ export default function SellerProductForm() {
             else if (formData.title.length < 3) newErrors.title = "Title must be at least 3 characters.";
 
             if (!formData.selectedCategoryId) newErrors.category = "Please select a category.";
+
+            if (!formData.weight) {
+                newErrors.weight = "Product weight is required.";
+            } else if (isNaN(Number(formData.weight)) || Number(formData.weight) <= 0) {
+                newErrors.weight = "Weight must be a positive number.";
+            }
             // Only require subcategory if there are subcategories for the selected category
             const hasSubcategories = dbSubcategories.some(
                 s => s.categoryId === formData.selectedCategoryId || s.parentId === formData.selectedCategoryId

@@ -37,6 +37,7 @@ interface Transaction {
   amount: number;
   commission: number;
   net_amount: number;
+  tax: number;
   date: string;
   status: string;
 }
@@ -116,6 +117,7 @@ export default function SellerPayouts() {
         amount: t.amount,
         commission: t.commission,
         net_amount: t.net_amount,
+        tax: t.tax ?? 0,
         date: t.date,
         status: t.status,
       }));
@@ -171,9 +173,9 @@ export default function SellerPayouts() {
     const GST_RATE = 0.18;
     const FEE_RATE = MARKETPLACE_FEE_PERCENTAGE;
 
-    const headers = ["Order ID", "Gross Amount", "Marketplace Fee", "GST (18%)", "Net Payout", "Date"];
+    const headers = ["Order ID", "Gross Amount", "Marketplace Fee", "GST", "Net Payout", "Date"];
     const rows = transactions.map(t => {
-      const gst = t.amount * GST_RATE;
+      const gst = t.tax ?? (t.amount * GST_RATE);
       const fee = t.commission;
       const net = t.amount - fee - gst;
       return [
@@ -467,13 +469,13 @@ export default function SellerPayouts() {
                                     <span className="font-bold text-rose-500">-₹{t.commission.toLocaleString()}</span>
                                   </div>
                                   <div className="flex justify-between items-center text-xs font-medium">
-                                    <span className="text-muted-foreground text-[10px] italic">Est. GST (18%)</span>
-                                    <span className="font-bold text-rose-400/70">-₹{(t.amount * 0.18).toFixed(2)}</span>
+                                    <span className="text-muted-foreground text-[10px] italic">Est. GST</span>
+                                    <span className="font-bold text-rose-400/70">-₹{(t.tax ?? (t.amount * 0.18)).toFixed(2)}</span>
                                   </div>
                                   <div className="pt-2.5 border-t border-border/20 mt-2 flex justify-between items-center">
                                     <span className="font-bold text-sm">Net payout</span>
                                     <span className="text-lg font-bold text-emerald-600">
-                                      ₹{(t.amount - t.commission - (t.amount * 0.18)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                      ₹{(t.amount - t.commission - (t.tax ?? (t.amount * 0.18))).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                   </div>
                                 </div>

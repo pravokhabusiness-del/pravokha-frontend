@@ -319,7 +319,10 @@ export async function generateInvoicePDF(data: InvoiceData) {
     doc.text(formatCurrency(data.subtotal), sumValueX, sumY, { align: 'right' });
 
     sumY += 7;
-    doc.text('Tax (GST 18%)', sumLabelX, sumY);
+    const gstRate = (data.subtotal + data.shipping) > 0
+        ? Math.round((data.tax / (data.subtotal + data.shipping)) * 100)
+        : 18;
+    doc.text(`Tax (GST ${gstRate}%)`, sumLabelX, sumY);
     doc.text(formatCurrency(data.tax), sumValueX, sumY, { align: 'right' });
 
     sumY += 7;
