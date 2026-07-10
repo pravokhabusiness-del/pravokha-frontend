@@ -76,20 +76,20 @@ export function CheckoutPage() {
     // Debounce shipping calculation on pincode/payment change
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (formData.pincode.match(/^[1-9]\d{5}$/)) {
-                calculateShipping();
-            }
+            const pinToCalculate = formData.pincode.match(/^[1-9]\d{5}$/) ? formData.pincode : '400001';
+            calculateShipping(pinToCalculate);
         }, 500);
         return () => clearTimeout(timer);
     }, [formData.pincode, paymentMethod]);
 
-    const calculateShipping = async () => {
+    const calculateShipping = async (pincodeToUse?: string) => {
         setCalculatingShipping(true);
         setShippingError(null);
+        const pin = pincodeToUse || formData.pincode;
         try {
             const response = await apiClient.post('/orders/calculate-shipping', {
                 items: items.map(i => ({ productId: i.productId, quantity: i.quantity, sellerId: i.sellerId })),
-                pincode: formData.pincode,
+                pincode: pin,
                 isCod: paymentMethod === 'cod',
                 isExpress: false
             });
@@ -100,9 +100,14 @@ export function CheckoutPage() {
             }
         } catch (error: any) {
             console.error("Shipping calculation failed:", error);
-            setShippingError(error.response?.data?.message || "Shipping not available for this pincode.");
-            setCalculatedShippingFee(0);
-            setShippingBreakdown([]);
+            if (pin === '400001') {
+                setCalculatedShippingFee(0);
+                setShippingBreakdown([]);
+            } else {
+                setShippingError(error.response?.data?.message || "Shipping not available for this pincode.");
+                setCalculatedShippingFee(0);
+                setShippingBreakdown([]);
+            }
         } finally {
             setCalculatingShipping(false);
         }
@@ -149,6 +154,45 @@ export function CheckoutPage() {
             });
             navigate("/auth");
             return;
+        }
+
+        try {
+            const response = await apiClient.get('/users/addresses');
+            if (response.data.success && response.data.data) {
+                const defaultAddr = response.data.data.find((a: any) => a.isDefault) || response.data.data[0];
+                if (defaultAddr) {
+                    setFormData({
+                        name: defaultAddr.name || user.name || "",
+                        email: user.email || "",
+                        phone: defaultAddr.phoneNumber || user.phone || user.phoneNumber || "",
+                        address: defaultAddr.addressLine1 + (defaultAddr.addressLine2 ? `, ${defaultAddr.addressLine2}` : ""),
+                        city: defaultAddr.city || "",
+                        pincode: defaultAddr.pincode || "",
+                    });
+                } else {
+                    setFormData(prev => ({
+                        ...prev,
+                        name: user.name || "",
+                        email: user.email || "",
+                        phone: user.phone || user.phoneNumber || "",
+                    }));
+                }
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    name: user.name || "",
+                    email: user.email || "",
+                    phone: user.phone || user.phoneNumber || "",
+                }));
+            }
+        } catch (error) {
+            console.error("Failed to load user addresses:", error);
+            setFormData(prev => ({
+                ...prev,
+                name: user.name || "",
+                email: user.email || "",
+                phone: user.phone || user.phoneNumber || "",
+            }));
         }
         setLoading(false);
     };
@@ -624,19 +668,33 @@ export function CheckoutPage() {
                                         {shippingBreakdown.length > 0 && shippingPrice > 0 && (
                                             <div className="ml-2 pl-2 border-l-2 border-primary/20 space-y-1">
                                                 {shippingBreakdown.map((b, idx) => (
-                                                    <div key={idx} className="flex justify-between text-[10px] text-muted-foreground">
-                                                        <span>{b.vendorName} ({b.zone})</span>
-                                                        <span>₹{b.total}</span>
+                                                    <div key={idx} className="flex flex-col text-[10px] text-muted-foreground border-b border-border/20 pb-1 last:border-0 last:pb-0">
+                                                        <div className="flex justify-between font-medium">
+                                                            <span>{b.vendorName} ({b.zone})</span>
+                                                            <span>₹{b.total}</span>
+                                                        </div>
+                                                        <div className="text-[9px] text-muted-foreground/80 flex flex-wrap gap-x-2">
+                                                            <span>Base: ₹{b.baseFee}</span>
+                                                            {b.slabFee > 0 && <span>Slab: +₹{b.slabFee}</span>}
+                                                            {b.handlingFee > 0 && <span>Handling: +₹{b.handlingFee}</span>}
+                                                            {b.fuelSurcharge > 0 && <span>Fuel: +₹{b.fuelSurcharge}</span>}
+                                                            {b.tax > 0 && <span className="text-primary">GST: +₹{b.tax}</span>}
+                                                        </div>
                                                     </div>
                                                 ))}
                                                 {shippingBreakdown.some(b => b.remoteSurcharge > 0) && (
-                                                    <p className="text-[9px] text-orange-600 font-medium">
+                                                    <p className="text-[9px] text-orange-600 font-medium mt-1">
                                                         * Includes remote area surcharge
                                                     </p>
                                                 )}
                                                 {paymentMethod === 'cod' && shippingBreakdown.some(b => b.codFee > 0) && (
-                                                    <p className="text-[9px] text-blue-600 font-medium">
+                                                    <p className="text-[9px] text-blue-600 font-medium mt-0.5">
                                                         * Includes COD handling fee
+                                                    </p>
+                                                )}
+                                                {!formData.pincode.match(/^[1-9]\d{5}$/) && (
+                                                    <p className="text-[9px] text-primary italic font-medium mt-1">
+                                                        * Estimated for default zone. Enter pincode for final rates.
                                                     </p>
                                                 )}
                                             </div>
