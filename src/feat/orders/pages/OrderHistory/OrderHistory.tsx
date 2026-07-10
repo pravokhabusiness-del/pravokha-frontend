@@ -213,11 +213,6 @@ export default function OrderHistory() {
     try {
       const items = Array.isArray(order.items) ? order.items : [];
 
-      // Calculate subtotal from actual product prices
-      const itemsTotal = items.reduce((sum: number, item: any) =>
-        sum + (((item.priceAtPurchase || item.price || 0)) * (item.quantity || 1)), 0
-      );
-
       // Use values directly from database
       const actualTotal = order.total || 0;
       const shippingCharge = (order as any).shipping_charge || 0;
@@ -226,13 +221,17 @@ export default function OrderHistory() {
       // Subtotal is what remains
       const subtotal = actualTotal - shippingCharge - taxAmount;
 
-      const invoiceItems = items.map((item: any) => ({
-        title: item.title || "Product",
-        quantity: item.quantity || 1,
-        price: item.priceAtPurchase || item.price || 0,
-        colorName: item.colorName || item.color || "",
-        size: item.size || ""
-      }));
+      const invoiceItems = items.map((item: any) => {
+        const rawPrice = item.priceAtPurchase || item.price || 0;
+        const basePrice = Math.round((rawPrice / 1.05) * 100) / 100;
+        return {
+          title: item.title || "Product",
+          quantity: item.quantity || 1,
+          price: basePrice,
+          colorName: item.colorName || item.color || "",
+          size: item.size || ""
+        };
+      });
 
       await generateInvoicePDF({
         orderNumber: order.order_number || "N/A",
@@ -483,11 +482,7 @@ export default function OrderHistory() {
                     <div className="flex flex-row items-center justify-between sm:justify-start sm:gap-12 w-full sm:w-auto">
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Subtotal</p>
-                        <p className="text-base font-bold">₹{(order.total - (order as any).tax_amount - (order as any).shipping_charge).toLocaleString()}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Tax</p>
-                        <p className="text-base font-bold">₹{(order as any).tax_amount.toLocaleString()}</p>
+                        <p className="text-base font-bold">₹{(order.total - (order as any).shipping_charge).toLocaleString()}</p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Shipping</p>

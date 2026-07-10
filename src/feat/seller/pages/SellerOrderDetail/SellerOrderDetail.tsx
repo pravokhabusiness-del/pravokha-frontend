@@ -213,11 +213,11 @@ export default function SellerOrderDetail() {
     const listingTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const total = order?.total || 0;
     const shipping = order?.shipping_charge || 0;
-    const tax = order?.tax_charge || 0;
-    const subtotal = total - shipping - tax;
-    const platformFee = Math.round(subtotal * 0.02 * 100) / 100; // 2% platform fee
+    const tax = 0; // Hide tax breakdown in UI
+    const subtotal = total - shipping;
+    const platformFee = Math.round((subtotal / 1.05) * 0.02 * 100) / 100; // 2% platform fee
     const sellerPayout = total - platformFee - shipping;
-    const gstRate = subtotal + shipping > 0 ? Math.round((tax / (subtotal + shipping)) * 100) : 18;
+    const gstRate = 5;
     return { listingTotal, subtotal, tax, shipping, platformFee, total, sellerPayout, gstRate };
   };
 
@@ -388,6 +388,21 @@ export default function SellerOrderDetail() {
   const handleDownloadInvoice = () => {
     if (!order) return;
     try {
+      const actualTotal = order.total || 0;
+      const shippingCharge = order.shipping_charge || 0;
+      const taxAmount = order.tax_charge || 0;
+      const baseSubtotal = actualTotal - shippingCharge - taxAmount;
+
+      const items = Array.isArray(order.items) ? order.items : [];
+      const invoiceItems = items.map((item: any) => {
+        const rawPrice = item.price || 0;
+        const basePrice = Math.round((rawPrice / 1.05) * 100) / 100;
+        return {
+          ...item,
+          price: basePrice
+        };
+      });
+
       generateInvoicePDF({
         orderNumber: order.order_number,
         orderDate: safeFormatDate(order.created_at, 'MMMM dd, yyyy'),
@@ -397,8 +412,11 @@ export default function SellerOrderDetail() {
         shippingAddress: order.shipping_address,
         shippingCity: order.shipping_city,
         shippingPincode: order.shipping_pincode,
-        items: Array.isArray(order.items) ? order.items : [],
-        subtotal, tax, shipping, total,
+        items: invoiceItems,
+        subtotal: baseSubtotal,
+        tax: taxAmount,
+        shipping: shippingCharge,
+        total: actualTotal,
         paymentMethod: order.payment_method || 'Online',
         paymentStatus: order.payment_status,
         orderStatus: order.order_status,
@@ -677,10 +695,7 @@ export default function SellerOrderDetail() {
                   <span className="pl-3 text-[12px]">Items Subtotal</span>
                   <span className="font-medium text-foreground">₹{subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex flex-row items-center justify-between text-sm text-muted-foreground w-full">
-                  <span className="pl-3 text-[12px]">Tax ({gstRate}% GST)</span>
-                  <span className="font-medium text-foreground">₹{tax.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                </div>
+
                 <div className="flex flex-row items-center justify-between text-sm text-muted-foreground w-full">
                   <span className="pl-3 text-[12px]">Shipping Fee</span>
                   <span className="font-medium text-foreground">₹{shipping.toLocaleString()}</span>

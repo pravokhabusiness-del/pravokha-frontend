@@ -245,20 +245,24 @@ export default function UnifiedOrdersPage() {
     };
 
     const mapOrders = (data: any[]): Order[] => {
-        return (data || []).map((order: any) => ({
-            ...order,
-            order_number: order.order_number || order.orderNumber || order.id?.slice(0, 8),
-            customer_name: order.customer_name || order.customerName || "Customer",
-            customer_email: order.customer_email || order.customerEmail || "",
-            created_at: order.created_at || order.createdAt || new Date().toISOString(),
-            status: (order.order_status || order.status || 'pending').toLowerCase() as any,
-            payment_status: (order.payment_status || order.paymentStatus || 'pending').toLowerCase() as any,
-            total: order.totalAmount ?? order.total ?? 0,
-            subtotal: order.subtotal ?? ((order.totalAmount ?? order.total ?? 0) - (order.shippingFee ?? 0) - (order.taxAmount ?? 0)),
-            tax: order.taxAmount ?? order.tax ?? 0,
-            shipping: order.shippingFee ?? order.shipping ?? 0,
-            items_count: Array.isArray(order.items) ? order.items.length : (order.items_count || 0),
-        }));
+        return (data || []).map((order: any) => {
+            const actualTotal = order.totalAmount ?? order.total ?? 0;
+            const shippingCharge = order.shippingFee ?? order.shipping ?? 0;
+            return {
+                ...order,
+                order_number: order.order_number || order.orderNumber || order.id?.slice(0, 8),
+                customer_name: order.customer_name || order.customerName || "Customer",
+                customer_email: order.customer_email || order.customerEmail || "",
+                created_at: order.created_at || order.createdAt || new Date().toISOString(),
+                status: (order.order_status || order.status || 'pending').toLowerCase() as any,
+                payment_status: (order.payment_status || order.paymentStatus || 'pending').toLowerCase() as any,
+                total: actualTotal,
+                subtotal: actualTotal - shippingCharge,
+                tax: 0, // Hide tax breakdown in UI
+                shipping: shippingCharge,
+                items_count: Array.isArray(order.items) ? order.items.length : (order.items_count || 0),
+            };
+        });
     };
 
     const filterOrders = () => {
@@ -313,6 +317,24 @@ export default function UnifiedOrdersPage() {
     const handleDownloadInvoice = async (order: Order) => {
         try {
             toast({ title: "Generating Invoice", description: "Please wait..." });
+            const actualTotal = order.total;
+            const shippingCharge = order.shippingFee ?? order.shipping ?? 0;
+            const taxAmount = order.taxAmount ?? (order as any).tax_charge ?? 0;
+            const baseSubtotal = actualTotal - shippingCharge - taxAmount;
+
+            const items = Array.isArray(order.items) ? order.items : [];
+            const invoiceItems = items.map((item: any) => {
+                const rawPrice = item.priceAtPurchase ?? item.price ?? 0;
+                const basePrice = Math.round((rawPrice / 1.05) * 100) / 100;
+                return {
+                    title: item.title || item.product?.title || "Product",
+                    quantity: item.quantity || 1,
+                    price: basePrice,
+                    colorName: item.colorName || item.color || "",
+                    size: item.size || ""
+                };
+            });
+
             await generateInvoicePDF({
                 orderNumber: order.order_number,
                 orderDate: format(new Date(order.created_at), 'dd MMM yyyy'),
@@ -322,17 +344,11 @@ export default function UnifiedOrdersPage() {
                 shippingAddress: order.shipping_address || 'N/A',
                 shippingCity: order.shipping_city || '',
                 shippingPincode: order.shipping_pincode || '',
-                items: (order.items || []).map((item: any) => ({
-                    title: item.title || item.product?.title || "Product",
-                    quantity: item.quantity || 1,
-                    price: item.priceAtPurchase ?? item.price ?? 0,
-                    colorName: item.colorName || item.color || "",
-                    size: item.size || ""
-                })),
-                subtotal: order.subtotal || (order.total * 0.82), // Fallback approx
-                tax: order.tax || (order.total * 0.18),
-                shipping: order.shipping || 0,
-                total: order.total,
+                items: invoiceItems,
+                subtotal: baseSubtotal,
+                tax: taxAmount,
+                shipping: shippingCharge,
+                total: actualTotal,
                 paymentMethod: order.payment_method || 'Online',
                 paymentStatus: order.payment_status || 'Paid'
             });

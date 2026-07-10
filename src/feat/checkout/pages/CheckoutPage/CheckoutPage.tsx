@@ -17,12 +17,52 @@ import { emailClient } from "@/lib/services/email/EmailClient";
 import { Shield } from "lucide-react";
 import { razorpayService } from "@/services/razorpayService";
 
+const INDIAN_STATES = [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Delhi",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Puducherry",
+    "Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Lakshadweep",
+    "Andaman and Nicobar Islands"
+];
+
 const checkoutSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name must be less than 100 characters"),
     email: z.string().email("Invalid email address").max(255, "Email must be less than 255 characters"),
     phone: z.string().regex(/^[6-9]\d{9}$/, "Phone must be a valid 10-digit Indian number"),
     address: z.string().min(10, "Address must be at least 10 characters").max(500, "Address must be less than 500 characters"),
     city: z.string().min(2, "City must be at least 2 characters").max(100, "City must be less than 100 characters"),
+    state: z.string().min(2, "State is required"),
     pincode: z.string().regex(/^[1-9]\d{5}$/, "Pincode must be a valid 6-digit Indian pincode"),
 });
 
@@ -41,6 +81,7 @@ export function CheckoutPage() {
         phone: "",
         address: "",
         city: "",
+        state: "",
         pincode: "",
     });
 
@@ -73,23 +114,25 @@ export function CheckoutPage() {
         fetchOrderCount();
     }, []);
 
-    // Debounce shipping calculation on pincode/payment change
+    // Debounce shipping calculation on pincode/state/payment change
     useEffect(() => {
         const timer = setTimeout(() => {
             const pinToCalculate = formData.pincode.match(/^[1-9]\d{5}$/) ? formData.pincode : '400001';
-            calculateShipping(pinToCalculate);
+            calculateShipping(pinToCalculate, formData.state);
         }, 500);
         return () => clearTimeout(timer);
-    }, [formData.pincode, paymentMethod]);
+    }, [formData.pincode, formData.state, paymentMethod]);
 
-    const calculateShipping = async (pincodeToUse?: string) => {
+    const calculateShipping = async (pincodeToUse?: string, stateToUse?: string) => {
         setCalculatingShipping(true);
         setShippingError(null);
         const pin = pincodeToUse || formData.pincode;
+        const st = stateToUse || formData.state;
         try {
             const response = await apiClient.post('/orders/calculate-shipping', {
                 items: items.map(i => ({ productId: i.productId, quantity: i.quantity, sellerId: i.sellerId })),
                 pincode: pin,
+                state: st,
                 isCod: paymentMethod === 'cod',
                 isExpress: false
             });
@@ -151,7 +194,7 @@ export function CheckoutPage() {
                 title: "Login Required",
                 description: "Please login to continue with checkout",
                 variant: "destructive",
-            });
+                });
             navigate("/auth");
             return;
         }
@@ -167,6 +210,7 @@ export function CheckoutPage() {
                         phone: defaultAddr.phoneNumber || user.phone || user.phoneNumber || "",
                         address: defaultAddr.addressLine1 + (defaultAddr.addressLine2 ? `, ${defaultAddr.addressLine2}` : ""),
                         city: defaultAddr.city || "",
+                        state: defaultAddr.state || "",
                         pincode: defaultAddr.pincode || "",
                     });
                 } else {
@@ -175,6 +219,7 @@ export function CheckoutPage() {
                         name: user.name || "",
                         email: user.email || "",
                         phone: user.phone || user.phoneNumber || "",
+                        state: "",
                     }));
                 }
             } else {
@@ -212,53 +257,9 @@ export function CheckoutPage() {
     // Advanced Shipping Logic: Dynamic Fee (Mandatory Shipping Charge)
     const shippingPrice = calculatedShippingFee > 0 ? calculatedShippingFee : settings.shippingFee;
 
-    // Group items by vendor to calculate tax dynamically matching the backend
-    const vendorGroups = new Map<string, typeof items>();
-    items.forEach(item => {
-        const vId = item.sellerId;
-        if (!vendorGroups.has(vId)) {
-            vendorGroups.set(vId, []);
-        }
-        vendorGroups.get(vId)!.push(item);
-    });
-
-    let remainingDiscount = comboSavings + couponDiscountAmount;
-    let remainingShipping = shippingPrice;
-    let totalTax = 0;
-    
-    const vendorEntries = Array.from(vendorGroups.entries());
-    
-    vendorEntries.forEach(([vId, group], index) => {
-        const vendorSubtotal = group.reduce((sum, i) => sum + i.price * i.quantity, 0);
-        const orderDiscount = Math.min(vendorSubtotal, remainingDiscount);
-        remainingDiscount -= orderDiscount;
-        const adjustedSubtotal = vendorSubtotal - orderDiscount;
-
-        let vendorShipping = 0;
-        const breakdownItem = shippingBreakdown.find(b => b.vendorId === vId);
-        if (breakdownItem) {
-            vendorShipping = breakdownItem.total;
-        } else {
-            if (index === vendorEntries.length - 1) {
-                vendorShipping = remainingShipping;
-            } else {
-                const portion = Math.round((vendorSubtotal / (actualSubtotal || 1)) * shippingPrice);
-                vendorShipping = Math.min(portion, remainingShipping);
-                remainingShipping -= vendorShipping;
-            }
-        }
-
-        const gstRate = adjustedSubtotal < 2500 ? 5 : 18;
-        const vendorTax = Math.round((adjustedSubtotal + vendorShipping) * (gstRate / 100));
-        totalTax += vendorTax;
-    });
-
-    const tax = totalTax;
-    const total = discountedSubtotal + shippingPrice + tax;
-    
-    const effectiveGstRate = (discountedSubtotal + shippingPrice) > 0 
-        ? Math.round((tax / (discountedSubtotal + shippingPrice)) * 100) 
-        : 18;
+    // Tax is inclusive of product price, so no additional tax is added at checkout.
+    const tax = 0;
+    const total = discountedSubtotal + shippingPrice;
 
     const applyCoupon = async () => {
         if (!couponCode.trim()) { setCouponError("Please enter a coupon code"); return; }
@@ -354,6 +355,7 @@ export function CheckoutPage() {
                 shippingAddress: formData.address,
                 shippingCity: formData.city,
                 shippingPincode: formData.pincode,
+                shippingState: formData.state,
                 items: items,
                 total: amount,
                 paymentMethod: 'COD',
@@ -549,7 +551,7 @@ export function CheckoutPage() {
                                 />
                                 {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address}</p>}
                             </div>
-                            <div className="grid md:grid-cols-2 gap-4">
+                            <div className="grid md:grid-cols-3 gap-4">
                                 <div>
                                     <Label htmlFor="city">City *</Label>
                                     <Input
@@ -562,6 +564,31 @@ export function CheckoutPage() {
                                         required
                                     />
                                     {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
+                                </div>
+                                <div>
+                                    <Label htmlFor="state">State *</Label>
+                                    <select
+                                        id="state"
+                                        name="state"
+                                        value={formData.state}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, state: e.target.value });
+                                            if (errors.state) {
+                                                setErrors({ ...errors, state: "" });
+                                            }
+                                        }}
+                                        className={cn(
+                                            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                                            errors.state && "border-red-500"
+                                        )}
+                                        required
+                                    >
+                                        <option value="">Select State</option>
+                                        {INDIAN_STATES.map((st) => (
+                                            <option key={st} value={st.toUpperCase()}>{st}</option>
+                                        ))}
+                                    </select>
+                                    {errors.state && <p className="text-xs text-red-500 mt-1">{errors.state}</p>}
                                 </div>
                                 <div>
                                     <Label htmlFor="pincode">Pincode *</Label>
@@ -708,11 +735,6 @@ export function CheckoutPage() {
                                         <span>-₹{comboSavings}</span>
                                     </div>
                                 )}
-                                <div className="flex justify-between text-sm">
-                                    <span>Tax ({effectiveGstRate}%)</span>
-                                    <span>₹{tax}</span>
-                                </div>
-
                                 <Separator />
                                 <div className="flex justify-between font-bold text-lg">
                                     <span>Total</span>

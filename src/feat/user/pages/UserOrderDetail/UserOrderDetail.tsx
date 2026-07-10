@@ -84,8 +84,8 @@ export default function UserOrderDetail() {
 
       const total = order.totalAmount || 0;
       const shipping = order.shippingFee || 0;
-      const tax = order.taxAmount || 0;
-      const subtotal = total - shipping - tax;
+      const tax = 0; // Hide tax breakdown in UI
+      const subtotal = total - shipping;
 
       return { subtotal, tax, shipping, total };
    };
@@ -145,25 +145,24 @@ export default function UserOrderDetail() {
       try {
          const items = Array.isArray(order.items) ? order.items : [];
 
-         // Calculate subtotal from actual product prices
-         const itemsTotal = items.reduce((sum: number, item: any) =>
-            sum + ((item.price || 0) * (item.quantity || 1)), 0
-         );
-
          // Use direct database values
          const actualTotal = order.totalAmount || 0;
          const shippingCharge = order.shippingFee || 0;
          const taxAmount = order.taxAmount || 0;
          const subtotal = actualTotal - shippingCharge - taxAmount;
 
-         // Ensure items are mapped correctly for the generator
-         const invoiceItems = items.map((item: any) => ({
-            title: item.title || item.product?.title || "Product",
-            quantity: item.quantity || 1,
-            price: item.priceAtPurchase || item.price || 0,
-            colorName: item.colorName || item.color || "",
-            size: item.size || ""
-         }));
+         // Ensure items are mapped correctly for the generator with base price (tax exclusive)
+         const invoiceItems = items.map((item: any) => {
+            const rawPrice = item.priceAtPurchase || item.price || 0;
+            const basePrice = Math.round((rawPrice / 1.05) * 100) / 100;
+            return {
+               title: item.title || item.product?.title || "Product",
+               quantity: item.quantity || 1,
+               price: basePrice,
+               colorName: item.colorName || item.color || "",
+               size: item.size || ""
+            };
+         });
 
          await generateInvoicePDF({
             orderNumber: order.orderNumber || "N/A",
@@ -451,10 +450,7 @@ export default function UserOrderDetail() {
                            <span className="text-muted-foreground">Subtotal</span>
                            <span>₹{subtotal.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                           <span className="text-muted-foreground">Tax</span>
-                           <span>₹{tax.toLocaleString()}</span>
-                        </div>
+
                         <div className="flex justify-between text-sm">
                            <span className="text-muted-foreground">Shipping</span>
                            <span>₹{shipping.toLocaleString()}</span>
