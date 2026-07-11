@@ -338,6 +338,7 @@ export default function UnifiedOrdersPage() {
             await generateInvoicePDF({
                 orderNumber: order.order_number,
                 orderDate: format(new Date(order.created_at), 'dd MMM yyyy'),
+                orderTime: order.created_at ? format(new Date(order.created_at), 'hh:mm a') : undefined,
                 customerName: order.customer_name,
                 customerEmail: order.customer_email,
                 customerPhone: order.customer_phone || 'N/A',

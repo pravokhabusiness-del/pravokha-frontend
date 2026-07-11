@@ -77,20 +77,6 @@ export default function UserAccount() {
             </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow border-primary/10 hover:border-primary/50" onClick={() => navigate("/user/account/addresses")}>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <MapPin className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">Address Book</CardTitle>
-                  <CardDescription>Manage your shipping addresses</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
           <Card className="cursor-pointer hover:shadow-lg transition-shadow border-primary/10 hover:border-primary/50" onClick={() => navigate("/user/account/settings")}>
             <CardHeader>
               <div className="flex items-center gap-3">

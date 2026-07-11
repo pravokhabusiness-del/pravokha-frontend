@@ -102,7 +102,6 @@ const navSections: NavSection[] = [
     links: [
       { title: "Products", href: "/admin/products/manage", icon: <Package className="h-4 w-4" /> },
       { title: "Categories", href: "/admin/categories", icon: <LayoutDashboard className="h-4 w-4" /> },
-      { title: "Subcategories", href: "/admin/subcategories", icon: <ShoppingBag className="h-4 w-4" /> },
       { title: "Banners", href: "/admin/banners", icon: <ImageIcon className="h-4 w-4" /> },
       { title: "Offers", href: "/admin/combo-offers", icon: <Plus className="h-4 w-4" /> },
     ]

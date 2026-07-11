@@ -7,7 +7,7 @@ interface InvoiceData {
     customerName: string;
     customerEmail: string;
     customerPhone: string;
-    shippingAddress: string;
+    shippingAddress: any;
     shippingCity: string;
     shippingPincode: string;
     items: {
@@ -24,6 +24,7 @@ interface InvoiceData {
     paymentMethod: string;
     paymentStatus: string;
     orderStatus?: string;
+    orderTime?: string;
 }
 
 // Premium Color Palette
@@ -51,6 +52,43 @@ function formatCurrency(amount: number): string {
     return `Rs. ${amount.toLocaleString('en-IN')}`;
 }
 
+// Helper to parse complex shipping address fields robustly
+function parseShippingAddress(addressInput: any) {
+    if (!addressInput) {
+        return { address: 'N/A', city: '', pincode: '', name: '', phone: '' };
+    }
+    if (typeof addressInput === 'object') {
+        return {
+            address: addressInput.address || addressInput.street || 'N/A',
+            city: addressInput.city || '',
+            pincode: addressInput.pincode || '',
+            name: addressInput.name || addressInput.fullName || '',
+            phone: addressInput.phone || ''
+        };
+    }
+    try {
+        if (typeof addressInput === 'string' && (addressInput.trim().startsWith('{') || addressInput.trim().startsWith('['))) {
+            const parsed = JSON.parse(addressInput);
+            return {
+                address: parsed.address || parsed.street || addressInput,
+                city: parsed.city || "",
+                pincode: parsed.pincode || "",
+                name: parsed.name || parsed.fullName || "",
+                phone: parsed.phone || ""
+            };
+        }
+    } catch (e) {
+        // Fallback
+    }
+    return {
+        address: addressInput,
+        city: "",
+        pincode: "",
+        name: "",
+        phone: ""
+    };
+}
+
 // Helper to load image as base64
 async function loadImageAsBase64(url: string): Promise<string | null> {
     try {
@@ -73,10 +111,11 @@ export async function generateInvoicePDF(data: InvoiceData) {
     const pageHeight = doc.internal.pageSize.height;
     const margin = 15;
 
-    // Load logo
+    // Load logo using absolute origin path
     let logoBase64: string | null = null;
     try {
-        logoBase64 = await loadImageAsBase64('/pravokha-logo.png');
+        const logoUrl = `${window.location.origin}/pravokha-logo.png`;
+        logoBase64 = await loadImageAsBase64(logoUrl);
     } catch (e) {
         console.warn('Could not load logo:', e);
     }
@@ -119,12 +158,15 @@ export async function generateInvoicePDF(data: InvoiceData) {
     const invoiceTitle = data.orderStatus?.toLowerCase() === 'cancelled' ? 'CANCELLATION INVOICE' : 'TAX INVOICE';
     doc.text(invoiceTitle, rightX, 14, { align: 'right' });
 
-    // Invoice Number and Date
+    // Invoice Number, Date and Time
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
     doc.text(`Invoice: #${data.orderNumber}`, rightX, 22, { align: 'right' });
-    doc.text(`Date: ${data.orderDate}`, rightX, 29, { align: 'right' });
+    doc.text(`Date: ${data.orderDate}`, rightX, 28, { align: 'right' });
+    if (data.orderTime) {
+        doc.text(`Time: ${data.orderTime}`, rightX, 34, { align: 'right' });
+    }
 
     // Payment Status Badge
     const status = (data.paymentStatus || 'pending').toUpperCase();
@@ -151,6 +193,14 @@ export async function generateInvoicePDF(data: InvoiceData) {
     const boxWidth = (pageWidth - margin * 2 - 10) / 2;
     const boxHeight = 38;
 
+    // Parse shipping address using the helper
+    const parsedAddr = parseShippingAddress(data.shippingAddress);
+    const parsedAddress = parsedAddr.address;
+    const parsedCity = parsedAddr.city || data.shippingCity || '';
+    const parsedPincode = parsedAddr.pincode || data.shippingPincode || '';
+    const parsedCustomerName = parsedAddr.name || data.customerName || "Customer";
+    const parsedPhone = parsedAddr.phone || data.customerPhone || "N/A";
+
     // Bill To Box
     doc.setDrawColor(COLORS.darkTeal.r, COLORS.darkTeal.g, COLORS.darkTeal.b);
     doc.setLineWidth(0.3);
@@ -169,7 +219,7 @@ export async function generateInvoicePDF(data: InvoiceData) {
     // Bill To Content
     doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
     doc.setFontSize(10);
-    doc.text(data.customerName || 'Customer', margin + 4, yPos + 14);
+    doc.text(parsedCustomerName, margin + 4, yPos + 14);
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
@@ -180,8 +230,8 @@ export async function generateInvoicePDF(data: InvoiceData) {
         doc.text(data.customerEmail, margin + 4, billY);
         billY += 5;
     }
-    if (data.customerPhone && data.customerPhone !== 'N/A') {
-        doc.text(`Ph: ${data.customerPhone}`, margin + 4, billY);
+    if (parsedPhone && parsedPhone !== 'N/A') {
+        doc.text(`Ph: ${parsedPhone}`, margin + 4, billY);
     }
 
     // Ship To Box
@@ -202,7 +252,7 @@ export async function generateInvoicePDF(data: InvoiceData) {
     // Ship To Content
     doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
     doc.setFontSize(10);
-    doc.text(data.customerName || 'Customer', shipX + 4, yPos + 14);
+    doc.text(parsedCustomerName, shipX + 4, yPos + 14);
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
@@ -210,11 +260,11 @@ export async function generateInvoicePDF(data: InvoiceData) {
 
     // Limit address to fit in box
     const maxAddrWidth = boxWidth - 10;
-    const addressText = data.shippingAddress || '';
+    const addressText = parsedAddress || '';
     const addressLines = doc.splitTextToSize(addressText, maxAddrWidth);
     doc.text(addressLines.slice(0, 2), shipX + 4, yPos + 20); // Max 2 lines
 
-    const cityLine = `${data.shippingCity || ''} ${data.shippingPincode ? '- ' + data.shippingPincode : ''}`.trim();
+    const cityLine = `${parsedCity} ${parsedPincode ? '- ' + parsedPincode : ''}`.trim();
     doc.text(cityLine, shipX + 4, yPos + 32);
 
     // ===== ITEMS TABLE =====
@@ -291,10 +341,10 @@ export async function generateInvoicePDF(data: InvoiceData) {
     doc.text(`Method: ${(data.paymentMethod || 'N/A').toUpperCase()}`, margin + 4, yPos + 15);
     doc.text(`Status: ${(data.paymentStatus || 'Pending').toUpperCase()}`, margin + 4, yPos + 22);
 
-    // Order Summary Box (Right)
+    // Order Summary Box (Right) - Increased height to fit GST breakdown
     doc.setDrawColor(COLORS.darkTeal.r, COLORS.darkTeal.g, COLORS.darkTeal.b);
     doc.setLineWidth(0.5);
-    doc.roundedRect(summaryX, yPos, rightBoxWidth, 50, 2, 2, 'S');
+    doc.roundedRect(summaryX, yPos, rightBoxWidth, 66, 2, 2, 'S');
 
     // Summary Header
     doc.setFillColor(COLORS.darkTeal.r, COLORS.darkTeal.g, COLORS.darkTeal.b);
@@ -309,24 +359,43 @@ export async function generateInvoicePDF(data: InvoiceData) {
     // Summary Content
     const sumLabelX = summaryX + 5;
     const sumValueX = summaryX + rightBoxWidth - 5;
-    let sumY = yPos + 16;
+    let sumY = yPos + 14;
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
 
-    doc.text('Subtotal', sumLabelX, sumY);
+    doc.text('Subtotal (Tax Excl.)', sumLabelX, sumY);
     doc.text(formatCurrency(data.subtotal), sumValueX, sumY, { align: 'right' });
 
-    sumY += 7;
     const gstRate = data.subtotal > 0
         ? Math.round((data.tax / data.subtotal) * 100)
-        : 5;
-    doc.text(`Tax (GST ${gstRate}%)`, sumLabelX, sumY);
-    doc.text(formatCurrency(data.tax), sumValueX, sumY, { align: 'right' });
+        : 18; // Default standard apparel rate
 
-    sumY += 7;
-    doc.text('Shipping', sumLabelX, sumY);
+    // Calculate CGST, SGST, IGST based on location state.
+    // If state contains 'Tamil Nadu' or code TN, it's intra-state. Else inter-state.
+    const stateStr = (parsedCity || '').toLowerCase(); // Fallback check city if state is blank
+    const isLocal = stateStr.includes('tamil nadu') || stateStr.includes('chennai') || stateStr.includes('tn') || !stateStr;
+
+    const halfTax = data.tax / 2;
+    const cgstAmount = isLocal ? halfTax : 0;
+    const sgstAmount = isLocal ? halfTax : 0;
+    const igstAmount = isLocal ? 0 : data.tax;
+
+    sumY += 6;
+    doc.text(`CGST (${isLocal ? gstRate/2 : 0}%)`, sumLabelX, sumY);
+    doc.text(formatCurrency(cgstAmount), sumValueX, sumY, { align: 'right' });
+
+    sumY += 6;
+    doc.text(`SGST (${isLocal ? gstRate/2 : 0}%)`, sumLabelX, sumY);
+    doc.text(formatCurrency(sgstAmount), sumValueX, sumY, { align: 'right' });
+
+    sumY += 6;
+    doc.text(`IGST (${isLocal ? 0 : gstRate}%)`, sumLabelX, sumY);
+    doc.text(formatCurrency(igstAmount), sumValueX, sumY, { align: 'right' });
+
+    sumY += 6;
+    doc.text('Shipping & Delivery', sumLabelX, sumY);
     doc.text(data.shipping > 0 ? formatCurrency(data.shipping) : 'FREE', sumValueX, sumY, { align: 'right' });
 
     // Gold divider line
@@ -336,11 +405,11 @@ export async function generateInvoicePDF(data: InvoiceData) {
     doc.line(sumLabelX, sumY, sumValueX, sumY);
 
     // Total
-    sumY += 7;
+    sumY += 6;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(COLORS.darkTeal.r, COLORS.darkTeal.g, COLORS.darkTeal.b);
-    doc.text('TOTAL', sumLabelX, sumY);
+    doc.text('TOTAL (Tax Incl.)', sumLabelX, sumY);
     doc.text(formatCurrency(data.total), sumValueX, sumY, { align: 'right' });
 
     // ===== RETURN POLICY =====

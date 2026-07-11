@@ -20,23 +20,18 @@ import { getMediaUrl } from "@/lib/utils";
 const sidebarLinks = [
     {
         title: "Dashboard",
-        href: "/user",
+        href: "/user/account/dashboard",
         icon: LayoutDashboard,
     },
     {
         title: "My Orders",
-        href: "/user/orders",
+        href: "/user/account/orders",
         icon: ShoppingBag,
     },
     {
         title: "Personal Info",
         href: "/user/account/profile",
         icon: User,
-    },
-    {
-        title: "Address Book",
-        href: "/user/account/addresses",
-        icon: MapPin,
     },
     {
         title: "Wishlist",

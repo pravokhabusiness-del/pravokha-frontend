@@ -19,7 +19,8 @@ import {
   Clock,
   Download,
   Eye,
-  ShoppingBag
+  ShoppingBag,
+  Trash2
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn, getMediaUrl } from "@/lib/utils";
@@ -50,6 +51,30 @@ export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [hiddenOrderIds, setHiddenOrderIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("deletedOrders");
+      if (stored) {
+        setHiddenOrderIds(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Error reading deleted orders from storage:", e);
+    }
+  }, []);
+
+  const handleDeleteOrder = (orderId: string) => {
+    if (confirm("Are you sure you want to delete this order from your view?")) {
+      const updated = [...hiddenOrderIds, orderId];
+      setHiddenOrderIds(updated);
+      localStorage.setItem("deletedOrders", JSON.stringify(updated));
+      toast({
+        title: "Order Hidden",
+        description: "Order has been removed from your history view.",
+      });
+    }
+  };
 
   useOrderNotifications(userId);
   const [user, setUser] = useState<any>(null);
@@ -236,6 +261,7 @@ export default function OrderHistory() {
       await generateInvoicePDF({
         orderNumber: order.order_number || "N/A",
         orderDate: order.created_at ? format(new Date(order.created_at), 'MMMM dd, yyyy') : new Date().toDateString(),
+        orderTime: order.created_at ? format(new Date(order.created_at), 'hh:mm a') : undefined,
         customerName: order.customer_name || "Customer",
         customerEmail: "",
         customerPhone: order.customer_phone || "N/A",
@@ -276,7 +302,9 @@ export default function OrderHistory() {
     );
   }
 
-  if (orders.length === 0) {
+  const visibleOrders = orders.filter((o) => !hiddenOrderIds.includes(o.id));
+
+  if (visibleOrders.length === 0) {
     return (
       <div className="container max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-md mx-auto">
@@ -317,7 +345,7 @@ export default function OrderHistory() {
 
         {/* Orders List */}
         <div className="space-y-6">
-          {orders.map((order) => {
+          {visibleOrders.map((order) => {
             const statusConfig = getStatusConfig(order.order_status);
             const StatusIcon = statusConfig.icon;
             const items = Array.isArray(order.items) ? order.items : [];
@@ -510,6 +538,15 @@ export default function OrderHistory() {
                           Re-order
                         </Button>
                       )}
+                      <Button
+                        variant="outline"
+                        onClick={() => handleDeleteOrder(order.id)}
+                        size="sm"
+                        className="flex-1 sm:flex-none h-10 px-4 font-bold border-red-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
+                        title="Delete from view"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

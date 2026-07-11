@@ -58,7 +58,6 @@ export const VisualsStep: React.FC<VisualsStepProps> = ({
                                         <div>
                                             <h4 className="font-semibold text-sm">
                                                 {color.name}
-                                                {id && !isAdmin && <Badge variant="secondary" className="ml-2 text-[8px] bg-amber-50 text-amber-700 border-amber-200 uppercase tracking-tighter transition-colors hover:bg-amber-100 hover:text-amber-800">Admin Managed</Badge>}
                                             </h4>
                                             <p className={cn("text-[10px] font-medium", (existing.length + previews.length) >= 4 ? "text-emerald-600" : "text-rose-500")}>
                                                 {(existing.length + previews.length) >= 4
@@ -77,10 +76,7 @@ export const VisualsStep: React.FC<VisualsStepProps> = ({
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                         {/* Upload Button */}
                                         <label
-                                            className={cn(
-                                                "aspect-[4/5] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-primary/50 transition-all group",
-                                                id && !isAdmin && "opacity-50 cursor-not-allowed hover:bg-white hover:border-gray-200"
-                                            )}
+                                            className="aspect-[4/5] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-primary/50 transition-all group"
                                         >
                                             <div className="bg-primary/5 p-2 rounded-full mb-2 group-hover:scale-110 transition-transform">
                                                 <Upload className="h-5 w-5 text-primary" />
@@ -92,7 +88,6 @@ export const VisualsStep: React.FC<VisualsStepProps> = ({
                                                 accept="image/*"
                                                 className="hidden"
                                                 onChange={(e) => handleImageUpload(e, color.id)}
-                                                disabled={!!id && !isAdmin}
                                             />
                                         </label>
 
@@ -102,11 +97,7 @@ export const VisualsStep: React.FC<VisualsStepProps> = ({
                                                 <img src={getMediaUrl(src)} className="w-full h-full object-cover" />
                                                 <button
                                                     onClick={() => removeImage(i, 'existing', color.id)}
-                                                    className={cn(
-                                                        "absolute top-2 right-2 bg-white/90 hover:bg-destructive hover:text-white text-gray-600 p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all",
-                                                        id && !isAdmin && "cursor-not-allowed hidden"
-                                                    )}
-                                                    disabled={!!id && !isAdmin}
+                                                    className="absolute top-2 right-2 bg-white/90 hover:bg-destructive hover:text-white text-gray-600 p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all"
                                                 >
                                                     <X className="h-3 w-3" />
                                                 </button>

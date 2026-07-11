@@ -169,6 +169,9 @@ export default function UserOrderDetail() {
             orderDate: order.createdAt && !isNaN(new Date(order.createdAt).getTime())
                ? format(new Date(order.createdAt), 'MMMM dd, yyyy')
                : new Date().toDateString(),
+            orderTime: order.createdAt && !isNaN(new Date(order.createdAt).getTime())
+               ? format(new Date(order.createdAt), 'hh:mm a')
+               : undefined,
             customerName: order.customerName || "Customer",
             customerEmail: order.customerEmail || "N/A",
             customerPhone: order.customerPhone || "N/A",

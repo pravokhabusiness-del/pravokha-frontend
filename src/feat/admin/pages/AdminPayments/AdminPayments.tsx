@@ -403,6 +403,7 @@ export default function AdminPayments() {
       const invoiceData = {
         orderNumber: transaction.order_number,
         orderDate: format(new Date(transaction.created_at), 'dd/MM/yyyy'),
+        orderTime: transaction.created_at ? format(new Date(transaction.created_at), 'hh:mm a') : undefined,
         customerName: transaction.customer_name || 'Customer',
         customerEmail: transaction.customer_email || '',
         customerPhone: transaction.customer_phone || '',

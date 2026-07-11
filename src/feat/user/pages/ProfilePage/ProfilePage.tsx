@@ -33,6 +33,17 @@ export function ProfilePage() {
         address: "",
         avatar_url: user?.avatar_url || "",
     });
+    const [userAddress, setUserAddress] = useState({
+        id: "",
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        pincode: "",
+    });
+    const [mapInstance, setMapInstance] = useState<any>(null);
+    const [mapMarker, setMapMarker] = useState<any>(null);
+    const [locating, setLocating] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [recentOrders, setRecentOrders] = useState<any[]>([]);
     const [notifications, setNotifications] = useState(true);
@@ -63,6 +74,190 @@ export function ProfilePage() {
             setAvatarPreview(userProfile.avatar_url || null);
         }
     }, [userProfile]);
+
+    // Fetch address from backend on mount
+    useEffect(() => {
+        const loadUserAddress = async () => {
+            try {
+                const res = await apiClient.get('/users/addresses');
+                if (res.data && res.data.length > 0) {
+                    const defaultAddr = res.data.find((addr: any) => addr.isDefault) || res.data[0];
+                    setUserAddress({
+                        id: defaultAddr.id || "",
+                        addressLine1: defaultAddr.addressLine1 || "",
+                        addressLine2: defaultAddr.addressLine2 || "",
+                        city: defaultAddr.city || "",
+                        state: defaultAddr.state || "",
+                        pincode: defaultAddr.pincode || "",
+                    });
+
+                    // Update map marker if map exists
+                    if (mapInstance && mapMarker && defaultAddr.city) {
+                        try {
+                            const mapQuery = encodeURIComponent(`${defaultAddr.addressLine1}, ${defaultAddr.city}, ${defaultAddr.state}, India`);
+                            const mapRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${mapQuery}`);
+                            const mapData = await mapRes.json();
+                            if (mapData && mapData.length > 0) {
+                                const lat = parseFloat(mapData[0].lat);
+                                const lon = parseFloat(mapData[0].lon);
+                                mapInstance.setView([lat, lon], 14);
+                                mapMarker.setLatLng([lat, lon]);
+                            }
+                        } catch (e) {
+                            console.error("Map repositioning failed:", e);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load user address:", err);
+            }
+        };
+
+        if (user) {
+            loadUserAddress();
+        }
+    }, [user, mapInstance, mapMarker]);
+
+    const initMap = (lat: number, lng: number) => {
+        const L = (window as any).L;
+        if (!L) return;
+
+        const mapEl = document.getElementById('profile-map');
+        if (!mapEl) return;
+
+        if ((window as any)._profileMap) {
+            (window as any)._profileMap.remove();
+        }
+
+        const map = L.map('profile-map').setView([lat, lng], 13);
+        (window as any)._profileMap = map;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        setMapMarker(marker);
+        setMapInstance(map);
+
+        const handleGeocode = async (coords: { lat: number; lng: number }) => {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`);
+                const data = await response.json();
+                if (data && data.address) {
+                    const addr = data.address;
+                    const road = addr.road || addr.suburb || addr.neighbourhood || addr.amenity || '';
+                    const city = addr.city || addr.town || addr.village || '';
+                    const state = addr.state || '';
+                    const pincode = addr.postcode || '';
+
+                    setUserAddress(prev => ({
+                        ...prev,
+                        addressLine1: road || prev.addressLine1 || "Located Address",
+                        city: city || prev.city,
+                        state: state || prev.state,
+                        pincode: pincode.replace(/\s/g, '') || prev.pincode
+                    }));
+                }
+            } catch (e) {
+                console.error("Geocoding failed:", e);
+            }
+        };
+
+        marker.on('dragend', () => {
+            const position = marker.getLatLng();
+            handleGeocode(position);
+        });
+
+        map.on('click', (e: any) => {
+            marker.setLatLng(e.latlng);
+            handleGeocode(e.latlng);
+        });
+    };
+
+    // Load Leaflet dynamically
+    useEffect(() => {
+        const leafletCssId = 'leaflet-css';
+        if (!document.getElementById(leafletCssId)) {
+            const link = document.createElement('link');
+            link.id = leafletCssId;
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(link);
+        }
+
+        const leafletJsId = 'leaflet-js';
+        if (!document.getElementById(leafletJsId)) {
+            const script = document.createElement('script');
+            script.id = leafletJsId;
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.onload = () => {
+                const lat = 13.0827;
+                const lng = 80.2707;
+                initMap(lat, lng);
+            };
+            document.head.appendChild(script);
+        } else if ((window as any).L) {
+            const lat = 13.0827;
+            const lng = 80.2707;
+            initMap(lat, lng);
+        }
+
+        return () => {
+            if ((window as any)._profileMap) {
+                (window as any)._profileMap.remove();
+                (window as any)._profileMap = null;
+            }
+        };
+    }, []);
+
+    const handleLocateMe = () => {
+        if (!navigator.geolocation) {
+            toast({ title: "Not Supported", description: "Geolocation is not supported by your browser.", variant: "destructive" });
+            return;
+        }
+
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const { latitude, longitude } = position.coords;
+            if (mapInstance && mapMarker) {
+                mapInstance.setView([latitude, longitude], 15);
+                mapMarker.setLatLng([latitude, longitude]);
+            } else {
+                initMap(latitude, longitude);
+            }
+
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                const data = await response.json();
+                if (data && data.address) {
+                    const addr = data.address;
+                    const road = addr.road || addr.suburb || addr.neighbourhood || addr.amenity || '';
+                    const city = addr.city || addr.town || addr.village || '';
+                    const state = addr.state || '';
+                    const pincode = addr.postcode || '';
+
+                    setUserAddress(prev => ({
+                        ...prev,
+                        addressLine1: road || "Located Address",
+                        city: city,
+                        state: state,
+                        pincode: pincode.replace(/\s/g, '')
+                    }));
+                    toast({ title: "Location Found", description: `Detected: ${city}, ${state}` });
+                }
+            } catch (e) {
+                console.error("Geocoding failed:", e);
+                toast({ title: "Detection Warning", description: "Located coordinates but failed to fetch address details." });
+            } finally {
+                setLocating(false);
+            }
+        }, (error) => {
+            console.error("Geolocation error:", error);
+            toast({ title: "Location Denied", description: "Enable GPS/location permissions or enter address manually.", variant: "destructive" });
+            setLocating(false);
+        });
+    };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -178,12 +373,55 @@ export function ProfilePage() {
             const response = await apiClient.patch("/users/profile", {
                 name: profile.full_name,
                 phone: profile.phone ? profile.phone.replace(/\D/g, '') : null,
-                // address: profile.address, // Removed: Not supported by backend schema
                 avatarUrl: profile.avatar_url,
             });
 
             if (!response.data.success) {
                 throw new Error(response.data.message || "Failed to update profile");
+            }
+
+            // Save address via addresses API if populated
+            if (userAddress.addressLine1 || userAddress.city || userAddress.state || userAddress.pincode) {
+                if (!userAddress.addressLine1 || !userAddress.city || !userAddress.state || !userAddress.pincode) {
+                    toast({
+                        title: "Validation Error",
+                        description: "Please fill in all required address fields (Address Line 1, City, State, Pincode).",
+                        variant: "destructive"
+                    });
+                    setSaving(false);
+                    return;
+                }
+
+                if (!/^[1-9][0-9]{5}$/.test(userAddress.pincode)) {
+                    toast({
+                        title: "Validation Error",
+                        description: "Pincode must be a valid 6-digit Indian pincode.",
+                        variant: "destructive"
+                    });
+                    setSaving(false);
+                    return;
+                }
+
+                const addressPayload = {
+                    label: "Default Shipping",
+                    fullName: profile.full_name || "Default Recipient",
+                    phone: profile.phone || "0000000000",
+                    addressLine1: userAddress.addressLine1,
+                    addressLine2: userAddress.addressLine2 || "",
+                    city: userAddress.city,
+                    state: userAddress.state,
+                    pincode: userAddress.pincode,
+                    isDefault: true,
+                };
+
+                if (userAddress.id) {
+                    await apiClient.patch(`/users/addresses/${userAddress.id}`, addressPayload);
+                } else {
+                    const res = await apiClient.post('/users/addresses', addressPayload);
+                    if (res.data && res.data.id) {
+                        setUserAddress(prev => ({ ...prev, id: res.data.id }));
+                    }
+                }
             }
 
             await refreshProfile();
@@ -217,6 +455,22 @@ export function ProfilePage() {
                 avatar_url: userProfile.avatar_url || "",
             });
             setAvatarPreview(userProfile.avatar_url || null);
+
+            // Re-fetch address
+            apiClient.get('/users/addresses').then(res => {
+                if (res.data && res.data.length > 0) {
+                    const defaultAddr = res.data.find((addr: any) => addr.isDefault) || res.data[0];
+                    setUserAddress({
+                        id: defaultAddr.id || "",
+                        addressLine1: defaultAddr.addressLine1 || "",
+                        addressLine2: defaultAddr.addressLine2 || "",
+                        city: defaultAddr.city || "",
+                        state: defaultAddr.state || "",
+                        pincode: defaultAddr.pincode || "",
+                    });
+                }
+            }).catch(e => console.error("Error reverting address:", e));
+
             toast({
                 title: "Changes discarded",
                 description: "Your profile has been reset to its previous state.",
@@ -386,19 +640,97 @@ export function ProfilePage() {
                                     Required for order updates via SMS
                                 </p>
                             </div>
+                            <div className="space-y-4 pt-4 border-t">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-base font-semibold flex items-center gap-2">
+                                        <MapPin className="h-4 w-4 text-primary" />
+                                        Shipping Address & Delivery Location
+                                    </h3>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleLocateMe}
+                                        disabled={locating}
+                                        className="h-8 gap-1.5 text-xs border-primary/30 text-primary hover:bg-primary/5 hover:text-primary transition-all font-semibold"
+                                    >
+                                        {locating ? (
+                                            <>Locating...</>
+                                        ) : (
+                                            <>Locate Me</>
+                                        )}
+                                    </Button>
+                                </div>
 
-                            <div>
-                                <Label htmlFor="address" className="responsive-label">Shipping address</Label>
-                                <div className="relative">
-                                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                    <Textarea
-                                        id="address"
-                                        value={profile.address}
-                                        onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                                        placeholder="Complete shipping address with pincode"
-                                        className="pl-10 min-h-[80px] resize-none responsive-body"
-                                        rows={3}
-                                    />
+                                {/* Leaflet Map container */}
+                                <div className="relative group overflow-hidden rounded-xl border border-border bg-muted/10">
+                                    <div id="profile-map" className="h-[200px] w-full z-10" />
+                                    <div className="absolute bottom-2 left-2 z-[1000] bg-background/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] text-muted-foreground font-semibold border shadow-sm select-none">
+                                        Click map or drag marker to pinpoint location
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div>
+                                        <Label htmlFor="addressLine1" className="responsive-label text-xs">Address Line 1 (Street, Building, Area) *</Label>
+                                        <Input
+                                            id="addressLine1"
+                                            value={userAddress.addressLine1}
+                                            onChange={(e) => setUserAddress({ ...userAddress, addressLine1: e.target.value })}
+                                            placeholder="e.g. 123 Main Street"
+                                            className="h-9 text-sm"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="addressLine2" className="responsive-label text-xs">Address Line 2 (Apartment, Suite, Landmark)</Label>
+                                        <Input
+                                            id="addressLine2"
+                                            value={userAddress.addressLine2}
+                                            onChange={(e) => setUserAddress({ ...userAddress, addressLine2: e.target.value })}
+                                            placeholder="e.g. Near City Mall"
+                                            className="h-9 text-sm"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <div>
+                                            <Label htmlFor="city" className="responsive-label text-xs">City *</Label>
+                                            <Input
+                                                id="city"
+                                                value={userAddress.city}
+                                                onChange={(e) => setUserAddress({ ...userAddress, city: e.target.value })}
+                                                placeholder="City"
+                                                className="h-9 text-sm"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="state" className="responsive-label text-xs">State *</Label>
+                                            <Input
+                                                id="state"
+                                                value={userAddress.state}
+                                                onChange={(e) => setUserAddress({ ...userAddress, state: e.target.value })}
+                                                placeholder="State"
+                                                className="h-9 text-sm"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="pincode" className="responsive-label text-xs">Pincode *</Label>
+                                            <Input
+                                                id="pincode"
+                                                maxLength={6}
+                                                value={userAddress.pincode}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                                                    setUserAddress({ ...userAddress, pincode: val });
+                                                }}
+                                                placeholder="6-digit pincode"
+                                                className="h-9 text-sm font-mono tracking-wider"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

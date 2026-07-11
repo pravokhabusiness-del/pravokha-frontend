@@ -209,16 +209,70 @@ export function ProductDetailPage() {
         checkWishlistStatus();
     }, [product, user]);
 
-    // Auto-fill delivery pincode from user profile on mount
+    const [pdpAddress, setPdpAddress] = useState({
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        pincode: "",
+    });
+    const [mapInstance, setMapInstance] = useState<any>(null);
+    const [mapMarker, setMapMarker] = useState<any>(null);
+    const [locating, setLocating] = useState(false);
+    const [showMapForm, setShowMapForm] = useState(false);
+
+    // Auto-fill delivery pincode and address from profile/storage on mount
     useEffect(() => {
-        if (!user) return;
-        // Try to get saved address pincode from user context or localStorage
-        const savedPincode = localStorage.getItem('deliveryPincode');
-        if (savedPincode && /^[1-9][0-9]{5}$/.test(savedPincode)) {
-            setDeliveryPincode(savedPincode);
-            setInputPincode(savedPincode);
-            applyPincode(savedPincode, false);
-        }
+        const loadSavedAddress = async () => {
+            try {
+                // Check if we have one in localStorage first
+                const savedPin = localStorage.getItem('deliveryPincode');
+                const savedCity = localStorage.getItem('deliveryCity');
+                const savedAddr = localStorage.getItem('deliveryAddress');
+                if (savedPin) {
+                    setDeliveryPincode(savedPin);
+                    setInputPincode(savedPin);
+                    setDeliveryCity(savedCity || "Your Location");
+                    setDeliveryEstimate("Delivery available to this area");
+                    setPdpAddress({
+                        addressLine1: savedAddr || "",
+                        addressLine2: "",
+                        city: savedCity || "",
+                        state: localStorage.getItem('deliveryState') || "",
+                        pincode: savedPin,
+                    });
+                    return;
+                }
+
+                // Otherwise fetch from database if logged in
+                if (user) {
+                    const res = await apiClient.get('/users/addresses');
+                    if (res.data && res.data.length > 0) {
+                        const defaultAddr = res.data.find((addr: any) => addr.isDefault) || res.data[0];
+                        setDeliveryPincode(defaultAddr.pincode);
+                        setInputPincode(defaultAddr.pincode);
+                        setDeliveryCity(defaultAddr.city);
+                        setDeliveryEstimate("Delivery available to your saved address");
+                        setPdpAddress({
+                            addressLine1: defaultAddr.addressLine1 || "",
+                            addressLine2: defaultAddr.addressLine2 || "",
+                            city: defaultAddr.city || "",
+                            state: defaultAddr.state || "",
+                            pincode: defaultAddr.pincode || "",
+                        });
+
+                        localStorage.setItem('deliveryPincode', defaultAddr.pincode);
+                        localStorage.setItem('deliveryCity', defaultAddr.city);
+                        localStorage.setItem('deliveryAddress', defaultAddr.addressLine1);
+                        localStorage.setItem('deliveryState', defaultAddr.state || "");
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load saved address in PDP:", e);
+            }
+        };
+
+        loadSavedAddress();
     }, [user]);
 
     // Mock pincode lookup — returns city name & delivery estimate
@@ -256,8 +310,198 @@ export function ProductDetailPage() {
 
             if (saveToStorage) {
                 localStorage.setItem('deliveryPincode', pin);
+                localStorage.setItem('deliveryCity', city);
             }
         }, 600);
+    };
+
+    const initPdpMap = (lat: number, lng: number) => {
+        const L = (window as any).L;
+        if (!L) return;
+
+        const mapEl = document.getElementById('pdp-map');
+        if (!mapEl) return;
+
+        if ((window as any)._pdpMap) {
+            (window as any)._pdpMap.remove();
+        }
+
+        const map = L.map('pdp-map').setView([lat, lng], 13);
+        (window as any)._pdpMap = map;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        setMapMarker(marker);
+        setMapInstance(map);
+
+        const handleGeocode = async (coords: { lat: number; lng: number }) => {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`);
+                const data = await response.json();
+                if (data && data.address) {
+                    const addr = data.address;
+                    const road = addr.road || addr.suburb || addr.neighbourhood || addr.amenity || '';
+                    const city = addr.city || addr.town || addr.village || '';
+                    const state = addr.state || '';
+                    const pincode = addr.postcode || '';
+
+                    setPdpAddress(prev => ({
+                        ...prev,
+                        addressLine1: road || prev.addressLine1 || "Located Address",
+                        city: city || prev.city,
+                        state: state || prev.state,
+                        pincode: pincode.replace(/\s/g, '') || prev.pincode
+                    }));
+                }
+            } catch (e) {
+                console.error("Geocoding failed:", e);
+            }
+        };
+
+        marker.on('dragend', () => {
+            handleGeocode(marker.getLatLng());
+        });
+
+        map.on('click', (e: any) => {
+            marker.setLatLng(e.latlng);
+            handleGeocode(e.latlng);
+        });
+    };
+
+    // Load Leaflet dynamically when showMapForm is opened
+    useEffect(() => {
+        if (!showMapForm) return;
+
+        const cssId = 'leaflet-css';
+        if (!document.getElementById(cssId)) {
+            const link = document.createElement('link');
+            link.id = cssId;
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(link);
+        }
+
+        const jsId = 'leaflet-js';
+        if (!document.getElementById(jsId)) {
+            const script = document.createElement('script');
+            script.id = jsId;
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.onload = () => {
+                initPdpMap(13.0827, 80.2707);
+            };
+            document.head.appendChild(script);
+        } else if ((window as any).L) {
+            setTimeout(() => initPdpMap(13.0827, 80.2707), 100);
+        }
+
+        return () => {
+            if ((window as any)._pdpMap) {
+                (window as any)._pdpMap.remove();
+                (window as any)._pdpMap = null;
+            }
+        };
+    }, [showMapForm]);
+
+    const handleLocateMe = () => {
+        if (!navigator.geolocation) {
+            toast({ title: "Not Supported", description: "Geolocation is not supported by your browser.", variant: "destructive" });
+            return;
+        }
+
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const { latitude, longitude } = position.coords;
+            if (mapInstance && mapMarker) {
+                mapInstance.setView([latitude, longitude], 15);
+                mapMarker.setLatLng([latitude, longitude]);
+            } else {
+                initPdpMap(latitude, longitude);
+            }
+
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                const data = await response.json();
+                if (data && data.address) {
+                    const addr = data.address;
+                    const road = addr.road || addr.suburb || addr.neighbourhood || addr.amenity || '';
+                    const city = addr.city || addr.town || addr.village || '';
+                    const state = addr.state || '';
+                    const pincode = addr.postcode || '';
+
+                    setPdpAddress(prev => ({
+                        ...prev,
+                        addressLine1: road || "Located Address",
+                        city: city,
+                        state: state,
+                        pincode: pincode.replace(/\s/g, '')
+                    }));
+                }
+            } catch (e) {
+                console.error("Geocoding failed:", e);
+            } finally {
+                setLocating(false);
+            }
+        }, (err) => {
+            console.error(err);
+            toast({ title: "Location Denied", description: "Enable location permissions or enter address manually.", variant: "destructive" });
+            setLocating(false);
+        });
+    };
+
+    const handleSavePdpAddress = async () => {
+        if (!pdpAddress.addressLine1 || !pdpAddress.city || !pdpAddress.state || !pdpAddress.pincode) {
+            toast({ title: "Validation Error", description: "All required fields must be filled.", variant: "destructive" });
+            return;
+        }
+
+        if (!/^[1-9][0-9]{5}$/.test(pdpAddress.pincode)) {
+            toast({ title: "Validation Error", description: "Pincode must be 6 digits.", variant: "destructive" });
+            return;
+        }
+
+        setDeliveryPincode(pdpAddress.pincode);
+        setInputPincode(pdpAddress.pincode);
+        setDeliveryCity(pdpAddress.city);
+        setDeliveryEstimate("Delivery available to this address");
+        setShowMapForm(false);
+
+        localStorage.setItem('deliveryPincode', pdpAddress.pincode);
+        localStorage.setItem('deliveryCity', pdpAddress.city);
+        localStorage.setItem('deliveryAddress', pdpAddress.addressLine1);
+        localStorage.setItem('deliveryState', pdpAddress.state);
+
+        if (user) {
+            try {
+                const res = await apiClient.get('/users/addresses');
+                const defaultAddr = res.data && res.data.length > 0
+                    ? res.data.find((addr: any) => addr.isDefault) || res.data[0]
+                    : null;
+
+                const payload = {
+                    label: "Default Shipping",
+                    fullName: user.name || "Default Recipient",
+                    phone: user.phone || "0000000000",
+                    addressLine1: pdpAddress.addressLine1,
+                    addressLine2: pdpAddress.addressLine2 || "",
+                    city: pdpAddress.city,
+                    state: pdpAddress.state,
+                    pincode: pdpAddress.pincode,
+                    isDefault: true
+                };
+
+                if (defaultAddr) {
+                    await apiClient.patch(`/users/addresses/${defaultAddr.id}`, payload);
+                } else {
+                    await apiClient.post('/users/addresses', payload);
+                }
+                toast({ title: "Address Saved", description: "Your address has been saved to your profile." });
+            } catch (err) {
+                console.error("Failed to save PDP address to database:", err);
+            }
+        }
     };
 
     // Fetch product from database
@@ -430,7 +674,7 @@ export function ProductDetailPage() {
         : 0;
 
     const handleShare = async () => {
-        const url = `${window.location.origin}/product/${product.slug}`;
+        const url = `${window.location.origin}/product/${product.slug || product.id}`;
         const shareData = { title: product.title, text: product.description || product.title, url };
         try {
             if ((navigator as any).share) {
@@ -780,7 +1024,7 @@ export function ProductDetailPage() {
                             <Button
                                 size="lg"
                                 variant="outline"
-                                className="col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform justify-center"
+                                className="col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform justify-center border-2 border-primary/40 text-primary hover:bg-primary/5 hover:border-primary font-bold"
                                 onClick={handleShare}
                                 aria-label="Share product"
                             >
@@ -789,10 +1033,12 @@ export function ProductDetailPage() {
                             </Button>
                             <Button
                                 size="lg"
-                                variant={isInWishlist ? "default" : "outline"}
+                                variant="outline"
                                 className={cn(
-                                    "col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform group justify-center gsap-scale-in",
-                                    isInWishlist && "bg-red-500 hover:bg-red-600 text-white border-red-500"
+                                    "col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform group justify-center gsap-scale-in border-2 font-bold",
+                                    isInWishlist 
+                                        ? "border-red-500 text-red-500 bg-red-500/10 hover:bg-red-500/20" 
+                                        : "border-primary/40 text-primary hover:bg-primary/5 hover:border-primary"
                                 )}
                                 onClick={async () => {
                                     if (!product) return;
@@ -844,7 +1090,7 @@ export function ProductDetailPage() {
                                 <Heart
                                     className={cn(
                                         "h-5 w-5 transition-colors",
-                                        isInWishlist ? "fill-white text-white" : "group-hover:fill-red-500 group-hover:text-red-500"
+                                        isInWishlist ? "fill-red-500 text-red-500" : "group-hover:fill-red-500 group-hover:text-red-500"
                                     )}
                                 />
                                 {isInWishlist ? "In Wishlist" : "Wishlist"}
@@ -858,20 +1104,21 @@ export function ProductDetailPage() {
                                     <MapPin className="h-4 w-4 text-primary" />
                                     <span className="text-sm font-semibold">Delivery Location</span>
                                 </div>
-                                {deliveryPincode && !editingPincode && (
-                                    <button
-                                        onClick={() => { setEditingPincode(true); setInputPincode(deliveryPincode); }}
-                                        className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
-                                    >
-                                        <Edit2 size={11} />
-                                        Change
-                                    </button>
-                                )}
+                                <button
+                                    onClick={() => {
+                                        setShowMapForm(!showMapForm);
+                                        setEditingPincode(!showMapForm);
+                                    }}
+                                    className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+                                >
+                                    <Edit2 size={11} />
+                                    {showMapForm ? "Cancel" : "Change / Enter Address"}
+                                </button>
                             </div>
 
                             {/* Current delivery info */}
-                            {deliveryPincode && !editingPincode ? (
-                                <div className="space-y-1">
+                            {deliveryPincode && !showMapForm && (
+                                <div className="space-y-1 bg-background/40 p-3 rounded-lg border border-border/30">
                                     <div className="flex items-center gap-2">
                                         <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                                         <span className="text-sm font-medium">
@@ -879,53 +1126,101 @@ export function ProductDetailPage() {
                                             <span className="text-muted-foreground ml-1">- {deliveryPincode}</span>
                                         </span>
                                     </div>
+                                    {pdpAddress.addressLine1 && (
+                                        <p className="text-xs text-muted-foreground pl-6 truncate">
+                                            {pdpAddress.addressLine1}
+                                        </p>
+                                    )}
                                     {deliveryEstimate && (
-                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium pl-6">
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium pl-6 mt-0.5">
                                             {deliveryEstimate}
                                         </p>
                                     )}
                                 </div>
-                            ) : (
-                                /* Pincode input */
+                            )}
+
+                            {/* Interactive Address Map & Manual form */}
+                            {showMapForm && (
+                                <div className="space-y-4 pt-2 border-t border-border/40 animate-in fade-in-50 duration-250">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs text-muted-foreground">Pin your address on the map or enter details below:</p>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleLocateMe}
+                                            disabled={locating}
+                                            className="h-7 gap-1 text-[10px] px-2"
+                                        >
+                                            {locating ? "Locating..." : "Locate Me"}
+                                        </Button>
+                                    </div>
+
+                                    {/* Map container */}
+                                    <div className="relative overflow-hidden rounded-lg border border-border bg-muted/10">
+                                        <div id="pdp-map" className="h-[150px] w-full z-10" />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <div>
+                                            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Address Line 1 *</Label>
+                                            <Input
+                                                value={pdpAddress.addressLine1}
+                                                onChange={(e) => setPdpAddress({ ...pdpAddress, addressLine1: e.target.value })}
+                                                placeholder="Street Address, Area"
+                                                className="h-8 text-xs"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div>
+                                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">City *</Label>
+                                                <Input
+                                                    value={pdpAddress.city}
+                                                    onChange={(e) => setPdpAddress({ ...pdpAddress, city: e.target.value })}
+                                                    placeholder="City"
+                                                    className="h-8 text-xs"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">State *</Label>
+                                                <Input
+                                                    value={pdpAddress.state}
+                                                    onChange={(e) => setPdpAddress({ ...pdpAddress, state: e.target.value })}
+                                                    placeholder="State"
+                                                    className="h-8 text-xs"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Pincode *</Label>
+                                                <Input
+                                                    maxLength={6}
+                                                    value={pdpAddress.pincode}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                                                        setPdpAddress({ ...pdpAddress, pincode: val });
+                                                    }}
+                                                    placeholder="Pincode"
+                                                    className="h-8 text-xs font-mono"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            onClick={handleSavePdpAddress}
+                                            className="w-full h-8 text-xs mt-2 font-bold"
+                                        >
+                                            Confirm Delivery Location
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!deliveryPincode && !showMapForm && (
                                 <div className="space-y-2">
                                     <p className="text-xs text-muted-foreground">
-                                        Enter pincode to check delivery availability
+                                        No delivery location selected. Click "Change / Enter Address" to check availability.
                                     </p>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            maxLength={6}
-                                            placeholder="Enter 6-digit pincode"
-                                            value={inputPincode}
-                                            onChange={(e) => {
-                                                const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                                                setInputPincode(val);
-                                                setPincodeError('');
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') applyPincode(inputPincode);
-                                            }}
-                                            className="flex-1 h-9 px-3 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono tracking-widest"
-                                        />
-                                        <button
-                                            onClick={() => applyPincode(inputPincode)}
-                                            disabled={checkingPincode || inputPincode.length < 6}
-                                            className="h-9 px-4 text-xs font-bold bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-                                        >
-                                            {checkingPincode ? (
-                                                <><Loader2 size={12} className="animate-spin" /> Checking</>
-                                            ) : 'Check'}
-                                        </button>
-                                    </div>
-                                    {pincodeError && (
-                                        <p className="text-xs text-red-500 font-medium">{pincodeError}</p>
-                                    )}
-                                    {!deliveryPincode && !editingPincode && (
-                                        <p className="text-[10px] text-muted-foreground/70">
-                                            Standard delivery: 3-5 business days across India
-                                        </p>
-                                    )}
                                 </div>
                             )}
                         </div>

@@ -163,8 +163,6 @@ export default function UserSettings() {
             <div className="w-full overflow-x-auto pb-0 scrollbar-hide">
               <TabsList className="w-full justify-start md:justify-center bg-transparent gap-2 h-auto p-0 inline-flex">
                 <TabItem value="profile" icon={<User className="h-4 w-4" />} label="Profile" />
-                <TabItem value="addresses" icon={<MapPin className="h-4 w-4" />} label="Addresses" />
-                <TabItem value="payment" icon={<CreditCard className="h-4 w-4" />} label="Payment" />
                 <TabItem value="notifications" icon={<Bell className="h-4 w-4" />} label="Alerts" />
                 <TabItem value="security" icon={<Shield className="h-4 w-4" />} label="Security" />
                 <TabItem value="history" icon={<History className="h-4 w-4" />} label="History" />
@@ -181,20 +179,6 @@ export default function UserSettings() {
                 loading={loading}
                 strength={strength}
               />
-            </TabsContent>
-
-            <TabsContent value="addresses" className="space-y-6 mt-0">
-              <AddressesManager
-                addresses={addresses}
-                addAddress={addAddress}
-                updateAddress={updateAddress}
-                deleteAddress={deleteAddress}
-                loading={loading}
-              />
-            </TabsContent>
-
-            <TabsContent value="payment" className="space-y-6 mt-0">
-              <PaymentMethods payments={payments} addPaymentMethod={addPaymentMethod} deletePaymentMethod={deletePaymentMethod} />
             </TabsContent>
 
             <TabsContent value="notifications" className="space-y-6 mt-0">

@@ -67,7 +67,24 @@ export default function SellerPayouts() {
   }, [user]);
 
   const handleWithdrawal = async () => {
-    if (!user || payoutStats.pendingBalance < payoutStats.minPayoutAmount) return;
+    if (!user) return;
+    if (!isVerified) {
+      toast({
+        title: "Compliance Verification Required",
+        description: "Please complete compliance verification in Settings to unlock payout requests.",
+        variant: "destructive"
+      });
+      return;
+    }
+    const minPayout = payoutStats.minPayoutAmount || 500;
+    if (payoutStats.pendingBalance < minPayout) {
+      toast({
+        title: "Payout Minimum Not Met",
+        description: `Minimum payout request is INR ${minPayout}. Your current pending balance is INR ${payoutStats.pendingBalance.toFixed(2)}.`,
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       setIsRequesting(true);
@@ -77,7 +94,10 @@ export default function SellerPayouts() {
         amount: Math.floor(payoutStats.pendingBalance)
       });
 
-      alert("Payout request submitted successfully! 🎉");
+      toast({
+        title: "Payout Requested",
+        description: "Your payout request has been submitted successfully! 🎉"
+      });
       fetchPayoutData();
     } catch (error: any) {
       console.error("Payout failed:", error);
@@ -145,7 +165,22 @@ export default function SellerPayouts() {
   };
 
   const exportTransactions = () => {
-    if (transactions.length === 0) return;
+    if (!isVerified) {
+      toast({
+        title: "Verification Required",
+        description: "Please complete compliance verification in Settings to download account statements.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (transactions.length === 0) {
+      toast({
+        title: "No Transactions Found",
+        description: "There are no ledger transactions to export for this account.",
+        variant: "destructive"
+      });
+      return;
+    }
     const headers = ["Order ID", "Date", "Order Amount", "Marketplace Fee", "Net Earnings", "Status"];
     const rows = transactions.map(t => [
       t.order_id,
@@ -168,7 +203,22 @@ export default function SellerPayouts() {
   };
 
   const exportTaxReport = () => {
-    if (transactions.length === 0) return;
+    if (!isVerified) {
+      toast({
+        title: "Verification Required",
+        description: "Please complete compliance verification in Settings to download tax reports.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (transactions.length === 0) {
+      toast({
+        title: "No Transactions Found",
+        description: "There are no transactions to generate a tax report.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const GST_RATE = 0.18;
     const FEE_RATE = MARKETPLACE_FEE_PERCENTAGE;
@@ -282,7 +332,7 @@ export default function SellerPayouts() {
             variant="default"
             className="flex-1 sm:flex-none h-11 sm:h-12 px-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm rounded-xl border border-emerald-500/20 transition-all active:scale-95 font-semibold"
             onClick={handleWithdrawal}
-            disabled={!isVerified || payoutStats.pendingBalance < payoutStats.minPayoutAmount || isRequesting}
+            disabled={isRequesting}
           >
             {isRequesting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wallet className="h-4 w-4 mr-2" />}
             Request payout
@@ -290,16 +340,14 @@ export default function SellerPayouts() {
           <Button
             variant="outline"
             className="flex-1 sm:flex-none h-11 sm:h-12 px-6 border-border/60 rounded-xl hover:bg-muted transition-all active:scale-95 font-semibold"
-            disabled={!isVerified || transactions.length === 0}
             onClick={exportTransactions}
           >
-            {!isVerified ? <Lock className="h-4 w-4 mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+            <Download className="h-4 w-4 mr-2" />
             Statement
           </Button>
           <Button
             variant="outline"
             className="flex-1 sm:flex-none h-11 sm:h-12 px-6 border-indigo-200 bg-indigo-50/50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/20 shadow-sm transition-all active:scale-95 disabled:opacity-40 font-semibold"
-            disabled={!isVerified || transactions.length === 0}
             onClick={exportTaxReport}
           >
             <Calculator className="h-4 w-4 mr-2" />

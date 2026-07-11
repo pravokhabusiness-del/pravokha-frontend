@@ -329,27 +329,7 @@ export default function SellerProductForm() {
 
         setIsSaving(true);
         try {
-            // Restricted Field Check (Editing existing product as non-admin)
-            if (id && !isAdmin && originalData) {
-                const isTitleChanged = formData.title !== originalData.title;
-                const isDescChanged = formData.description !== originalData.description;
 
-                // Compare Subcategory ID
-                const originalSubId = originalData.subcategory?.id || originalData.subcategory_id;
-                const isSubChanged = formData.selectedSubcategoryId !== originalSubId &&
-                    // Handle case where both are falsy/null
-                    !(!formData.selectedSubcategoryId && !originalSubId);
-
-                // Compare Category Slug/ID (Robust fallback)
-                const origCatSlug = originalData.category?.slug || originalData.category || "";
-                const isCatChanged = formData.category !== origCatSlug;
-
-                if (isTitleChanged || isDescChanged || isSubChanged || isCatChanged) {
-                    setIsRequestDialogOpen(true);
-                    setIsSaving(false);
-                    return;
-                }
-            }
 
             // 1. Prepare Product Data
             let productId = id;
@@ -484,13 +464,7 @@ export default function SellerProductForm() {
             } else if (isNaN(Number(formData.weight)) || Number(formData.weight) <= 0) {
                 newErrors.weight = "Weight must be a positive number.";
             }
-            // Only require subcategory if there are subcategories for the selected category
-            const hasSubcategories = dbSubcategories.some(
-                s => s.categoryId === formData.selectedCategoryId || s.parentId === formData.selectedCategoryId
-            );
-            if (hasSubcategories && !formData.selectedSubcategoryId) {
-                newErrors.subcategory = "Please select a subcategory.";
-            }
+
 
             if (!formData.description.trim()) newErrors.description = "Product description is required.";
             else if (formData.description.length < 10) newErrors.description = "Description should be at least 10 characters.";

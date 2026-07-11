@@ -60,6 +60,43 @@ const safeFormatDate = (dateValue: any, formatStr: string, fallback: string = 'N
   return format(date, formatStr);
 };
 
+// Helper to parse complex shipping address fields robustly
+function parseShippingAddress(addressInput: any) {
+  if (!addressInput) {
+    return { address: 'N/A', city: '', pincode: '', name: '', phone: '' };
+  }
+  if (typeof addressInput === 'object') {
+    return {
+      address: addressInput.address || addressInput.street || 'N/A',
+      city: addressInput.city || '',
+      pincode: addressInput.pincode || '',
+      name: addressInput.name || addressInput.fullName || '',
+      phone: addressInput.phone || ''
+    };
+  }
+  try {
+    if (typeof addressInput === 'string' && (addressInput.trim().startsWith('{') || addressInput.trim().startsWith('['))) {
+      const parsed = JSON.parse(addressInput);
+      return {
+        address: parsed.address || parsed.street || addressInput,
+        city: parsed.city || "",
+        pincode: parsed.pincode || "",
+        name: parsed.name || parsed.fullName || "",
+        phone: parsed.phone || ""
+      };
+    }
+  } catch (e) {
+    // Fallback
+  }
+  return {
+    address: addressInput,
+    city: "",
+    pincode: "",
+    name: "",
+    phone: ""
+  };
+}
+
 interface OrderItem {
   id: string;
   title: string;
@@ -957,17 +994,25 @@ export default function SellerOrderDetail() {
               </div>
               <div className="text-right">
                 <p className="font-bold">Order #: {order.order_number}</p>
-                <p className="text-sm text-muted-foreground">{safeFormatDate(order.created_at, 'MMMM dd, yyyy')}</p>
+                <p className="text-sm text-muted-foreground">Date: {safeFormatDate(order.created_at, 'MMMM dd, yyyy')}</p>
+                <p className="text-xs text-muted-foreground">Time: {safeFormatDate(order.created_at, 'hh:mm a')}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-12 mb-8">
               <div>
                 <p className="text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">Ship To:</p>
-                <p className="font-bold text-lg leading-tight">{order.customer_name}</p>
-                <p className="text-sm mt-2">{order.shipping_address}</p>
-                <p className="text-sm">{order.shipping_city}, {order.shipping_pincode}</p>
-                <p className="text-sm mt-2 font-medium">{order.customer_phone}</p>
+                {(() => {
+                  const addr = parseShippingAddress(order.shipping_address);
+                  return (
+                    <>
+                      <p className="font-bold text-lg leading-tight">{addr.name || order.customer_name}</p>
+                      <p className="text-sm mt-2">{addr.address}</p>
+                      <p className="text-sm">{(addr.city || order.shipping_city || '')} {addr.pincode || order.shipping_pincode || ''}</p>
+                      <p className="text-sm mt-2 font-medium">{addr.phone || order.customer_phone}</p>
+                    </>
+                  );
+                })()}
               </div>
               <div className="text-right">
                 <p className="text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">Sold By:</p>
@@ -1001,7 +1046,56 @@ export default function SellerOrderDetail() {
               </tbody>
             </table>
 
-            <div className="border-t-2 border-black pt-6 flex justify-between items-center">
+            {/* Packing Slip Pricing Summary */}
+            {(() => {
+              const actualTotal = order.total || 0;
+              const shippingCharge = order.shipping_charge || 0;
+              const taxAmount = order.tax_charge || 0;
+              const baseSubtotal = actualTotal - shippingCharge - taxAmount;
+              const gstPercent = baseSubtotal > 0 ? Math.round((taxAmount / baseSubtotal) * 100) : 18;
+
+              const parsedAddr = parseShippingAddress(order.shipping_address);
+              const stateStr = (parsedAddr.city || order.shipping_city || '').toLowerCase();
+              const isLocal = stateStr.includes('tamil nadu') || stateStr.includes('chennai') || stateStr.includes('tn') || !stateStr;
+
+              const halfTax = taxAmount / 2;
+              const cgst = isLocal ? halfTax : 0;
+              const sgst = isLocal ? halfTax : 0;
+              const igst = isLocal ? 0 : taxAmount;
+
+              return (
+                <div className="border-t pt-4 mt-6 flex justify-end">
+                  <div className="w-64 space-y-1.5 text-xs text-right">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal (Tax Excl.):</span>
+                      <span className="font-bold">₹{baseSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                      <span>CGST ({isLocal ? gstPercent/2 : 0}%):</span>
+                      <span>₹{cgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                      <span>SGST ({isLocal ? gstPercent/2 : 0}%):</span>
+                      <span>₹{sgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                      <span>IGST ({isLocal ? 0 : gstPercent}%):</span>
+                      <span>₹{igst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Shipping:</span>
+                      <span className="font-bold">{shippingCharge > 0 ? `₹${shippingCharge.toLocaleString()}` : "FREE"}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-1.5 text-sm">
+                      <span className="font-bold text-[#146B6B]">Total Amount (Tax Incl.):</span>
+                      <span className="font-extrabold text-[#146B6B]">₹{actualTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <div className="border-t-2 border-black pt-6 flex justify-between items-center mt-6">
               <div>
                 <p className="text-[10px] text-muted-foreground italic font-medium">Thank you for shopping with us!</p>
               </div>

@@ -69,7 +69,7 @@ export default function SellerMessages() {
 
     try {
       const { data } = await apiClient.get(`/orders/${orderId}`);
-      setOrderDetails(prev => ({ ...prev, [orderId]: data }));
+      setOrderDetails(prev => ({ ...prev, [orderId]: data?.data || data }));
     } catch (error) {
       console.error('Error fetching order:', error);
     } finally {

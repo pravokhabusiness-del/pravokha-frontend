@@ -134,46 +134,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
                 )}
             </div>
 
-            {formData.selectedCategoryId && (() => {
-                const categorySubcategories = dbSubcategories.filter(
-                    sub => sub.categoryId === formData.selectedCategoryId
-                );
-                if (categorySubcategories.length === 0) return null;
-                return (
-                <div className="grid gap-2">
-                    <Label className={cn(errors.subcategory ? "text-destructive" : "")}>
-                        Subcategory *
-                    </Label>
-                    <Select
-                        value={formData.selectedSubcategoryId}
-                        onValueChange={handleSubcategoryChange}
-                        disabled={isLoadingSubcategories || !formData.selectedCategoryId}
-                    >
-                        <SelectTrigger className={cn(
-                            "text-lg h-12",
-                            errors.subcategory ? "border-destructive focus-visible:ring-destructive" : ""
-                        )}>
-                            <SelectValue placeholder="Select a subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {categorySubcategories.map(sub => (
-                                <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {errors.subcategory && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive font-medium">
-                            {errors.subcategory}
-                        </motion.p>
-                    )}
-                    {subcategoryWarning && !errors.subcategory && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-amber-600 font-medium">
-                            {subcategoryWarning}
-                        </motion.p>
-                    )}
-                </div>
-                );
-            })()}
+            {/* Subcategory hidden for seller */}
             {/* Review Categories Configuration */}
             <div className="grid gap-2">
                 <div className="flex items-center justify-between">

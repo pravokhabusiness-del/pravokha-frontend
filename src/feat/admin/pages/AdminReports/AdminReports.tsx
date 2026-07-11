@@ -32,6 +32,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { apiClient } from "@/infra/api/apiClient";
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from "date-fns";
 import { useAdmin } from "@/core/context/AdminContext";
+import { toast } from "@/shared/hook/use-toast";
 
 import { AdminSkeleton, AdminHeaderSkeleton } from "@/feat/admin/components/AdminSkeleton";
 import { NoResultsFound } from "@/feat/admin/components/NoResultsFound";
@@ -182,6 +183,57 @@ export default function AdminReports() {
     }
   };
 
+  const exportReport = () => {
+    if (salesData.length === 0) {
+      toast({
+        title: "No Data",
+        description: "There is no report data to export for the selected date range.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const headers = ["Date", "Revenue (INR)", "Orders"];
+      const rows = salesData.map(day => [
+        day.name,
+        day.revenue,
+        day.orders
+      ]);
+
+      const csvContent = "\uFEFF" + [
+        ["PRAVOKHA MARKETPLACE ANALYTICS REPORT"],
+        [`Generated on: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`],
+        [`Date Range Filter: ${dateRange}`],
+        [],
+        ["SALES OVER TIME"],
+        headers.join(","),
+        ...rows.map(r => r.join(","))
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Pravokha_Analytics_Report_${format(new Date(), 'yyyy_MM_dd')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Report Exported",
+        description: "Your platform analytics report has been downloaded successfully.",
+      });
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Export Failed",
+        description: "Could not export analytics report.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (adminLoading || loading) {
     return (
       <div className="container max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
@@ -214,6 +266,7 @@ export default function AdminReports() {
           <Button
             variant="outline"
             className="w-full sm:w-auto h-10 rounded-lg border-border/60 bg-card hover:bg-accent font-bold text-xs shadow-sm transition-all duration-300"
+            onClick={exportReport}
           >
             <Download className="mr-2 h-4 w-4" /> Export Report
           </Button>

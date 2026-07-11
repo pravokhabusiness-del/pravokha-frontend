@@ -566,16 +566,13 @@ export default function App() {
                             <ProtectedRoute allowedRoles={["CUSTOMER", "ADMIN", "SUPER_ADMIN"]}>
                               <Suspense fallback={<LoadingFallback />}>
                                 <Routes>
-                                  <Route index element={
-                                    <Suspense fallback={<LoadingFallback />}>
-                                      <UserDashboard />
-                                    </Suspense>
-                                  } />
-                                  <Route path="home" element={<Navigate to="/user" replace />} />
+                                  <Route index element={<Navigate to="account/dashboard" replace />} />
+                                  <Route path="home" element={<Navigate to="account/dashboard" replace />} />
                                   <Route path="account" element={<AccountLayout />}>
-                                    <Route index element={
+                                    <Route index element={<Navigate to="dashboard" replace />} />
+                                    <Route path="dashboard" element={
                                       <Suspense fallback={<LoadingFallback />}>
-                                        <UserAccount />
+                                        <UserDashboard />
                                       </Suspense>
                                     } />
                                     <Route path="profile" element={
@@ -583,14 +580,20 @@ export default function App() {
                                         <Profile />
                                       </Suspense>
                                     } />
-                                    <Route path="addresses" element={
-                                      <Suspense fallback={<LoadingFallback />}>
-                                        <AddressManagement />
-                                      </Suspense>
-                                    } />
+                                    <Route path="addresses" element={<Navigate to="/user/account/profile" replace />} />
                                     <Route path="settings" element={
                                       <Suspense fallback={<LoadingFallback />}>
                                         <UserSettings />
+                                      </Suspense>
+                                    } />
+                                    <Route path="orders" element={
+                                      <Suspense fallback={<LoadingFallback />}>
+                                        <OrderHistory />
+                                      </Suspense>
+                                    } />
+                                    <Route path="orders/:status" element={
+                                      <Suspense fallback={<LoadingFallback />}>
+                                        <OrderHistory />
                                       </Suspense>
                                     } />
                                   </Route>
@@ -599,16 +602,8 @@ export default function App() {
                                       <UserMessages />
                                     </Suspense>
                                   } />
-                                  <Route path="orders" element={
-                                    <Suspense fallback={<LoadingFallback />}>
-                                      <OrderHistory />
-                                    </Suspense>
-                                  } />
-                                  <Route path="orders/:status" element={
-                                    <Suspense fallback={<LoadingFallback />}>
-                                      <OrderHistory />
-                                    </Suspense>
-                                  } />
+                                  <Route path="orders" element={<Navigate to="account/orders" replace />} />
+                                  <Route path="orders/:status" element={<Navigate to="account/orders/:status" replace />} />
                                   <Route path="orders/detail/:orderId" element={
                                     <Suspense fallback={<LoadingFallback />}>
                                       <UserOrderDetail />
