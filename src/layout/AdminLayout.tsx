@@ -347,6 +347,10 @@ export default function AdminLayout() {
                     <p className="w-[200px] truncate text-xs text-muted-foreground">{user?.email}</p>
                   </div>
                 </div>
+                <DropdownMenuItem onClick={() => navigate('/admin/settings')} className="cursor-pointer font-semibold">
+                  <SettingsIcon className="h-4 w-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleLogout()} className="text-destructive cursor-pointer font-bold focus:bg-destructive/10">
                   <LogOutIcon className="h-4 w-4 mr-2" />
                   Logout

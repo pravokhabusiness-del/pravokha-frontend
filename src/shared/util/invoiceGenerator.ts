@@ -368,26 +368,34 @@ export async function generateInvoicePDF(data: InvoiceData) {
     doc.text('Subtotal (Tax Excl.)', sumLabelX, sumY);
     doc.text(formatCurrency(data.subtotal), sumValueX, sumY, { align: 'right' });
 
-    const gstRate = data.subtotal > 0
+    // Standard GST rate for apparel (garments) in India:
+    // 5% for garments priced up to ₹1000, 12% for above ₹1000.
+    // The price calculation already strips 5% tax (divides by 1.05), so we use 5%.
+    // If actual tax data is provided, calculate rate from it.
+    const STANDARD_GST_RATE = 5; // 5% for standard apparel
+    const gstRate = (data.tax > 0 && data.subtotal > 0)
         ? Math.round((data.tax / data.subtotal) * 100)
-        : 18; // Default standard apparel rate
+        : STANDARD_GST_RATE;
 
-    // Calculate CGST, SGST, IGST based on location state.
-    // If state contains 'Tamil Nadu' or code TN, it's intra-state. Else inter-state.
-    const stateStr = (parsedCity || '').toLowerCase(); // Fallback check city if state is blank
+    // Calculate effective tax: use provided tax amount or compute from subtotal at standard rate
+    const effectiveTax = data.tax > 0 ? data.tax : Math.round((data.subtotal * gstRate / 100) * 100) / 100;
+
+    // Determine if intra-state (CGST + SGST) or inter-state (IGST)
+    // Tamil Nadu is intra-state for Pravokha; all others use IGST
+    const stateStr = (parsedCity || '').toLowerCase();
     const isLocal = stateStr.includes('tamil nadu') || stateStr.includes('chennai') || stateStr.includes('tn') || !stateStr;
 
-    const halfTax = data.tax / 2;
+    const halfTax = effectiveTax / 2;
     const cgstAmount = isLocal ? halfTax : 0;
     const sgstAmount = isLocal ? halfTax : 0;
-    const igstAmount = isLocal ? 0 : data.tax;
+    const igstAmount = isLocal ? 0 : effectiveTax;
 
     sumY += 6;
-    doc.text(`CGST (${isLocal ? gstRate/2 : 0}%)`, sumLabelX, sumY);
+    doc.text(`CGST (${isLocal ? gstRate / 2 : 0}%)`, sumLabelX, sumY);
     doc.text(formatCurrency(cgstAmount), sumValueX, sumY, { align: 'right' });
 
     sumY += 6;
-    doc.text(`SGST (${isLocal ? gstRate/2 : 0}%)`, sumLabelX, sumY);
+    doc.text(`SGST (${isLocal ? gstRate / 2 : 0}%)`, sumLabelX, sumY);
     doc.text(formatCurrency(sgstAmount), sumValueX, sumY, { align: 'right' });
 
     sumY += 6;

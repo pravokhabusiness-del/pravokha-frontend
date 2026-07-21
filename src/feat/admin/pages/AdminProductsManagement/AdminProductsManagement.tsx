@@ -334,11 +334,10 @@ export default function AdminProductsManagement() {
             <Button
               onClick={handleExportCSV}
               variant="outline"
-              className="flex-none h-10 px-3 rounded-xl border-border/60 bg-card font-medium text-xs shadow-sm"
+              className="flex-none h-10 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white hover:text-white border-none font-bold text-xs shadow-md shadow-emerald-500/10 flex items-center gap-1.5"
             >
-              <Download className="h-3.5 w-3.5 sm:mr-2" />
+              <Download className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Export CSV</span>
-              <span className="sm:hidden">CSV</span>
             </Button>
             {can('APPROVE_PRODUCT') && (
               <Button

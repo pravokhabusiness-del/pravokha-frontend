@@ -34,7 +34,7 @@ import {
   AlertDialogTitle,
 } from "@/ui/AlertDialog";
 import { toast } from "@/shared/hook/use-toast";
-import { ArrowLeft, Package, Truck, MapPin, Calendar, CreditCard, User, Trash2, RotateCcw, XCircle } from "lucide-react";
+import { ArrowLeft, Package, Truck, MapPin, Calendar, CreditCard, User, Trash2, RotateCcw, XCircle, Download, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { getMediaUrl } from "@/lib/utils";
 
@@ -269,6 +269,41 @@ export default function AdminOrders() {
     }
   };
 
+  const exportOrders = () => {
+    if (orders.length === 0) {
+      toast({ title: "No Data", description: "No orders to export.", variant: "destructive" });
+      return;
+    }
+    try {
+      const headers = ["Order Number", "Date", "Customer", "Email", "Total (INR)", "Items", "Status", "Payment Status", "Payment Method"];
+      const rows = orders.map(o => [
+        o.order_number,
+        o.created_at ? format(new Date(o.created_at), 'dd MMM yyyy') : '',
+        o.customer_name,
+        o.customer_email,
+        o.total,
+        Array.isArray(o.items) ? o.items.length : 0,
+        o.order_status,
+        o.payment_status,
+        o.payment_method || 'Online'
+      ]);
+      const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Orders_Export_${format(new Date(), 'yyyy_MM_dd')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: "Exported", description: "Orders report downloaded successfully." });
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Export Failed", description: "Could not export orders.", variant: "destructive" });
+    }
+  };
+
   if (adminLoading || loading) {
     return <AdminSkeleton variant="table" />;
   }
@@ -299,6 +334,12 @@ export default function AdminOrders() {
                 </p>
               </div>
             </div>
+            <Button
+              onClick={exportOrders}
+              className="flex-none h-9 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 gap-2"
+            >
+              <Download className="h-4 w-4" /> Export Report
+            </Button>
           </div>
         </div>
 

@@ -113,6 +113,7 @@ export function ProductsPage() {
 
     // Fetch products from database with server-side filters
     const { products, loading, error } = useProducts({
+        ids: searchParams.get("ids") || undefined,
         search: searchQuery || undefined,
         category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
         subcategory: selectedSubcategories.length > 0 ? selectedSubcategories[0] : undefined,

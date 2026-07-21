@@ -13,7 +13,7 @@ import { apiClient } from "@/infra/api/apiClient";
 import { useAuth } from "@/core/context/AuthContext";
 import { useAdmin } from "@/core/context/AdminContext";
 import { toast } from "@/shared/hook/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminHeaderSkeleton, AdminKpiSkeleton, AdminTableSkeleton } from "@/feat/admin/components/AdminSkeleton";
 import { NoResultsFound } from "@/feat/admin/components/NoResultsFound";
@@ -738,8 +738,8 @@ export default function AdminTickets() {
 
         {/* Reply Dialog */}
         < Dialog open={showReplyDialog} onOpenChange={setShowReplyDialog} >
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
+          <DialogContent className="w-[95%] max-w-2xl mx-auto rounded-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-card shadow-xl border border-border/40">
+            <DialogHeader className="p-6 pb-4 border-b bg-card">
               <DialogTitle>Reply to ticket #{selectedTicket?.ticket_number}</DialogTitle>
               <DialogDescription className="flex items-center gap-2">
                 {selectedTicket?.subject}
@@ -750,7 +750,7 @@ export default function AdminTickets() {
             </DialogHeader>
 
             {selectedTicket?.evidence_urls && selectedTicket.evidence_urls.length > 0 && (
-              <div className="px-6 py-2 border-b bg-muted/20">
+              <div className="px-6 py-2 border-b bg-muted/20 shrink-0">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
                   <Download className="h-3 w-3" /> Attachments ({selectedTicket.evidence_urls.length})
                 </p>
@@ -781,13 +781,15 @@ export default function AdminTickets() {
             )}
 
             {selectedTicket?.user?.status === 'suspended' && (
-              <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl flex items-start gap-3 mb-4">
-                <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="text-xs font-bold text-rose-800 tracking-wider">Governance alert: Restricted entity</p>
-                  <p className="text-[11px] text-rose-700 leading-relaxed font-medium">
-                    This user is currently <span className="font-black text-rose-900">suspended</span>. Proceed with caution. Verify identity and compliance requirements before resolving appeals or restoring access.
-                  </p>
+              <div className="px-6 pt-4 shrink-0">
+                <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-rose-800 tracking-wider">Governance alert: Restricted entity</p>
+                    <p className="text-[11px] text-rose-700 leading-relaxed font-medium">
+                      This user is currently <span className="font-black text-rose-900">suspended</span>. Proceed with caution. Verify identity and compliance requirements before resolving appeals or restoring access.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -805,7 +807,7 @@ export default function AdminTickets() {
                     <div key={msg.id} className={cn("flex gap-3", isCurrentUser ? "flex-row-reverse" : "flex-row")}>
                       <Avatar className="h-8 w-8 shrink-0 border-2 border-background shadow-sm">
                         {msg.sender?.avatar_url && (
-                          <AvatarImage src={msg.sender.avatar_url} />
+                          <AvatarImage src={getMediaUrl(msg.sender.avatar_url)} />
                         )}
                         <AvatarFallback className={cn("text-[10px] font-bold", isCurrentUser ? "bg-primary text-primary-foreground" : "bg-muted")}>
                           {msg.sender?.full_name?.[0] || (isCurrentUser ? 'A' : 'S')}
@@ -838,20 +840,21 @@ export default function AdminTickets() {
               )}
             </div>
 
-            <div className="space-y-4">
+            <div className="p-6 pt-0 space-y-4 shrink-0">
               <Textarea
                 placeholder="Type your reply..."
                 value={replyMessage}
                 onChange={(e) => setReplyMessage(e.target.value)}
                 rows={4}
+                className="bg-background rounded-xl border-border/60 focus-visible:ring-primary/20 transition-all font-medium text-sm animate-none resize-none"
               />
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowReplyDialog(false)}>
+            <DialogFooter className="p-6 pt-0 bg-muted/10 border-t border-border/20 flex flex-col sm:flex-row items-center gap-3 shrink-0">
+              <Button variant="outline" onClick={() => setShowReplyDialog(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button onClick={sendReply} disabled={sending || !replyMessage.trim()}>
+              <Button onClick={sendReply} disabled={sending || !replyMessage.trim()} className="w-full sm:w-auto bg-primary hover:bg-primary/95 text-white font-bold shadow-md shadow-primary/20">
                 {sending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

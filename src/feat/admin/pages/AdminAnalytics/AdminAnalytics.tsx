@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdmin } from "@/core/context/AdminContext";
+import { format } from "date-fns";
+import { toast } from "@/shared/hook/use-toast";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/Card";
 import { Button } from "@/ui/Button";
@@ -18,6 +20,56 @@ export default function AdminAnalytics() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const { stats, loading: statsLoading } = useAdminStats();
+
+  const exportReport = () => {
+    try {
+      const rows: string[][] = [
+        ["PRAVOKHA ADMIN ANALYTICS REPORT"],
+        [`Generated: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`],
+        [],
+        ["KPI SUMMARY"],
+        ["Metric", "Value"],
+        ["Total Sales", String(stats.totalSales)],
+        ["Total Revenue (INR)", String(stats.revenue)],
+        ["Total Users", String(stats.totalUsers)],
+        ["Pending Orders", String(stats.pendingOrders)],
+        ["Total Products", String(stats.totalProducts)],
+        ["Low Stock Items", String(stats.lowStockItems)],
+        ["Open Tickets", String(stats.openTickets)],
+        [],
+        ["SALES TREND"],
+        ["Date", "Sales"],
+        ...stats.salesTrend.map(d => [d.date, String(d.sales)]),
+        [],
+        ["REVENUE GROWTH"],
+        ["Month", "Revenue (INR)"],
+        ...stats.revenueGrowth.map(d => [d.month, String(d.revenue)]),
+        [],
+        ["TOP PRODUCTS"],
+        ["Product", "Sales"],
+        ...stats.topProducts.map(p => [p.name, String(p.sales)]),
+        [],
+        ["CATEGORY DISTRIBUTION"],
+        ["Category", "Count"],
+        ...stats.categoryDistribution.map(c => [c.name, String(c.value)]),
+      ];
+
+      const csvContent = "\uFEFF" + rows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Pravokha_Analytics_${format(new Date(), 'yyyy_MM_dd')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: "Report Exported", description: "Analytics report downloaded successfully." });
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Export Failed", description: "Could not export report.", variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -57,7 +109,7 @@ export default function AdminAnalytics() {
             </div>
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <Button className="flex-1 md:flex-none h-10 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 border-0">
+            <Button onClick={exportReport} className="flex-1 md:flex-none h-10 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 border-0">
               <Download className="mr-2 h-4 w-4" />
               Export Report
             </Button>

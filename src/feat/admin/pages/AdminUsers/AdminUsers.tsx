@@ -586,7 +586,7 @@ export default function AdminUsers() {
 
         {/* Profile Detail Dialog */}
         <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
-          <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-border/60 rounded-2xl bg-card shadow-xl">
+          <DialogContent className="w-[95%] sm:max-w-[500px] mx-auto p-0 overflow-hidden border-border/60 rounded-2xl bg-card shadow-xl">
             <DialogHeader className="p-6 bg-primary text-white">
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16 rounded-2xl border-2 border-white/20 shadow-lg" >
@@ -699,7 +699,7 @@ export default function AdminUsers() {
 
         {/* Role Authorization Dialog */}
         <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog} >
-          <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden border-border/40 rounded-3xl bg-card shadow-xl" >
+          <DialogContent className="w-[95%] sm:max-w-[450px] mx-auto p-0 overflow-hidden border-border/40 rounded-3xl bg-card shadow-xl" >
             <DialogHeader className="p-6 bg-slate-900 text-white" >
               <div className="flex items-center gap-3" >
                 <UserCog className="h-5 w-5 text-primary" />

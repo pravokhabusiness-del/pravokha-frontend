@@ -435,10 +435,10 @@ export default function AdminOrderTracking() {
 
       {/* Side Detail Sheet */}
       <Sheet open={showDetailSheet} onOpenChange={setShowDetailSheet}>
-        <SheetContent className="w-full sm:max-w-[500px] bg-card border-l-border/60 shadow-2xl p-0">
-          <div className="flex flex-col h-full">
-            <SheetHeader className="p-8 pb-4 bg-primary/5 border-b border-primary/10">
-              <div className="flex items-center gap-4 mb-2">
+        <SheetContent className="w-full sm:max-w-[500px] bg-card border-l-border/60 shadow-2xl p-0 flex flex-col">
+          <div className="flex flex-col h-full overflow-hidden">
+            <SheetHeader className="p-4 sm:p-8 pb-3 sm:pb-4 bg-primary/5 border-b border-primary/10 shrink-0">
+              <div className="flex items-center gap-3 mb-1">
                 <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/20">
                   <Package className="h-6 w-6 text-white" />
                 </div>
@@ -451,7 +451,7 @@ export default function AdminOrderTracking() {
               </div>
             </SheetHeader>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
               {/* Order Info Summary */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -544,7 +544,7 @@ export default function AdminOrderTracking() {
               </div>
             </div>
 
-            <SheetFooter className="p-8 pt-4 bg-muted/20 border-t border-border/40">
+            <SheetFooter className="p-4 sm:p-8 pt-3 sm:pt-4 bg-muted/20 border-t border-border/40 shrink-0">
               <Button
                 onClick={updateOrderStatus}
                 className="w-full h-14 rounded-2xl font-semibold text-base shadow-xl shadow-primary/20"

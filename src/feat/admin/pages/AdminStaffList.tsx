@@ -107,7 +107,51 @@ export default function AdminStaffList() {
             </div>
 
             <div className="grid gap-6">
-                <Card className="border-border/60 shadow-sm overflow-hidden">
+                {/* Mobile Card View */}
+            <div className="grid gap-3 sm:hidden">
+              {filteredAdmins.length === 0 ? (
+                <p className="text-center text-muted-foreground italic text-sm py-8">No staff members found.</p>
+              ) : (
+                filteredAdmins.map((admin) => (
+                  <div key={admin.id} className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 border border-border/40 shrink-0">
+                        <AvatarFallback className="bg-primary/5 text-primary font-bold text-xs uppercase">
+                          {admin.name?.charAt(0) || admin.email.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{admin.name || 'Anonymous Admin'}</p>
+                        <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> {admin.email}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className={admin.role === 'SUPER_ADMIN' ? 'bg-primary/10 text-primary border-primary/20 shrink-0' : 'bg-emerald-500/10 text-emerald-600 shrink-0'}>
+                        {admin.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Staff Admin'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`h-2 w-2 rounded-full ${admin.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <span className="text-xs font-medium capitalize">{admin.status}</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 rounded-lg border-border/60 hover:bg-primary hover:text-white hover:border-primary transition-all gap-1.5 text-xs"
+                        onClick={() => navigate(`/admin/permissions/${admin.id}`)}
+                        disabled={admin.role === 'SUPER_ADMIN'}
+                      >
+                        <Settings className="h-3.5 w-3.5" />
+                        Permissions
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <Card className="border-border/60 shadow-sm overflow-hidden hidden sm:block">
                     <CardHeader className="bg-muted/30">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">

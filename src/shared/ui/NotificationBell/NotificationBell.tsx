@@ -51,15 +51,31 @@ export function NotificationBell() {
 
     const [isOpen, setIsOpen] = React.useState(false);
 
+    const normalizeLink = (link: string | undefined, role: string | null): string => {
+        if (!link) return getMessagesLink();
+        const normalizedRole = (role || '').toLowerCase();
+        const isAdmin = normalizedRole === 'super_admin' || normalizedRole === 'admin';
+        // Normalize product/stock/inventory links for admin
+        if (isAdmin) {
+            if (link.includes('/products') && !link.startsWith('/admin')) {
+                return '/admin/products/manage';
+            }
+            if (link.includes('stock') || link.includes('inventory')) {
+                return '/admin/products/manage';
+            }
+            if (link.includes('/orders/') && !link.startsWith('/admin')) {
+                return '/admin/orders';
+            }
+        }
+        return link;
+    };
+
     const handleNotificationClick = (notification: Notification) => {
         if (!notification.isRead) {
             markAsRead(notification.id);
         }
-        if (notification.link) {
-            navigate(notification.link);
-        } else {
-            navigate(getMessagesLink());
-        }
+        const resolvedLink = normalizeLink(notification.link, role);
+        navigate(resolvedLink);
         setIsOpen(false);
     };
 

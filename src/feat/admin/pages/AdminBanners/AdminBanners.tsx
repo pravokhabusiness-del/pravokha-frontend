@@ -60,7 +60,7 @@ export default function AdminBanners() {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await apiClient.post("/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      const res = await apiClient.post("/uploads/single", fd, { headers: { "Content-Type": "multipart/form-data" } });
       if (res.data.url) setFormData(f => ({ ...f, imageUrl: res.data.url }));
       else toast({ title: "Upload failed – no URL returned", variant: "destructive" });
     } catch {

@@ -54,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
         e.stopPropagation();
 
         const productPath = product.slug ? `/product/${product.slug}` : `/product/${product.id}`;
-        const url = `${window.location.origin}${productPath}`;
+        const url = `${window.location.origin}/#${productPath}`;
 
         const shareData = {
             title: product.title,

@@ -1,5 +1,5 @@
 import { Suspense, lazy, useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation, Navigate, useParams } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation, Navigate, useParams } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/ui/Tooltip";
 import { Toaster } from "@/ui/Toaster";
@@ -182,7 +182,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+        <HashRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
           <ScrollToTop />
           <AuthProvider>
             <AdminProvider>
@@ -561,9 +561,8 @@ export default function App() {
                             } />
                           </Route>
 
-                          {/* User Routes */}
                           <Route path="/user/*" element={
-                            <ProtectedRoute allowedRoles={["CUSTOMER", "ADMIN", "SUPER_ADMIN"]}>
+                            <ProtectedRoute allowedRoles={["CUSTOMER", "ADMIN", "SUPER_ADMIN", "SELLER", "VENDOR"]}>
                               <Suspense fallback={<LoadingFallback />}>
                                 <Routes>
                                   <Route index element={<Navigate to="account/dashboard" replace />} />
@@ -655,7 +654,7 @@ export default function App() {
               </CartProvider>
             </AdminProvider>
           </AuthProvider>
-        </BrowserRouter>
+        </HashRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/ui/Avatar";
 import { apiClient } from "@/infra/api/apiClient";
 import { useAuth } from "@/core/context/AuthContext";
 import { toast } from "@/shared/hook/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { Loader2, Send, ArrowLeft, Clock, Shield, Paperclip, Lock, ShieldAlert, MessageSquare, Check, AlertCircle } from "lucide-react";
 import { ImagePreviewModal } from "@/shared/ui/ImagePreviewModal/ImagePreviewModal";
 
@@ -269,7 +269,7 @@ export function TicketDetailPage() {
                     <div className="flex items-center gap-2 sm:gap-3">
                         <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-primary/20">
                             {ticketUser.avatar_url && (
-                                <AvatarImage src={ticketUser.avatar_url} alt={ticketUser.full_name} className="object-cover" />
+                                <AvatarImage src={getMediaUrl(ticketUser.avatar_url)} alt={ticketUser.full_name} className="object-cover" />
                             )}
                             <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs sm:text-sm">
                                 {ticketUser.full_name?.[0] || 'U'}
@@ -389,7 +389,7 @@ export function TicketDetailPage() {
                                 >
                                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 border-2 border-background shadow-sm hover:scale-105 transition-transform duration-300">
                                         {message.sender?.avatar_url && (
-                                            <AvatarImage src={message.sender.avatar_url} alt={message.sender.full_name} className="object-cover" />
+                                            <AvatarImage src={getMediaUrl(message.sender.avatar_url)} alt={message.sender.full_name} className="object-cover" />
                                         )}
                                         <AvatarFallback className={cn(
                                             "text-[10px] sm:text-xs font-bold transition-colors",

@@ -69,6 +69,7 @@ import {
 } from 'recharts';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/Tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/Avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -114,6 +115,7 @@ interface Transaction {
   tax?: number;
   shipping_address?: any;
   items?: any[];
+  customer_avatarUrl?: string;
 }
 
 
@@ -134,6 +136,7 @@ interface PayoutRequest {
     ifsc?: string;
     beneficiaryName?: string;
     verificationStatus?: string;
+    avatarUrl?: string;
   };
 }
 
@@ -175,8 +178,12 @@ export default function AdminPayments() {
   }, [isAdmin, adminLoading, navigate]);
 
   useEffect(() => {
-    fetchData();
+    setCurrentPage(1);
   }, [activeTab]);
+
+  useEffect(() => {
+    fetchData();
+  }, [activeTab, currentPage]);
 
   const mapTransaction = (order: any): Transaction => ({
     id: order.id,
@@ -197,7 +204,8 @@ export default function AdminPayments() {
       city: order.shippingCity,
       pincode: order.shippingPincode
     },
-    items: order.items || []
+    items: order.items || [],
+    customer_avatarUrl: order.customer?.avatarUrl
   });
 
   const mapPayoutRequest = (payout: any): PayoutRequest => ({
@@ -216,7 +224,8 @@ export default function AdminPayments() {
       bankAccount: payout.vendor.bankAccountNumber,
       ifsc: payout.vendor.bankIfscCode,
       beneficiaryName: payout.vendor.beneficiaryName,
-      verificationStatus: payout.vendor.owner?.verificationStatus || payout.vendor.status || 'unverified'
+      verificationStatus: payout.vendor.owner?.verificationStatus || payout.vendor.status || 'unverified',
+      avatarUrl: payout.vendor.owner?.avatarUrl
     } : undefined
   });
 
@@ -525,7 +534,41 @@ export default function AdminPayments() {
               >
                 <RefreshCcw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} /> Refresh Ledger
               </Button>
-              <Button className="flex-1 sm:flex-none h-10 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
+              <Button className="flex-1 sm:flex-none h-10 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 shadow-md shadow-primary/20" onClick={() => {
+                try {
+                  if (activeTab === 'transactions') {
+                    const headers = ["Order #", "Date", "Customer", "Email", "Total (INR)", "Status", "Payment", "Method"];
+                    const rows = transactions.map(t => [
+                      t.order_number, t.created_at ? format(new Date(t.created_at), 'dd MMM yyyy') : '',
+                      t.customer_name, t.customer_email, t.total, t.order_status, t.payment_status, t.payment_method || 'Online'
+                    ]);
+                    const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+                    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = `Transactions_${format(new Date(), 'yyyy_MM_dd')}.csv`;
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+                  } else {
+                    const headers = ["Seller", "Email", "Amount (INR)", "Bank Account", "IFSC", "Status", "Requested On"];
+                    const rows = payoutRequests.map(p => [
+                      p.seller?.name, p.seller?.email, p.amount,
+                      p.seller?.bankAccount || 'N/A', p.seller?.ifsc || 'N/A', p.status,
+                      p.created_at ? format(new Date(p.created_at), 'dd MMM yyyy') : ''
+                    ]);
+                    const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+                    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = `Payouts_${format(new Date(), 'yyyy_MM_dd')}.csv`;
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+                  }
+                  toast({ title: "Exported", description: "Report downloaded successfully." });
+                } catch(e) {
+                  toast({ title: "Export Failed", description: "Could not export report.", variant: "destructive" });
+                }
+              }}>
                 <Download className="mr-2 h-4 w-4" /> Export Report
               </Button>
             </div>
@@ -758,9 +801,14 @@ export default function AdminPayments() {
                     <CardContent className="p-3 pt-3 space-y-3">
                       <div className="flex justify-between items-center text-xs">
                         <div className="flex items-center gap-2 max-w-[70%]">
-                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                            {trx.customer_name?.charAt(0) || 'C'}
-                          </div>
+                          <Avatar className="h-6 w-6 shrink-0">
+                            {trx.customer_avatarUrl && (
+                              <AvatarImage src={getMediaUrl(trx.customer_avatarUrl)} />
+                            )}
+                            <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
+                              {trx.customer_name?.charAt(0) || 'C'}
+                            </AvatarFallback>
+                          </Avatar>
                           <span className="truncate font-medium">{trx.customer_name}</span>
                         </div>
                         {getStatusBadge(trx.payment_status)}
@@ -870,9 +918,19 @@ export default function AdminPayments() {
                               )}
                             </TableCell>
                             <TableCell>
-                              <div className="flex flex-col">
-                                <span className="font-semibold text-sm">{trx.customer_name}</span>
-                                <span className="text-[10px] text-muted-foreground">{trx.customer_email}</span>
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8 shrink-0">
+                                  {trx.customer_avatarUrl && (
+                                    <AvatarImage src={getMediaUrl(trx.customer_avatarUrl)} />
+                                  )}
+                                  <AvatarFallback className="text-[10px] font-bold bg-muted text-muted-foreground">
+                                    {trx.customer_name?.[0]?.toUpperCase() || 'C'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-sm">{trx.customer_name}</span>
+                                  <span className="text-[10px] text-muted-foreground">{trx.customer_email}</span>
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell className="font-bold text-sm">₹{trx.total.toLocaleString()}</TableCell>
@@ -918,21 +976,31 @@ export default function AdminPayments() {
                   <Card key={request.id} className="border-border/60 bg-card overflow-hidden shadow-sm">
                     <CardHeader className="p-3 bg-muted/20 border-b border-border/10 pb-2">
                       <div className="flex justify-between items-start">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-sm text-primary">{request.seller?.name || 'Marketplace Seller'}</span>
-                          <span className="text-[10px] text-muted-foreground">{format(new Date(request.created_at), "MMM d, p")}</span>
-                          {/* Verification badge */}
-                          {request.seller?.verificationStatus && (
-                            <span className={cn(
-                              "mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded w-fit",
-                              request.seller.verificationStatus === 'verified' ? "bg-emerald-100 text-emerald-700" :
-                              request.seller.verificationStatus === 'pending' ? "bg-amber-100 text-amber-700" :
-                              request.seller.verificationStatus === 'rejected' ? "bg-rose-100 text-rose-700" :
-                              "bg-gray-100 text-gray-600"
-                            )}>
-                              {request.seller.verificationStatus.toUpperCase()}
-                            </span>
-                          )}
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 shrink-0">
+                            {request.seller?.avatarUrl && (
+                              <AvatarImage src={getMediaUrl(request.seller.avatarUrl)} />
+                            )}
+                            <AvatarFallback className="text-[10px] font-bold bg-muted text-muted-foreground">
+                              {request.seller?.name?.[0]?.toUpperCase() || 'S'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm text-primary">{request.seller?.name || 'Marketplace Seller'}</span>
+                            <span className="text-[10px] text-muted-foreground">{format(new Date(request.created_at), "MMM d, p")}</span>
+                            {/* Verification badge */}
+                            {request.seller?.verificationStatus && (
+                              <span className={cn(
+                                "mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded w-fit",
+                                request.seller.verificationStatus === 'verified' ? "bg-emerald-100 text-emerald-700" :
+                                request.seller.verificationStatus === 'pending' ? "bg-amber-100 text-amber-700" :
+                                request.seller.verificationStatus === 'rejected' ? "bg-rose-100 text-rose-700" :
+                                "bg-gray-100 text-gray-600"
+                              )}>
+                                {request.seller.verificationStatus.toUpperCase()}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <span className="font-bold text-sm text-emerald-600">₹{request.amount.toLocaleString()}</span>
@@ -1025,21 +1093,31 @@ export default function AdminPayments() {
                         payoutRequests.map((request) => (
                           <TableRow key={request.id}>
                             <TableCell>
-                              <div className="flex flex-col">
-                                <span className="font-bold text-sm">{request.seller?.name || 'Marketplace Seller'}</span>
-                                <span className="text-[10px] text-muted-foreground">{request.seller?.email}</span>
-                                {/* Seller verification status badge */}
-                                {request.seller?.verificationStatus && (
-                                  <span className={cn(
-                                    "mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded w-fit",
-                                    request.seller.verificationStatus === 'verified' ? "bg-emerald-100 text-emerald-700" :
-                                    request.seller.verificationStatus === 'pending' ? "bg-amber-100 text-amber-700" :
-                                    request.seller.verificationStatus === 'rejected' ? "bg-rose-100 text-rose-700" :
-                                    "bg-gray-100 text-gray-600"
-                                  )}>
-                                    {request.seller.verificationStatus.toUpperCase()}
-                                  </span>
-                                )}
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8 shrink-0">
+                                  {request.seller?.avatarUrl && (
+                                    <AvatarImage src={getMediaUrl(request.seller.avatarUrl)} />
+                                  )}
+                                  <AvatarFallback className="text-[10px] font-bold bg-muted text-muted-foreground">
+                                    {request.seller?.name?.[0]?.toUpperCase() || 'S'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-sm">{request.seller?.name || 'Marketplace Seller'}</span>
+                                  <span className="text-[10px] text-muted-foreground">{request.seller?.email}</span>
+                                  {/* Seller verification status badge */}
+                                  {request.seller?.verificationStatus && (
+                                    <span className={cn(
+                                      "mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded w-fit",
+                                      request.seller.verificationStatus === 'verified' ? "bg-emerald-100 text-emerald-700" :
+                                      request.seller.verificationStatus === 'pending' ? "bg-amber-100 text-amber-700" :
+                                      request.seller.verificationStatus === 'rejected' ? "bg-rose-100 text-rose-700" :
+                                      "bg-gray-100 text-gray-600"
+                                    )}>
+                                      {request.seller.verificationStatus.toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell className="font-bold text-sm text-emerald-600">₹{request.amount.toLocaleString()}</TableCell>
@@ -1205,7 +1283,7 @@ export default function AdminPayments() {
                           <p>{selectedTransaction.customer_email}</p>
                           {selectedTransaction.shipping_address && (
                             <>
-                              <p className="mt-2">{selectedTransaction.shipping_address.address_line1}</p>
+                              <p className="mt-2">{selectedTransaction.shipping_address.address}</p>
                               <p>{selectedTransaction.shipping_address.city}, {selectedTransaction.shipping_address.state} {selectedTransaction.shipping_address.pincode}</p>
                             </>
                           )}
@@ -1220,30 +1298,30 @@ export default function AdminPayments() {
                 </ScrollArea>
 
                 {/* Footer Actions */}
-                <div className="p-4 border-t bg-muted/30 space-y-3">
+                <div className="p-4 border-t bg-muted/30 grid grid-cols-2 gap-2 shrink-0">
                   <Button
-                    className="w-full"
+                    className="w-full h-10 text-xs rounded-xl"
                     variant="outline"
                     onClick={() => handleDownloadReceipt(selectedTransaction)}
                   >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Receipt
+                    <Download className="mr-2 h-3.5 w-3.5" />
+                    Receipt
                   </Button>
                   {(selectedTransaction.payment_status === 'paid' || selectedTransaction.payment_status === 'completed') && (
                     <Button
-                      className="w-full"
+                      className="w-full h-10 text-xs rounded-xl"
                       variant="destructive"
                       onClick={() => handleIssueRefund(selectedTransaction.id)}
                     >
                       Issue Refund
                     </Button>
                   )}
-                  <Button className="w-full shadow-lg shadow-primary/20" size="lg" onClick={() => navigate(`/admin/orders/${selectedTransaction.id}`)}>
-                    View Full Order Details <ExternalLink className="h-4 w-4 ml-2" />
+                  <Button 
+                    className="col-span-2 w-full h-11 text-xs rounded-xl shadow-lg shadow-primary/10 bg-primary hover:bg-primary/95 text-white" 
+                    onClick={() => navigate(`/admin/orders/${selectedTransaction.id}`)}
+                  >
+                    View Full Order Details <ExternalLink className="h-3.5 w-3.5 ml-2" />
                   </Button>
-                  <SheetClose asChild>
-                    <Button variant="ghost" className="w-full">Close</Button>
-                  </SheetClose>
                 </div>
               </>
             )}

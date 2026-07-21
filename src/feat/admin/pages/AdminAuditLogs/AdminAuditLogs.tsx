@@ -628,7 +628,7 @@ export default function AdminAuditLogs() {
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-[100px] -mr-32 -mt-32" />
                             )}
 
-                            <SheetHeader className="p-8 border-b border-border/40 relative z-10 bg-muted/20">
+                            <SheetHeader className="p-4 sm:p-8 border-b border-border/40 relative z-10 bg-muted/20 shrink-0">
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
@@ -650,8 +650,8 @@ export default function AdminAuditLogs() {
                                 </div>
                             </SheetHeader>
 
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 relative z-10">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8 relative z-10">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                     <div className="space-y-6">
                                         <div className="space-y-2">
                                             <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
@@ -727,7 +727,7 @@ export default function AdminAuditLogs() {
                                 </div>
                             </div>
 
-                            <div className="p-8 bg-muted/30 border-t border-border/40 relative z-10">
+                            <div className="p-4 sm:p-8 bg-muted/30 border-t border-border/40 relative z-10 shrink-0">
                                 <Button
                                     variant="outline"
                                     className="w-full rounded-2xl h-14 font-medium text-xs hover:bg-primary hover:text-white transition-all shadow-sm"

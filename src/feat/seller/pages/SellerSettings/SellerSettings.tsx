@@ -18,6 +18,16 @@ import { useProfile } from "@/shared/hook/useProfile";
 import { usePreferences } from "@/shared/hook/usePreferences";
 import { useAuth } from "@/core/context/AuthContext";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/ui/AlertDialog";
+import {
   Form,
 
   FormControl,
@@ -142,6 +152,10 @@ export default function SellerSettings() {
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [profileNameTouched, setProfileNameTouched] = useState(false);
   const [profileSubmitted, setProfileSubmitted] = useState(false);
+
+  // Vacation Mode confirmation state
+  const [showVacationDialog, setShowVacationDialog] = useState(false);
+  const [pendingVacationValue, setPendingVacationValue] = useState<boolean | null>(null);
 
   const form = useForm<SellerProfile>({
     resolver: zodResolver(formSchema),
@@ -808,6 +822,17 @@ export default function SellerSettings() {
                           </div>
                         </div>
                       </div>
+
+                      <div className="flex justify-end pt-4 shrink-0">
+                        <Button
+                          type="button"
+                          onClick={handleProfileSave}
+                          disabled={updatingProfile}
+                          className="w-full sm:w-auto min-w-[120px] bg-primary hover:bg-primary/90 text-white font-bold h-10 rounded-xl shadow-md shadow-primary/10"
+                        >
+                          {updatingProfile ? "Updating..." : "Save Profile"}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -969,22 +994,22 @@ export default function SellerSettings() {
                     </CardHeader>
                     <CardContent>
                       {profile?.verificationStatus === 'verified' ? (
-                        <div className="flex items-center justify-between p-5 border rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800 shadow-sm transition-all hover:shadow-md">
-                          <div className="flex items-center gap-4">
-                            <div className="bg-emerald-100 dark:bg-emerald-800/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-700">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 border rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800 shadow-sm gap-4">
+                          <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                            <div className="bg-emerald-100 dark:bg-emerald-800/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-700 mt-1 shrink-0">
                               <BadgeCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
                               <p className="font-bold text-emerald-900 dark:text-emerald-300 text-base leading-tight">Account Verified</p>
-                              <p className="text-xs text-emerald-700/80 dark:text-emerald-400/60 mt-0.5">Your business identity has been validated. You are eligible to sell.</p>
+                              <p className="text-xs text-emerald-700/80 dark:text-emerald-400/60 mt-0.5 leading-relaxed">Your business identity has been validated. You are eligible to sell.</p>
                             </div>
                           </div>
-                          <Badge className="bg-emerald-600 text-white dark:bg-emerald-500/40 dark:text-emerald-400 border-none font-black text-[10px] tracking-widest px-3 py-1">Active</Badge>
+                          <Badge className="bg-emerald-600 text-white dark:bg-emerald-500/40 dark:text-emerald-400 border-none font-black text-[10px] tracking-widest px-3 py-1 w-fit whitespace-nowrap self-end sm:self-center">Active</Badge>
                         </div>
                       ) : profile?.verificationStatus === 'rejected' ? (
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border rounded-2xl bg-rose-50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-800 shadow-sm gap-4">
-                          <div className="flex items-start gap-4 flex-1">
-                            <div className="bg-rose-100 dark:bg-rose-900/40 p-2.5 rounded-xl border border-rose-200 dark:border-rose-700 mt-1">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 border rounded-2xl bg-rose-50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-800 shadow-sm gap-4">
+                          <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                            <div className="bg-rose-100 dark:bg-rose-900/40 p-2.5 rounded-xl border border-rose-200 dark:border-rose-700 mt-1 shrink-0">
                               <ShieldAlert className="w-6 h-6 text-rose-600 dark:text-rose-400" />
                             </div>
                             <div className="space-y-2">
@@ -997,22 +1022,31 @@ export default function SellerSettings() {
                               </div>
                             </div>
                           </div>
-                          <Badge variant="destructive" className="bg-rose-600 text-white dark:bg-rose-500 dark:text-white border-none font-black text-[10px] tracking-widest px-4 py-1.5 whitespace-nowrap self-end sm:self-center">Rejected</Badge>
+                          <Badge variant="destructive" className="bg-rose-600 text-white dark:bg-rose-500 dark:text-white border-none font-black text-[10px] tracking-widest px-4 py-1.5 w-fit whitespace-nowrap self-end sm:self-center">Rejected</Badge>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-between p-5 border rounded-2xl bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 shadow-sm transition-all hover:shadow-md border-dashed">
-                          <div className="flex items-center gap-4">
-                            <div className="bg-amber-100 dark:bg-amber-800/40 p-2.5 rounded-xl border border-amber-200 dark:border-amber-700">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 border rounded-2xl bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 shadow-sm gap-4 border-dashed">
+                          <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                            <div className="bg-amber-100 dark:bg-amber-800/40 p-2.5 rounded-xl border border-amber-200 dark:border-amber-700 mt-1 shrink-0">
                               <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400 animate-pulse" />
                             </div>
                             <div>
                               <p className="font-bold text-amber-900 dark:text-amber-300 text-base leading-tight">Verification In Progress</p>
-                              <p className="text-xs text-amber-700/80 dark:text-amber-400/60 mt-0.5">Our compliance team is currently reviewing your application. This usually takes 24-48 hours.</p>
+                              <p className="text-xs text-amber-700/80 dark:text-amber-400/60 mt-0.5 leading-relaxed">Our compliance team is currently reviewing your application. This usually takes 24-48 hours.</p>
                             </div>
                           </div>
-                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border-none font-semibold text-[10px] tracking-widest px-3 py-1">Pending</Badge>
+                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border-none font-semibold text-[10px] tracking-widest px-3 py-1 w-fit whitespace-nowrap self-end sm:self-center">Pending</Badge>
                         </div>
                       )}
+                      <div className="flex justify-end pt-4 sm:hidden">
+                        <Button
+                          type="submit"
+                          disabled={saving || uploading || updatingProfile}
+                          className="w-full h-11 rounded-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/10"
+                        >
+                          {saving ? "Saving Changes..." : "Save Changes"}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -1032,7 +1066,7 @@ export default function SellerSettings() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-6 pt-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
                           name="beneficiaryName"
@@ -1074,6 +1108,15 @@ export default function SellerSettings() {
                           </FormItem>
                         )}
                       />
+                      <div className="flex justify-end pt-4 sm:hidden">
+                        <Button
+                          type="submit"
+                          disabled={saving || uploading || updatingProfile}
+                          className="w-full h-11 rounded-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/10"
+                        >
+                          {saving ? "Saving Changes..." : "Save Changes"}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -1125,7 +1168,10 @@ export default function SellerSettings() {
                             <FormControl className="shrink-0 self-end sm:self-center">
                               <Switch
                                 checked={field.value}
-                                onCheckedChange={field.onChange}
+                                onCheckedChange={(checked) => {
+                                  setPendingVacationValue(checked);
+                                  setShowVacationDialog(true);
+                                }}
                                 className="data-[state=checked]:bg-blue-600"
                               />
                             </FormControl>
@@ -1158,6 +1204,15 @@ export default function SellerSettings() {
                           </FormItem>
                         )}
                       />
+                      <div className="flex justify-end pt-4 sm:hidden">
+                        <Button
+                          type="submit"
+                          disabled={saving || uploading || updatingProfile}
+                          className="w-full h-11 rounded-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/10"
+                        >
+                          {saving ? "Saving Changes..." : "Save Changes"}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -1167,6 +1222,55 @@ export default function SellerSettings() {
           </div>
         </form>
       </Form>
+
+      {/* Vacation Mode Confirmation Alert */}
+      <AlertDialog open={showVacationDialog} onOpenChange={setShowVacationDialog}>
+        <AlertDialogContent className="w-[95%] max-w-md mx-auto rounded-2xl bg-card border border-border/40 shadow-xl p-6">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold text-foreground">
+              {pendingVacationValue ? "Activate Vacation Mode?" : "Deactivate Vacation Mode?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground mt-2 leading-relaxed">
+              {pendingVacationValue
+                ? "Are you sure you want to activate Vacation Mode? This will temporarily hide all your products from the marketplace search and pause new order fulfillment."
+                : "Are you sure you want to deactivate Vacation Mode? Your products will become visible to customers and return online immediately."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-row gap-2 mt-4">
+            <AlertDialogCancel onClick={() => setShowVacationDialog(false)} className="flex-1 rounded-xl h-10 border border-border/60">
+              No
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (pendingVacationValue !== null) {
+                  form.setValue('vacationMode', pendingVacationValue, { shouldDirty: true });
+                  setShowVacationDialog(false);
+                  
+                  // Trigger direct settings update to avoid user confusion
+                  const currentValues = form.getValues();
+                  currentValues.vacationMode = pendingVacationValue;
+                  await saveSettings(currentValues);
+                  
+                  if (!pendingVacationValue) {
+                    toast({
+                      title: "Vacation Mode Inactive",
+                      description: "Your storefront is now back online and visible to buyers."
+                    });
+                  } else {
+                    toast({
+                      title: "Vacation Mode Active",
+                      description: "Your products have been temporarily hidden."
+                    });
+                  }
+                }
+              }}
+              className="flex-1 rounded-xl h-10 bg-primary hover:bg-primary/95 text-white font-bold"
+            >
+              Yes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

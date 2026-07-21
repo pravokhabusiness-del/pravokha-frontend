@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiClient } from "@/infra/api/apiClient";
 import { Button } from "@/ui/Button";
 import { Input } from "@/ui/Input";
@@ -21,12 +21,25 @@ const passwordSchema = z.string()
 
 export function ResetPasswordPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get("token") || "";
+
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { theme } = useTheme();
+
+    useEffect(() => {
+        if (!token) {
+            toast({
+                title: "Invalid Link",
+                description: "No reset token was found in the URL. Please request a new link.",
+                variant: "destructive"
+            });
+        }
+    }, [token]);
 
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,9 +56,19 @@ export function ResetPasswordPage() {
                 return;
             }
 
+            if (!token) {
+                toast({
+                    title: "Missing Token",
+                    description: "Cannot reset password without a valid token. Please request a new link.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
             setLoading(true);
             const response = await apiClient.post('/auth/reset-password', {
-                password: password,
+                token: token,
+                newPassword: password,
             });
 
             if (!response.data.success) {

@@ -674,7 +674,7 @@ export function ProductDetailPage() {
         : 0;
 
     const handleShare = async () => {
-        const url = `${window.location.origin}/product/${product.slug || product.id}`;
+        const url = `${window.location.origin}/#/product/${product.slug || product.id}`;
         const shareData = { title: product.title, text: product.description || product.title, url };
         try {
             if ((navigator as any).share) {

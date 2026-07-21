@@ -470,7 +470,7 @@ export default function AdminSellers() {
       </div>
 
       <Dialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
-        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-border/60 shadow-xl rounded-2xl bg-card">
+        <DialogContent className="w-[95%] sm:max-w-[550px] mx-auto p-0 overflow-hidden border-border/60 shadow-xl rounded-2xl bg-card max-h-[90dvh] flex flex-col">
           <DialogHeader className="p-6 bg-gradient-to-br from-primary to-primary/90 text-white">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-white/20 rounded-xl border border-white/30 shadow-sm flex items-center justify-center">
@@ -485,9 +485,9 @@ export default function AdminSellers() {
             </div>
           </DialogHeader>
 
-          <div className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-muted/50 border border-border/60 hover:border-primary/30 transition-colors col-span-1 md:col-span-2">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-xl bg-muted/50 border border-border/60 hover:border-primary/30 transition-colors col-span-1 sm:col-span-2">
                 <div className="flex items-center gap-2 mb-2 text-muted-foreground">
                   <Store className="h-3.5 w-3.5" />
                   <span className="text-[10px] font-bold uppercase tracking-wider">Store Identity</span>
@@ -527,7 +527,7 @@ export default function AdminSellers() {
                 <p className="text-sm font-bold font-mono tracking-wider">{selectedSeller?.ifsc || 'Not Provided'}</p>
               </div>
 
-              <div className="p-4 rounded-xl bg-muted/50 border border-border/60 hover:border-primary/30 transition-colors col-span-1 md:col-span-2">
+              <div className="p-4 rounded-xl bg-muted/50 border border-border/60 hover:border-primary/30 transition-colors col-span-1 sm:col-span-2">
                 <div className="flex items-center gap-2 mb-2 text-muted-foreground">
                   <Users className="h-3.5 w-3.5" />
                   <span className="text-[10px] font-bold uppercase tracking-wider">Beneficiary Name</span>
@@ -559,7 +559,7 @@ export default function AdminSellers() {
             </div>
           </div>
 
-          <DialogFooter className="p-6 bg-muted/10 border-t border-border/20 flex flex-col sm:flex-row items-center gap-3">
+          <DialogFooter className="p-4 sm:p-6 bg-muted/10 border-t border-border/20 flex flex-col sm:flex-row items-center gap-3 shrink-0">
             <Button
               variant="outline"
               onClick={() => setShowVerifyDialog(false)}

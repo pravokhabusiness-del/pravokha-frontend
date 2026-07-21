@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdmin } from "@/core/context/AdminContext";
 import { apiClient } from "@/infra/api/apiClient";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { AdminSkeleton } from "@/feat/admin/components/AdminSkeleton";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/Card";
@@ -149,6 +149,37 @@ export default function AdminCustomers() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const exportCustomers = () => {
+    if (profiles.length === 0) {
+      toast({ title: "No Data", description: "No customers to export.", variant: "destructive" });
+      return;
+    }
+    try {
+      const headers = ["Name", "Email", "Phone", "Status", "Registered On"];
+      const rows = profiles.map(p => [
+        p.name || 'Anonymous',
+        p.email || '',
+        p.phone || '',
+        p.verificationStatus || 'pending',
+        p.createdAt ? format(new Date(p.createdAt), 'dd MMM yyyy') : ''
+      ]);
+      const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Customers_Export_${format(new Date(), 'yyyy_MM_dd')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: "Exported", description: "Customer data downloaded successfully." });
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Export Failed", description: "Could not export customer data.", variant: "destructive" });
+    }
+  };
+
   const filteredProfiles = profiles.filter(p =>
     (p.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -191,7 +222,7 @@ export default function AdminCustomers() {
             <Button variant="outline" className="flex-1 sm:flex-none rounded-xl h-10 font-medium text-xs bg-card shadow-sm" onClick={loadProfiles}>
               Refresh
             </Button>
-            <Button className="flex-1 sm:flex-none h-8 sm:h-10 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
+            <Button className="flex-1 sm:flex-none h-8 sm:h-10 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 shadow-md shadow-primary/20" onClick={exportCustomers}>
               <Download className="mr-2 h-3.5 w-3.5" /> Export Data
             </Button>
           </div>
@@ -230,7 +261,7 @@ export default function AdminCustomers() {
                   <div className="flex items-center gap-2 max-w-[70%]">
                     <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 overflow-hidden flex items-center justify-center font-bold text-primary text-[10px] shrink-0">
                       {profile.avatarUrl ? (
-                        <img src={profile.avatarUrl} alt={profile.name} className="h-full w-full object-cover" />
+                        <img src={getMediaUrl(profile.avatarUrl)} alt={profile.name} className="h-full w-full object-cover" />
                       ) : (
                         profile.name?.charAt(0) || <Users className="h-3 w-3" />
                       )}
@@ -319,7 +350,7 @@ export default function AdminCustomers() {
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 overflow-hidden flex items-center justify-center font-bold text-primary text-xs shrink-0">
                           {profile.avatarUrl ? (
-                            <img src={profile.avatarUrl} alt={profile.name} className="h-full w-full object-cover" />
+                            <img src={getMediaUrl(profile.avatarUrl)} alt={profile.name} className="h-full w-full object-cover" />
                           ) : (
                             profile.name?.charAt(0) || <Users className="h-4 w-4" />
                           )}

@@ -205,8 +205,14 @@ export default function SellerProducts() {
             </div>
           </div>
           <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-            <Button variant="outline" size="sm" onClick={exportToCSV} className="flex-none h-10 rounded-xl gap-2 font-bold text-xs px-3 sm:px-4">
-              <Download className="h-4 w-4" /> Export
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={exportToCSV} 
+              className="flex-none h-10 rounded-xl gap-1.5 font-bold text-xs px-3 bg-emerald-600 hover:bg-emerald-700 text-white hover:text-white border-none shadow-md shadow-emerald-500/10"
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Export CSV</span>
             </Button>
             <Button
               type="button"
