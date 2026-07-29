@@ -113,15 +113,13 @@ export function ComboOfferBanner() {
                     {/* CTA Buttons */}
                     <div className={styles.buttonGrid}>
                         {hasProducts ? (
-                            offer.products.map((product) => (
-                                <Link key={product.id} to={`/product/${product.slug}`} className="w-full sm:w-auto">
-                                    <Button size="lg" variant={hasBgImage ? "default" : "secondary"} className="gap-2 w-full font-bold px-6">
-                                        <ShoppingBag className="h-4 w-4" />
-                                        <span className="truncate max-w-[150px]">{product.title}</span>
-                                        <ArrowRight className="h-3 w-3 flex-shrink-0" />
-                                    </Button>
-                                </Link>
-                            ))
+                            <Link to={`/product/${offer.products[0].slug}`} className="w-full sm:w-auto">
+                                <Button size="lg" className="gap-2 w-full font-bold px-8 bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-lg shadow-amber-500/25 transition-all hover:scale-105">
+                                    <ShoppingBag className="h-5 w-5" />
+                                    Get Combo Deal
+                                    <ArrowRight className="h-4 w-4 flex-shrink-0 animate-bounce" />
+                                </Button>
+                            </Link>
                         ) : (
                             <Link to="/products" className="w-full sm:w-auto">
                                 <Button size="lg" className="gap-2 w-full font-bold">

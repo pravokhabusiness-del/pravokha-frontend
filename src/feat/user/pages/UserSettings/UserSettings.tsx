@@ -34,6 +34,14 @@ export default function UserSettings() {
 
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "profile");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
   const { toast } = useToast(); // Ensure useToast is imported or available via hook
   const fileInputRef = useRef<HTMLInputElement>(null);
 

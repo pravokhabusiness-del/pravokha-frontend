@@ -44,18 +44,33 @@ export function WishlistPage() {
                     reviews: Math.max(0, parseInt(p.reviews) || 0),
                     sku: p.sku,
                     sellerId: p.seller_id,
-                    variants: (p.variants || []).map((v: any) => ({
-                        id: v.id,
-                        colorName: v.colorName,
-                        colorHex: v.colorHex,
-                        images: Array.isArray(v.images) && v.images.length > 0
-                            ? v.images
-                            : ['https://placehold.co/600x600/e2e8f0/64748b?text=No+Image'],
-                        sizes: (v.sizes || []).map((s: any) => ({
-                            size: s.size,
-                            stock: s.stock,
-                        })),
-                    })),
+                    variants: (p.variants || []).map((v: any) => {
+                        let parsedImages = [];
+                        try {
+                            parsedImages = typeof v.images === 'string' ? JSON.parse(v.images) : (v.images || []);
+                        } catch (e) {
+                            parsedImages = v.images ? [v.images] : [];
+                        }
+                        return {
+                            id: v.id,
+                            colorName: v.colorName,
+                            colorHex: v.colorHex,
+                            images: Array.isArray(parsedImages) && parsedImages.length > 0
+                                ? parsedImages
+                                : ['https://placehold.co/600x600/e2e8f0/64748b?text=No+Image'],
+                            sizes: (v.sizes || []).map((s: any) => ({
+                                size: s.size,
+                                stock: s.stock,
+                            })),
+                        };
+                    }),
+                    images: (() => {
+                        try {
+                            return typeof p.images === 'string' ? JSON.parse(p.images) : (p.images || []);
+                        } catch (e) {
+                            return p.images ? [p.images] : [];
+                        }
+                    })()
                 };
                 return { id: item.id, product: transformedProduct };
             });
@@ -219,7 +234,7 @@ export function WishlistPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {wishlistItems.map(({ id, product }) => {
-                        const firstImage = product.variants?.[0]?.images?.[0] || 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
+                        const firstImage = (product.images && product.images.length > 0 ? product.images[0] : null) || product.variants?.[0]?.images?.[0] || 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
 
                         return (
                             <Card key={id} className="group overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300">

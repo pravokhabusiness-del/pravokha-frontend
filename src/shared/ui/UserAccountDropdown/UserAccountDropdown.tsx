@@ -71,9 +71,9 @@ export function UserAccountDropdown() {
 
     // Menu items based on role
     const getUserMenuItems = () => [
-        { icon: ShoppingBag, label: "My Orders", path: "/user/orders" },
-        { icon: User, label: "Profile", path: "/user/account/profile" },
-        { icon: MapPin, label: "Addresses", path: "/user/account/addresses" },
+        { icon: ShoppingBag, label: "My Orders", path: "/user/account/orders" },
+        { icon: User, label: "Profile", path: "/user/account/settings" },
+        { icon: MapPin, label: "Addresses", path: "/user/account/settings" },
         { icon: Heart, label: "Wishlist", path: "/wishlist" },
     ];
 

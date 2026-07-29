@@ -29,11 +29,6 @@ const sidebarLinks = [
         icon: ShoppingBag,
     },
     {
-        title: "Personal Info",
-        href: "/user/account/profile",
-        icon: User,
-    },
-    {
         title: "Wishlist",
         href: "/wishlist",
         icon: Heart,

@@ -370,10 +370,10 @@ export function Navbar() {
                                             <div className="grid grid-cols-1 gap-2">
                                                 {user ? (
                                                     <>
-                                                        <Link to="/user/orders" onClick={closeMobileMenu} className="flex items-center gap-3 px-1 py-1 text-sm font-medium hover:text-primary transition-colors">
+                                                        <Link to="/user/account/orders" onClick={closeMobileMenu} className="flex items-center gap-3 px-1 py-1 text-sm font-medium hover:text-primary transition-colors">
                                                             <Package className="h-4 w-4" /> My Orders
                                                         </Link>
-                                                        <Link to="/user" onClick={closeMobileMenu} className="flex items-center gap-3 px-1 py-1 text-sm font-medium hover:text-primary transition-colors">
+                                                        <Link to="/user/account/settings" onClick={closeMobileMenu} className="flex items-center gap-3 px-1 py-1 text-sm font-medium hover:text-primary transition-colors">
                                                             <User className="h-4 w-4" /> Profile
                                                         </Link>
                                                         <Button variant="ghost" className="w-full justify-start px-1 h-8 text-destructive hover:bg-destructive/10" onClick={() => { handleLogout(); closeMobileMenu(); }}>
@@ -439,7 +439,7 @@ export function Navbar() {
 
 
 
-                        <Link to="/user/orders">
+                        <Link to="/user/account/orders">
                             <Button variant="ghost" size="sm" className={styles.navButton}>
                                 <Package className={cn("h-4 w-4 flex-shrink-0", styles.navButtonIcon)} />
                                 <span className={cn("hidden lg:inline", styles.navButtonText)}>Orders</span>

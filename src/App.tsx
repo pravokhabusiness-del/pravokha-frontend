@@ -178,6 +178,23 @@ const AdminDashboardRouter = () => {
   return <Navigate to="/unauthorized" replace />;
 };
 
+const RedirectToStatusOrders = () => {
+  const { status } = useParams();
+  return <Navigate to={`/user/account/orders/${status}`} replace />;
+};
+
+const RoleBasedDashboardRedirect = () => {
+  const { role } = useAuth();
+  const roleUpper = role?.toUpperCase();
+  if (roleUpper === 'SUPER_ADMIN' || roleUpper === 'ADMIN') {
+    return <Navigate to="/admin" replace />;
+  }
+  if (roleUpper === 'SELLER' || roleUpper === 'VENDOR') {
+    return <Navigate to="/seller" replace />;
+  }
+  return <Navigate to="/user/account/dashboard" replace />;
+};
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -257,7 +274,7 @@ export default function App() {
                               <Contact />
                             </Suspense>
                           } />
-                          <Route path="/profile" element={<Navigate to="/user/account/profile" replace />} />
+                          <Route path="/profile" element={<Navigate to="/user/account/settings" replace />} />
                           <Route path="/faq" element={<Suspense fallback={<LoadingFallback />}><FAQ /></Suspense>} />
                           <Route path="/size-guide" element={<Suspense fallback={<LoadingFallback />}><SizeGuide /></Suspense>} />
                           <Route path="/shipping-returns" element={<Suspense fallback={<LoadingFallback />}><ShippingReturns /></Suspense>} />
@@ -283,11 +300,12 @@ export default function App() {
                           <Route path="/epr" element={<Suspense fallback={<LoadingFallback />}><PolicyPage type="epr" /></Suspense>} />
                           <Route path="/report-infringement" element={<Suspense fallback={<LoadingFallback />}><PolicyPage type="infringement" /></Suspense>} />
                           <Route path="/payments-info" element={<Suspense fallback={<LoadingFallback />}><PolicyPage type="payments" /></Suspense>} />
-                          <Route path="/orders" element={<Navigate to="/user/orders" replace />} />
+                          <Route path="/orders" element={<Navigate to="/user/account/orders" replace />} />
                           <Route path="/orders/:orderId" element={<NavigateToOrderDetail />} />
                           <Route path="/settings" element={<Navigate to="/user/account/settings" replace />} />
                           <Route path="/account" element={<Navigate to="/user/account" replace />} />
                           <Route path="/payments" element={<Navigate to="/user/account/settings?tab=payment" replace />} />
+                          <Route path="/dashboard" element={<RoleBasedDashboardRedirect />} />
 
                           {/* Ticket System Routes */}
                           <Route path="/tickets" element={
@@ -565,21 +583,17 @@ export default function App() {
                             <ProtectedRoute allowedRoles={["CUSTOMER", "ADMIN", "SUPER_ADMIN", "SELLER", "VENDOR"]}>
                               <Suspense fallback={<LoadingFallback />}>
                                 <Routes>
-                                  <Route index element={<Navigate to="account/dashboard" replace />} />
-                                  <Route path="home" element={<Navigate to="account/dashboard" replace />} />
+                                  <Route index element={<Navigate to="/user/account/dashboard" replace />} />
+                                  <Route path="home" element={<Navigate to="/user/account/dashboard" replace />} />
                                   <Route path="account" element={<AccountLayout />}>
-                                    <Route index element={<Navigate to="dashboard" replace />} />
+                                    <Route index element={<Navigate to="/user/account/dashboard" replace />} />
                                     <Route path="dashboard" element={
                                       <Suspense fallback={<LoadingFallback />}>
                                         <UserDashboard />
                                       </Suspense>
                                     } />
-                                    <Route path="profile" element={
-                                      <Suspense fallback={<LoadingFallback />}>
-                                        <Profile />
-                                      </Suspense>
-                                    } />
-                                    <Route path="addresses" element={<Navigate to="/user/account/profile" replace />} />
+                                    <Route path="profile" element={<Navigate to="/user/account/settings" replace />} />
+                                    <Route path="addresses" element={<Navigate to="/user/account/settings" replace />} />
                                     <Route path="settings" element={
                                       <Suspense fallback={<LoadingFallback />}>
                                         <UserSettings />
@@ -601,8 +615,8 @@ export default function App() {
                                       <UserMessages />
                                     </Suspense>
                                   } />
-                                  <Route path="orders" element={<Navigate to="account/orders" replace />} />
-                                  <Route path="orders/:status" element={<Navigate to="account/orders/:status" replace />} />
+                                  <Route path="orders" element={<Navigate to="/user/account/orders" replace />} />
+                                  <Route path="orders/:status" element={<RedirectToStatusOrders />} />
                                   <Route path="orders/detail/:orderId" element={
                                     <Suspense fallback={<LoadingFallback />}>
                                       <UserOrderDetail />

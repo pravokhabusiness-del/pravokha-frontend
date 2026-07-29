@@ -23,6 +23,12 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
+const isValidDate = (dateStr: any) => {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  return d instanceof Date && !isNaN(d.getTime());
+};
+
 interface HistorySectionProps {
   history?: any[];
   orders?: any[];
@@ -147,7 +153,9 @@ export const HistorySection = ({ history, orders = [], payments = [] }: HistoryS
                           </h3>
                           <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
                             <History className="h-3.5 w-3.5" />
-                            {format(new Date(order.created_at), 'MMM dd, yyyy • hh:mm a')}
+                            {isValidDate(order.created_at)
+                              ? format(new Date(order.created_at), 'MMM dd, yyyy • hh:mm a')
+                              : 'Date N/A'}
                           </p>
                         </div>
                         <div className="text-right">
@@ -203,7 +211,9 @@ export const HistorySection = ({ history, orders = [], payments = [] }: HistoryS
                         {payment.status === 'refunded' ? '-' : '+'}₹{payment.amount.toLocaleString()}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {format(new Date(payment.created_at), 'MMM dd')}
+                        {isValidDate(payment.created_at)
+                          ? format(new Date(payment.created_at), 'MMM dd')
+                          : 'Date N/A'}
                       </p>
                     </div>
                   </CardContent>
@@ -266,7 +276,18 @@ export const HistorySection = ({ history, orders = [], payments = [] }: HistoryS
                     {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
                       selectedOrder.items.map((item: any, idx: number) => {
                         // Extract image from order item structure
-                        const imageUrl = item.image || item.product?.variants?.[0]?.images?.[0] || null;
+                        let variantImgs = [];
+                        const rawVariantImgs = item.product?.variants?.[0]?.images;
+                        if (Array.isArray(rawVariantImgs)) {
+                          variantImgs = rawVariantImgs;
+                        } else if (typeof rawVariantImgs === 'string') {
+                          try {
+                            variantImgs = JSON.parse(rawVariantImgs);
+                          } catch (e) {
+                            variantImgs = rawVariantImgs ? [rawVariantImgs] : [];
+                          }
+                        }
+                        const imageUrl = item.image || item.product?.images?.[0]?.url || variantImgs?.[0] || null;
 
                         return (
                           <div key={idx} className="bg-muted/30 rounded-xl p-3 border border-border/50 flex gap-4 items-start">
