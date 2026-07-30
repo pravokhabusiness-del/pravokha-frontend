@@ -180,7 +180,7 @@ const AdminDashboardRouter = () => {
 
 const RedirectToStatusOrders = () => {
   const { status } = useParams();
-  return <Navigate to={`/user/account/orders/${status}`} replace />;
+  return <Navigate to={`../../account/orders/${status}`} replace />;
 };
 
 const RoleBasedDashboardRedirect = () => {
@@ -615,7 +615,7 @@ export default function App() {
                                       <UserMessages />
                                     </Suspense>
                                   } />
-                                  <Route path="orders" element={<Navigate to="/user/account/orders" replace />} />
+                                  <Route path="orders" element={<Navigate to="../account/orders" replace />} />
                                   <Route path="orders/:status" element={<RedirectToStatusOrders />} />
                                   <Route path="orders/detail/:orderId" element={
                                     <Suspense fallback={<LoadingFallback />}>

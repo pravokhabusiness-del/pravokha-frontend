@@ -7,12 +7,30 @@ import { ShoppingBag, Package, ArrowRight, Zap } from "lucide-react";
 import styles from "./ComboOfferBanner.module.css";
 import { getMediaUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/core/context/CartContext";
+import { toast } from "@/shared/hook/use-toast";
 
 interface ComboProduct {
     id: string;
     title: string;
     slug: string;
+    price: number;
+    compareAtPrice: number | null;
     imageUrl: string | null;
+    stock: number;
+    vendorId: string;
+    variants: Array<{
+        id: string;
+        name: string;
+        colorName: string | null;
+        colorHex: string | null;
+        images: string | string[] | null;
+        sizes: Array<{
+            id: string;
+            size: string;
+            stock: number;
+        }>;
+    }>;
 }
 
 interface ComboOffer {
@@ -29,6 +47,7 @@ interface ComboOffer {
 }
 
 export function ComboOfferBanner() {
+    const { addMultipleToCart } = useCart();
     const [offers, setOffers] = useState<ComboOffer[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -67,6 +86,68 @@ export function ComboOfferBanner() {
     const offer = offers[activeIndex];
     const hasProducts = offer.products && offer.products.length > 0;
     const hasBgImage = !!offer.imageUrl;
+
+    const handleAddComboToCart = () => {
+        if (!hasProducts) return;
+
+        const itemsToAdd = offer.products.map(product => {
+            const firstVariant = product.variants?.[0] || {
+                id: 'none',
+                colorName: 'None',
+                colorHex: '#ccc',
+                images: [],
+                sizes: []
+            };
+
+            let parsedImages: string[] = [];
+            if (firstVariant.images) {
+                try {
+                    parsedImages = typeof firstVariant.images === 'string'
+                        ? JSON.parse(firstVariant.images)
+                        : (Array.isArray(firstVariant.images) ? firstVariant.images : [firstVariant.images]);
+                } catch {
+                    parsedImages = [];
+                }
+            }
+
+            const sizesList = firstVariant.sizes || [];
+            const firstAvailableSize = sizesList.find((s: any) => s.stock > 0) || {
+                size: 'Free Size',
+                stock: 0
+            };
+
+            return {
+                item: {
+                    productId: product.id,
+                    variantId: firstVariant.id,
+                    title: product.title,
+                    colorName: firstVariant.colorName || 'None',
+                    colorHex: firstVariant.colorHex || '#ccc',
+                    size: firstAvailableSize.size,
+                    price: product.price,
+                    image: (parsedImages && parsedImages.length > 0)
+                        ? parsedImages[0]
+                        : (product.imageUrl || 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image'),
+                    maxStock: firstAvailableSize.stock || product.stock || 0,
+                    sellerId: product.vendorId || '',
+                },
+                quantity: 1
+            };
+        });
+
+        // Verify that all items in the combo are valid and have stock
+        const anyUnavailable = itemsToAdd.some(i => i.item.variantId === 'none' || i.item.maxStock < 1);
+        if (anyUnavailable) {
+            toast({
+                title: "Combo unavailable",
+                description: "One or more items in this combo are currently out of stock.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        addMultipleToCart(itemsToAdd);
+    };
 
     return (
         <div 
@@ -113,13 +194,15 @@ export function ComboOfferBanner() {
                     {/* CTA Buttons */}
                     <div className={styles.buttonGrid}>
                         {hasProducts ? (
-                            <Link to={`/product/${offer.products[0].slug}`} className="w-full sm:w-auto">
-                                <Button size="lg" className="gap-2 w-full font-bold px-8 bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-lg shadow-amber-500/25 transition-all hover:scale-105">
-                                    <ShoppingBag className="h-5 w-5" />
-                                    Get Combo Deal
-                                    <ArrowRight className="h-4 w-4 flex-shrink-0 animate-bounce" />
-                                </Button>
-                            </Link>
+                            <Button 
+                                size="lg" 
+                                onClick={handleAddComboToCart}
+                                className="gap-2 w-full font-bold px-8 bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-lg shadow-amber-500/25 transition-all hover:scale-105"
+                            >
+                                <ShoppingBag className="h-5 w-5" />
+                                Apply Offer & Add to Cart
+                                <ArrowRight className="h-4 w-4 flex-shrink-0 animate-bounce" />
+                            </Button>
                         ) : (
                             <Link to="/products" className="w-full sm:w-auto">
                                 <Button size="lg" className="gap-2 w-full font-bold">

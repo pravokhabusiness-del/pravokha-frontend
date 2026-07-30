@@ -73,7 +73,6 @@ export function UserAccountDropdown() {
     const getUserMenuItems = () => [
         { icon: ShoppingBag, label: "My Orders", path: "/user/account/orders" },
         { icon: User, label: "Profile", path: "/user/account/settings" },
-        { icon: MapPin, label: "Addresses", path: "/user/account/settings" },
         { icon: Heart, label: "Wishlist", path: "/wishlist" },
     ];
 

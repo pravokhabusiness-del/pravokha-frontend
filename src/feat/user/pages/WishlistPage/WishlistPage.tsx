@@ -65,6 +65,9 @@ export function WishlistPage() {
                         };
                     }),
                     images: (() => {
+                        if (Array.isArray(p.images)) {
+                            return p.images.map((img: any) => img && typeof img === 'object' && 'url' in img ? img.url : img);
+                        }
                         try {
                             return typeof p.images === 'string' ? JSON.parse(p.images) : (p.images || []);
                         } catch (e) {

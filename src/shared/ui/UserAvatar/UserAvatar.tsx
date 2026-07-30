@@ -100,11 +100,7 @@ export function UserAvatar({
                         label: "Wishlist",
                         href: "/wishlist",
                     },
-                    {
-                        icon: <MapPin className="h-4 w-4" />,
-                        label: "Addresses",
-                        href: "/addresses",
-                    },
+
                     {
                         icon: <Settings className="h-4 w-4" />,
                         label: "Profile",
