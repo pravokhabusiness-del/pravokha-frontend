@@ -73,7 +73,7 @@ export const ComboOfferWidget: React.FC<ComboOfferWidgetProps> = ({ productId, o
                                 <p className="text-sm text-muted-foreground mb-3">{offer.description}</p>
 
                                 <div className="flex -space-x-3 mb-4 overflow-hidden">
-                                    {offer.products.map((p, idx) => (
+                                    {offer.products.map((p) => (
                                         <div key={p.id} className="relative group">
                                             <div className={`h-12 w-12 rounded-full border-2 border-background overflow-hidden bg-muted ${p.id === productId ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
                                                 <img
@@ -87,29 +87,40 @@ export const ComboOfferWidget: React.FC<ComboOfferWidgetProps> = ({ productId, o
                                             )}
                                         </div>
                                     ))}
-                                    <div className="h-12 w-12 rounded-full border-2 border-background bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                        +{offer.products.length}
-                                    </div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col items-end gap-2 w-full md:w-auto">
                                 <div className="text-right">
-                                    <div className="flex items-center justify-end gap-2 text-muted-foreground line-through text-sm">
-                                        <IndianRupee className="h-3 w-3" />
-                                        {offer.originalPrice || offer.products.reduce((s, p) => s + p.price, 0)}
-                                    </div>
-                                    <div className="flex items-center justify-end gap-1 text-2xl font-black text-foreground">
-                                        <IndianRupee className="h-5 w-5" />
-                                        {offer.comboPrice}
-                                    </div>
-                                    <Badge variant="secondary" className="mt-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200">
-                                        Save ₹{(offer.originalPrice || offer.products.reduce((s, p) => s + p.price, 0)) - offer.comboPrice}
-                                    </Badge>
+                                    {(() => {
+                                        const origPrice = offer.originalPrice || offer.products.reduce((s, p) => s + p.price, 0);
+                                        const savings = origPrice - offer.comboPrice;
+                                        const calculatedPct = origPrice > 0 ? Math.round((savings / origPrice) * 100) : 25;
+                                        return (
+                                            <>
+                                                <div className="flex items-center justify-end gap-2 text-muted-foreground line-through text-sm">
+                                                    <IndianRupee className="h-3 w-3" />
+                                                    {origPrice}
+                                                </div>
+                                                <div className="flex items-center justify-end gap-1 text-2xl font-black text-foreground">
+                                                    <IndianRupee className="h-5 w-5" />
+                                                    {offer.comboPrice}
+                                                </div>
+                                                <div className="flex items-center gap-1 mt-1 justify-end">
+                                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 text-xs font-bold">
+                                                        {calculatedPct}% OFF
+                                                    </Badge>
+                                                    <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 text-xs">
+                                                        Save ₹{savings}
+                                                    </Badge>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                                 <Button
                                     onClick={() => handleAddBundle(offer)}
-                                    className="w-full md:w-auto gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                                    className="w-full md:w-auto gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-transform font-bold"
                                 >
                                     <ShoppingBag className="h-4 w-4" />
                                     Add Bundle to Cart

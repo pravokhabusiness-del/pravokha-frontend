@@ -162,7 +162,7 @@
     display: flex;
     align-items: center;
     gap: 0.125rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
     flex-wrap: nowrap;
     /* Force single row */
 }
@@ -186,7 +186,7 @@
 @media (min-width: 640px) {
     .rating {
         gap: 0.25rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.125rem;
     }
 
     .star {

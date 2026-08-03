@@ -251,31 +251,32 @@ export function ProductCard({ product }: ProductCardProps) {
                     <p className={styles.description}>
                         {product.description}
                     </p>
-                    {product.rating > 0 && (
-                        <div
-                            className={cn(styles.rating, "flex items-center gap-1 sm:gap-2 cursor-pointer hover:opacity-80 transition-opacity")}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (product.slug) {
-                                    navigate(`/product/${product.slug}?tab=reviews`);
-                                }
-                            }}
-                        >
-                            <InteractiveStarRating
-                                rating={product.rating}
-                                readOnly
-                                size="sm"
-                                showQuotes={false}
-                            />
-                            <span className={cn(styles.reviewCount, "text-[10px] sm:text-xs whitespace-nowrap overflow-hidden text-ellipsis hidden sm:block")}>
-                                ({product.reviews})
-                            </span>
-                        </div>
-                    )}
                 </div>
 
                 <div className={styles.footer}>
                     <div className={styles.priceGroup}>
+                        {product.rating > 0 && (
+                            <div
+                                className={cn(styles.rating, "flex items-center gap-1 sm:gap-1.5 cursor-pointer hover:opacity-80 transition-opacity")}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (product.slug) {
+                                        navigate(`/product/${product.slug}?tab=reviews`);
+                                    }
+                                }}
+                            >
+                                <InteractiveStarRating
+                                    rating={product.rating}
+                                    readOnly
+                                    size="sm"
+                                    showQuotes={false}
+                                />
+                                <span className={cn(styles.reviewCount, "text-[10px] sm:text-xs text-muted-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis")}>
+                                    ({product.reviews})
+                                </span>
+                            </div>
+                        )}
+
                         <div className={styles.priceRow}>
                             <span className={styles.currentPrice}>
                                 ₹{product.discountPrice || product.price}

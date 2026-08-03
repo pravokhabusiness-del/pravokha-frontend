@@ -12,7 +12,6 @@ interface UserPreferences {
     theme: string;
     language: string;
     currency: string;
-    two_factor_auth: boolean;
 }
 
 export function useUserPreferences() {
@@ -29,8 +28,7 @@ export function useUserPreferences() {
         sms_notifications: data.smsNotifications,
         theme: data.theme,
         language: data.language,
-        currency: data.currency,
-        two_factor_auth: data.twoFactorAuth || false
+        currency: data.currency
     });
 
     const mapPreferencesToBackend = (prefs: Partial<UserPreferences>) => {
@@ -42,7 +40,6 @@ export function useUserPreferences() {
         if (prefs.theme !== undefined) updates.theme = prefs.theme;
         if (prefs.language !== undefined) updates.language = prefs.language;
         if (prefs.currency !== undefined) updates.currency = prefs.currency;
-        if (prefs.two_factor_auth !== undefined) updates.twoFactorAuth = prefs.two_factor_auth;
         return updates;
     };
 

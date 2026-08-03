@@ -42,6 +42,8 @@ interface ComboOffer {
     comboPrice: number;
     originalPrice: number;
     discountPercentage: number;
+    startDate?: string | null;
+    endDate?: string | null;
     active: boolean;
     imageUrl: string | null;
 }
@@ -86,6 +88,26 @@ export function ComboOfferBanner() {
     const offer = offers[activeIndex];
     const hasProducts = offer.products && offer.products.length > 0;
     const hasBgImage = !!offer.imageUrl;
+
+    const computedDiscountPercent = offer.originalPrice > 0
+        ? Math.round(((offer.originalPrice - offer.comboPrice) / offer.originalPrice) * 100)
+        : (offer.discountPercentage || 25);
+
+    const formatDateOnly = (dateStr?: string | null) => {
+        if (!dateStr) return null;
+        try {
+            return new Date(dateStr).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch {
+            return null;
+        }
+    };
+
+    const startDateText = formatDateOnly(offer.startDate);
+    const endDateText = formatDateOnly(offer.endDate);
 
     const handleAddComboToCart = () => {
         if (!hasProducts) return;
@@ -166,9 +188,9 @@ export function ComboOfferBanner() {
                             <Zap className="h-3 w-3 mr-1 inline" />
                             LIMITED OFFER
                         </Badge>
-                        {offer.discountPercentage > 0 && (
+                        {computedDiscountPercent > 0 && (
                             <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2.5 py-0.5">
-                                {offer.discountPercentage}% OFF
+                                {computedDiscountPercent}% OFF
                             </Badge>
                         )}
                     </div>
@@ -268,7 +290,7 @@ export function ComboOfferBanner() {
                         )}
 
                         <p className={styles.footer}>
-                            *Valid on all colors and sizes | Limited time offer
+                            {endDateText ? `*Valid until ${endDateText} | Limited time offer` : startDateText ? `*Offer started ${startDateText} | Limited time offer` : "*Valid on all colors and sizes | Limited time offer"}
                         </p>
                     </div>
                 )}

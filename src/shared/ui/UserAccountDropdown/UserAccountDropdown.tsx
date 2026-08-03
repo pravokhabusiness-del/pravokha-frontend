@@ -30,8 +30,8 @@ export function UserAccountDropdown() {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
 
-    // ✅ NEW: Read ALL data from AuthContext user object only
-    const currentAvatarUrl = user?.avatar_url;
+    // Read avatar URL supporting camelCase (backend standard) and snake_case properties
+    const currentAvatarUrl = user?.avatar_url || (user as any)?.avatarUrl || (user as any)?.image;
     const currentName = user?.full_name || user?.name || user?.email?.split('@')[0] || "User";
     const userKey = user?._lastFetchedAt || user?.id || 'guest';
 

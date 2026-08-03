@@ -45,7 +45,9 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
     const [rating, setRating] = useState(0);
     const [title, setTitle] = useState("");
     const [reviewText, setReviewText] = useState("");
+    const [locationState, setLocationState] = useState("Tamil Nadu");
     const [selectedImages, setSelectedImages] = useState<File[]>([]);
+    const [existingImages, setExistingImages] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingReview, setEditingReview] = useState<string | null>(null);
     const [selectedModalImage, setSelectedModalImage] = useState<string | null>(null);
@@ -54,6 +56,12 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
         reviewText?: string;
         rating?: string;
     }>({});
+
+    const INDIAN_STATES = [
+        "Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Telangana",
+        "Maharashtra", "Delhi", "Gujarat", "West Bengal", "Punjab",
+        "Rajasthan", "Uttar Pradesh", "Madhya Pradesh", "Other"
+    ];
 
     // New State for Category Ratings
     const [categoryRatings, setCategoryRatings] = useState<CategoryRating[]>([]);
@@ -141,7 +149,7 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                 return;
             }
 
-            if (files.length + selectedImages.length > 3) {
+            if (files.length + selectedImages.length + existingImages.length > 3) {
                 toast.error("You can upload up to 3 images only");
                 return;
             }
@@ -150,8 +158,12 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
         }
     };
 
-    const removeImage = (index: number) => {
+    const removeSelectedImage = (index: number) => {
         setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const removeExistingImage = (index: number) => {
+        setExistingImages(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmitReview = async () => {
@@ -168,7 +180,7 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
         setIsSubmitting(true);
 
         try {
-            let imageUrls: string[] = [];
+            let newlyUploadedUrls: string[] = [];
 
             if (selectedImages.length > 0) {
                 const formData = new FormData();
@@ -179,12 +191,15 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                 });
 
                 if (uploadRes.data.success) {
-                    imageUrls = uploadRes.data.urls;
+                    newlyUploadedUrls = uploadRes.data.urls;
                 }
             }
 
+            const finalImageUrls = [...existingImages, ...newlyUploadedUrls];
+
             const metadata = {
-                categoryRatings: categoryRatings.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.rating }), {})
+                categoryRatings: categoryRatings.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.rating }), {}),
+                locationState: locationState || "Tamil Nadu"
             };
 
             const reviewData = {
@@ -192,7 +207,7 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                 rating,
                 title: title.trim(),
                 comment: reviewText.trim(),
-                images: imageUrls,
+                images: finalImageUrls,
                 metadata: JSON.stringify(metadata)
             };
 
@@ -212,7 +227,9 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
             setRating(0);
             setTitle("");
             setReviewText("");
+            setLocationState("Tamil Nadu");
             setSelectedImages([]);
+            setExistingImages([]);
             setValidationErrors({});
             setCategoryRatings(reviewCategories.map(c => ({ name: c, rating: 0 })));
 
@@ -230,10 +247,14 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
         setRating(review.rating);
         setTitle(review.title);
         setReviewText(review.comment);
+        setExistingImages(review.images || []);
 
         if (review.metadata) {
             try {
                 const meta = JSON.parse(review.metadata);
+                if (meta.locationState) {
+                    setLocationState(meta.locationState);
+                }
                 if (meta.categoryRatings) {
                     const loadedRatings = Object.entries(meta.categoryRatings).map(([name, rating]) => ({
                         name,
@@ -307,6 +328,20 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                         </div>
                     )}
 
+                    {/* Location / State Selection Field */}
+                    <div className={styles.fieldGroup}>
+                        <label className={styles.label}>Your Location (State)</label>
+                        <select
+                            value={locationState}
+                            onChange={(e) => setLocationState(e.target.value)}
+                            className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                            {INDIAN_STATES.map((st) => (
+                                <option key={st} value={st}>{st}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className={styles.fieldGroup}>
                         <label className={styles.label}>Review Title *</label>
                         <Input
@@ -370,22 +405,43 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                             Add Photos (Optional - Max 3, JPG/PNG/WebP, 5MB each)
                         </label>
                         <div className={styles.imageGrid}>
-                            {selectedImages.map((file, index) => (
-                                <div key={index} className={styles.imagePreview}>
+                            {/* Existing Images when Editing */}
+                            {existingImages.map((imgUrl, index) => (
+                                <div key={`exist-${index}`} className={styles.imagePreview}>
                                     <img
-                                        src={URL.createObjectURL(file)}
-                                        alt={`Preview ${index + 1}`}
+                                        src={getMediaUrl(imgUrl)}
+                                        alt={`Existing preview ${index + 1}`}
                                         className={styles.previewImg}
                                     />
                                     <button
-                                        onClick={() => removeImage(index)}
+                                        type="button"
+                                        onClick={() => removeExistingImage(index)}
                                         className={styles.removeImgButton}
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
                                 </div>
                             ))}
-                            {selectedImages.length < 3 && (
+
+                            {/* Newly Selected Image Files */}
+                            {selectedImages.map((file, index) => (
+                                <div key={`selected-${index}`} className={styles.imagePreview}>
+                                    <img
+                                        src={URL.createObjectURL(file)}
+                                        alt={`Preview ${index + 1}`}
+                                        className={styles.previewImg}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeSelectedImage(index)}
+                                        className={styles.removeImgButton}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            ))}
+
+                            {existingImages.length + selectedImages.length < 3 && (
                                 <label className={styles.uploadLabel}>
                                     <Upload className={styles.uploadIcon} />
                                     <span className={styles.uploadText}>Upload</span>
@@ -417,7 +473,9 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                                     setRating(0);
                                     setTitle("");
                                     setReviewText("");
+                                    setLocationState("Tamil Nadu");
                                     setSelectedImages([]);
+                                    setExistingImages([]);
                                     setValidationErrors({});
                                 }}
                             >
@@ -440,83 +498,90 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                 <h3 className={styles.reviewsTitle}>Customer Reviews</h3>
 
                 {reviews.length > 0 ? (
-                    reviews.map((review) => (
-                        <Card key={review.id} className={styles.reviewCard}>
-                            <div className={styles.reviewHeader}>
-                                <div className={styles.reviewStars}>
-                                    <InteractiveStarRating
-                                        rating={review.rating}
-                                        readOnly
-                                        size="sm"
-                                        showQuotes={false}
-                                    />
+                    reviews.map((review) => {
+                        let parsedMeta: any = {};
+                        try {
+                            if (review.metadata) parsedMeta = JSON.parse(review.metadata);
+                        } catch (e) {}
+
+                        return (
+                            <Card key={review.id} className={styles.reviewCard}>
+                                <div className={styles.reviewHeader}>
+                                    <div className="flex flex-col gap-1">
+                                        <div className={styles.reviewStars}>
+                                            <InteractiveStarRating
+                                                rating={review.rating}
+                                                readOnly
+                                                size="sm"
+                                                showQuotes={false}
+                                            />
+                                        </div>
+                                        {parsedMeta.locationState && (
+                                            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                                                📍 {parsedMeta.locationState}, India
+                                            </span>
+                                        )}
+                                    </div>
+                                    {user && user.id === review.userId && (
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleEditReview(review)}
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleDeleteReview(review.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
-                                {user && user.id === review.userId && (
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleEditReview(review)}
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDeleteReview(review.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+
+                                <h4 className={styles.reviewTitle}>{review.title}</h4>
+                                <p className={styles.reviewComment}>{review.comment}</p>
+
+                                {parsedMeta.categoryRatings && (
+                                    <div className="mt-3 mb-3 grid grid-cols-2 gap-x-4 gap-y-1">
+                                        {Object.entries(parsedMeta.categoryRatings).map(([name, rating]) => (
+                                            <div key={name} className="flex items-center justify-between text-xs">
+                                                <span className="text-muted-foreground capitalize">{name}</span>
+                                                <InteractiveStarRating
+                                                    rating={Number(rating)}
+                                                    readOnly
+                                                    size="sm"
+                                                    showQuotes={false}
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
-                            </div>
 
-                            <h4 className={styles.reviewTitle}>{review.title}</h4>
-                            <p className={styles.reviewComment}>{review.comment}</p>
+                                {review.images && review.images.length > 0 && (
+                                    <div className={styles.reviewImages}>
+                                        {review.images.map((imageUrl, index) => (
+                                            <img
+                                                key={index}
+                                                src={getMediaUrl(imageUrl)}
+                                                alt={`Review image ${index + 1}`}
+                                                className={styles.reviewImgThumb}
+                                                loading="lazy"
+                                                onClick={() => setSelectedModalImage(getMediaUrl(imageUrl))}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
 
-                            {review.metadata && (
-                                <div className="mt-3 mb-3 grid grid-cols-2 gap-x-4 gap-y-1">
-                                    {(() => {
-                                        try {
-                                            const meta = JSON.parse(review.metadata);
-                                            if (meta.categoryRatings) {
-                                                return Object.entries(meta.categoryRatings).map(([name, rating]) => (
-                                                    <div key={name} className="flex items-center justify-between text-xs">
-                                                        <span className="text-muted-foreground capitalize">{name}</span>
-                                                        <InteractiveStarRating
-                                                            rating={Number(rating)}
-                                                            readOnly
-                                                            size="sm"
-                                                            showQuotes={false}
-                                                        />
-                                                    </div>
-                                                ));
-                                            }
-                                        } catch (e) { return null; }
-                                    })()}
-                                </div>
-                            )}
-
-                            {review.images && review.images.length > 0 && (
-                                <div className={styles.reviewImages}>
-                                    {review.images.map((imageUrl, index) => (
-                                        <img
-                                            key={index}
-                                            src={getMediaUrl(imageUrl)}
-                                            alt={`Review image ${index + 1}`}
-                                            className={styles.reviewImgThumb}
-                                            loading="lazy"
-                                            onClick={() => setSelectedModalImage(getMediaUrl(imageUrl))}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            <p className={styles.reviewDate}>
-                                {new Date(review.createdAt).toLocaleDateString()}
-                            </p>
-                        </Card>
-                    ))
+                                <p className={styles.reviewDate}>
+                                    {new Date(review.createdAt).toLocaleDateString()}
+                                </p>
+                            </Card>
+                        );
+                    })
                 ) : (
                     <Card className="p-6 text-center">
                         <p className="text-muted-foreground">No reviews yet. Be the first to review!</p>

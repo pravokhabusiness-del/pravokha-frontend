@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Lock, Smartphone } from "lucide-react";
+import { Lock, Eye, EyeOff, Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/Card";
 import { Button } from "@/ui/Button";
-import { Switch } from "@/ui/Switch";
+import { Input } from "@/ui/Input";
+import { Label } from "@/ui/Label";
 import { useToast } from "@/shared/hook/use-toast";
 import { apiClient } from "@/infra/api/apiClient";
+import { changePasswordSchema } from "@/shared/validation/user.schema";
+import { ZodError } from "zod";
 
 interface SecuritySettingsProps {
   email: string;
@@ -12,29 +15,54 @@ interface SecuritySettingsProps {
   updatePreferences?: (prefs: any) => void;
 }
 
-export const SecuritySettings = ({ email, preferences, updatePreferences }: SecuritySettingsProps) => {
+export const SecuritySettings = ({ email }: SecuritySettingsProps) => {
   const [loading, setLoading] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
 
-  const handleResetPassword = async () => {
-    // ... (rest of logic same)
-    if (!email) {
-      toast({ title: "Error", description: "No email found for this user.", variant: "destructive" });
-      return;
+  const [passwords, setPasswords] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormErrors({});
+
+    try {
+      changePasswordSchema.parse(passwords);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errors: Record<string, string> = {};
+        error.errors.forEach(err => {
+          if (err.path[0]) errors[err.path[0].toString()] = err.message;
+        });
+        setFormErrors(errors);
+        return;
+      }
     }
+
     setLoading(true);
     try {
-      await apiClient.post('/auth/password/reset-request', { email });
-
-      toast({
-        title: "Check your email",
-        description: `We've sent a password reset link to ${email}.`,
+      const response = await apiClient.post("/auth/change-password", {
+        currentPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword
       });
+
+      if (response.data.success || response.status === 200) {
+        toast({ title: "Success", description: "Password updated successfully" });
+        setPasswords({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      }
     } catch (error: any) {
-      console.error("Error resetting password:", error);
+      console.error("Error updating password:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to send reset email.",
+        description: error.response?.data?.message || "Failed to update password",
         variant: "destructive"
       });
     } finally {
@@ -44,43 +72,102 @@ export const SecuritySettings = ({ email, preferences, updatePreferences }: Secu
 
   return (
     <Card className="border-none shadow-lg">
-      {/* ... header ... */}
       <CardHeader className="p-4 md:p-6">
-        <CardTitle className="text-xl md:text-2xl">Security</CardTitle>
-        <CardDescription>Manage your password and security settings.</CardDescription>
+        <div className="flex items-center gap-2">
+          <Lock className="h-5 w-5 text-primary" />
+          <CardTitle className="text-xl md:text-2xl">Security Settings</CardTitle>
+        </div>
+        <CardDescription>Update your password to keep your account secure.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 p-4 md:p-6 pt-0">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg border border-transparent hover:border-border transition-all">
-          <div className="flex gap-3 items-center">
-            <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary shrink-0">
-              <Lock className="h-5 w-5" />
+      <CardContent className="p-4 md:p-6 pt-0 space-y-6">
+        <form onSubmit={handlePasswordChange} className="space-y-4 max-w-lg">
+          <div className="space-y-2">
+            <Label htmlFor="current-password">Current Password *</Label>
+            <div className="relative">
+              <Input
+                id="current-password"
+                type={showCurrentPassword ? "text" : "password"}
+                value={passwords.currentPassword}
+                onChange={(e) => {
+                  setPasswords({ ...passwords, currentPassword: e.target.value });
+                  if (formErrors.currentPassword) setFormErrors(prev => ({ ...prev, currentPassword: '' }));
+                }}
+                placeholder="Enter current password"
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full hover:bg-transparent px-3 text-muted-foreground"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              >
+                {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
-            <div>
-              <p className="font-medium text-sm md:text-base">Password</p>
-              <p className="text-xs text-muted-foreground">Last changed 3 months ago</p>
-            </div>
+            {formErrors.currentPassword && <p className="text-xs text-destructive">{formErrors.currentPassword}</p>}
           </div>
-          <Button variant="outline" size="sm" onClick={handleResetPassword} disabled={loading} className="w-full md:w-auto text-xs md:text-sm">
-            {loading ? "Sending..." : "Change Password"}
+
+          <div className="space-y-2">
+            <Label htmlFor="new-password">New Password *</Label>
+            <div className="relative">
+              <Input
+                id="new-password"
+                type={showNewPassword ? "text" : "password"}
+                value={passwords.newPassword}
+                onChange={(e) => {
+                  setPasswords({ ...passwords, newPassword: e.target.value });
+                  if (formErrors.newPassword) setFormErrors(prev => ({ ...prev, newPassword: '' }));
+                }}
+                placeholder="Min. 8 characters"
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full hover:bg-transparent px-3 text-muted-foreground"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+              >
+                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            {formErrors.newPassword && <p className="text-xs text-destructive">{formErrors.newPassword}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirm-password">Confirm New Password *</Label>
+            <div className="relative">
+              <Input
+                id="confirm-password"
+                type={showConfirmPassword ? "text" : "password"}
+                value={passwords.confirmPassword}
+                onChange={(e) => {
+                  setPasswords({ ...passwords, confirmPassword: e.target.value });
+                  if (formErrors.confirmPassword) setFormErrors(prev => ({ ...prev, confirmPassword: '' }));
+                }}
+                placeholder="Repeat new password"
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full hover:bg-transparent px-3 text-muted-foreground"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            {formErrors.confirmPassword && <p className="text-xs text-destructive">{formErrors.confirmPassword}</p>}
+          </div>
+
+          <Button type="submit" disabled={loading || !passwords.newPassword || !passwords.currentPassword} className="w-full sm:w-auto font-semibold">
+            {loading ? "Updating..." : "Update Password"}
           </Button>
-        </div>
-        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-transparent hover:border-border transition-all">
-          <div className="flex gap-3 items-center">
-            <div className="h-10 w-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 shrink-0">
-              <Smartphone className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-medium text-sm md:text-base">Two-Factor Auth</p>
-              <p className="text-xs text-muted-foreground hidden md:block">Add an extra layer of security</p>
-              <p className="text-xs text-muted-foreground md:hidden">Secure your account</p>
-            </div>
-          </div>
-          <Switch
-            checked={preferences?.two_factor_auth || false}
-            onCheckedChange={(checked) => updatePreferences && updatePreferences({ two_factor_auth: checked })}
-          />
-        </div>
+        </form>
       </CardContent>
     </Card>
   );
 };
+
