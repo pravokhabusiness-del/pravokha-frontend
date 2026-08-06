@@ -221,7 +221,7 @@ export function ProductDetailPage() {
     const [locating, setLocating] = useState(false);
     const [showMapForm, setShowMapForm] = useState(false);
 
-    // Auto-fill delivery pincode and address from profile/storage on mount
+    // Auto-fill delivery pincode and address from profile/storage on mount (defaults to Chennai, Tamil Nadu)
     useEffect(() => {
         const loadSavedAddress = async () => {
             try {
@@ -229,16 +229,17 @@ export function ProductDetailPage() {
                 const savedPin = localStorage.getItem('deliveryPincode');
                 const savedCity = localStorage.getItem('deliveryCity');
                 const savedAddr = localStorage.getItem('deliveryAddress');
+                const savedState = localStorage.getItem('deliveryState');
                 if (savedPin) {
                     setDeliveryPincode(savedPin);
                     setInputPincode(savedPin);
-                    setDeliveryCity(savedCity || "Your Location");
-                    setDeliveryEstimate("Delivery available to this area");
+                    setDeliveryCity(savedCity || "Chennai");
+                    setDeliveryEstimate("Estimated delivery: 3-4 business days");
                     setPdpAddress({
-                        addressLine1: savedAddr || "",
+                        addressLine1: savedAddr || "Mount Road, Anna Salai",
                         addressLine2: "",
-                        city: savedCity || "",
-                        state: localStorage.getItem('deliveryState') || "",
+                        city: savedCity || "Chennai",
+                        state: savedState || "Tamil Nadu",
                         pincode: savedPin,
                     });
                     return;
@@ -252,21 +253,45 @@ export function ProductDetailPage() {
                         setDeliveryPincode(defaultAddr.pincode);
                         setInputPincode(defaultAddr.pincode);
                         setDeliveryCity(defaultAddr.city);
-                        setDeliveryEstimate("Delivery available to your saved address");
+                        setDeliveryEstimate("Estimated delivery: 3-4 business days");
                         setPdpAddress({
                             addressLine1: defaultAddr.addressLine1 || "",
                             addressLine2: defaultAddr.addressLine2 || "",
-                            city: defaultAddr.city || "",
-                            state: defaultAddr.state || "",
-                            pincode: defaultAddr.pincode || "",
+                            city: defaultAddr.city || "Chennai",
+                            state: defaultAddr.state || "Tamil Nadu",
+                            pincode: defaultAddr.pincode || "600001",
                         });
 
                         localStorage.setItem('deliveryPincode', defaultAddr.pincode);
                         localStorage.setItem('deliveryCity', defaultAddr.city);
                         localStorage.setItem('deliveryAddress', defaultAddr.addressLine1);
-                        localStorage.setItem('deliveryState', defaultAddr.state || "");
+                        localStorage.setItem('deliveryState', defaultAddr.state || "Tamil Nadu");
+                        return;
                     }
                 }
+
+                // DEFAULT LOCATION FALLBACK when no address is selected
+                const defaultPin = "600001";
+                const defaultCity = "Chennai";
+                const defaultState = "Tamil Nadu";
+                const defaultLine = "Mount Road, Anna Salai";
+
+                setDeliveryPincode(defaultPin);
+                setInputPincode(defaultPin);
+                setDeliveryCity(defaultCity);
+                setDeliveryEstimate("Estimated delivery: 3-4 business days");
+                setPdpAddress({
+                    addressLine1: defaultLine,
+                    addressLine2: "",
+                    city: defaultCity,
+                    state: defaultState,
+                    pincode: defaultPin
+                });
+
+                localStorage.setItem('deliveryPincode', defaultPin);
+                localStorage.setItem('deliveryCity', defaultCity);
+                localStorage.setItem('deliveryAddress', defaultLine);
+                localStorage.setItem('deliveryState', defaultState);
             } catch (e) {
                 console.error("Failed to load saved address in PDP:", e);
             }
@@ -674,20 +699,56 @@ export function ProductDetailPage() {
         : 0;
 
     const handleShare = async () => {
-        const url = `${window.location.origin}/#/product/${product.slug || product.id}`;
-        const shareData = { title: product.title, text: product.description || product.title, url };
-        try {
-            if ((navigator as any).share) {
-                await (navigator as any).share(shareData);
-            } else if (navigator.clipboard?.writeText) {
-                await navigator.clipboard.writeText(url);
-                toast({ title: "Link copied!", description: "Product link copied to clipboard." });
-            }
-        } catch (e: any) {
-            if (e?.name !== "AbortError") {
-                toast({ title: "Could not share", description: "Please copy the URL manually.", variant: "destructive" });
+        const url = window.location.href.includes('#')
+            ? window.location.href
+            : `${window.location.origin}/#/product/${product.slug || product.id}`;
+
+        // Try Web Share API on mobile devices first
+        if (typeof navigator !== 'undefined' && navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+            try {
+                await navigator.share({
+                    title: product.title,
+                    text: product.description || product.title,
+                    url,
+                });
+                return;
+            } catch (err: any) {
+                if (err?.name === "AbortError") return;
             }
         }
+
+        // Try Clipboard API
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(url);
+                toast({ title: "Link copied!", description: "Product link copied to clipboard." });
+                return;
+            }
+        } catch (clipErr) {
+            console.warn("Clipboard API failed, using fallback copy", clipErr);
+        }
+
+        // Fallback textarea copy for restricted contexts
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = url;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            textarea.style.top = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            const success = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            if (success) {
+                toast({ title: "Link copied!", description: "Product link copied to clipboard." });
+                return;
+            }
+        } catch (fallbackErr) {
+            console.error("Fallback copy failed:", fallbackErr);
+        }
+
+        toast({ title: "Link copied!", description: `Product link: ${url}` });
     };
 
         const handleAddToCart = () => {
@@ -1024,7 +1085,7 @@ export function ProductDetailPage() {
                             <Button
                                 size="lg"
                                 variant="outline"
-                                className="col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform justify-center border-2 border-primary/40 text-primary hover:bg-primary/5 hover:border-primary font-bold"
+                                className="col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform justify-center border-2 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground font-bold shadow-sm"
                                 onClick={handleShare}
                                 aria-label="Share product"
                             >
@@ -1035,10 +1096,10 @@ export function ProductDetailPage() {
                                 size="lg"
                                 variant="outline"
                                 className={cn(
-                                    "col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform group justify-center gsap-scale-in border-2 font-bold",
+                                    "col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform group justify-center gsap-scale-in border-2 font-bold shadow-sm",
                                     isInWishlist 
-                                        ? "border-red-500 text-red-500 bg-red-500/10 hover:bg-red-500/20" 
-                                        : "border-primary/40 text-primary hover:bg-primary/5 hover:border-primary"
+                                        ? "border-red-500 text-red-500 bg-red-500/10 hover:bg-red-600 hover:text-white" 
+                                        : "border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                                 )}
                                 onClick={async () => {
                                     if (!product) return;
@@ -1122,7 +1183,7 @@ export function ProductDetailPage() {
                                     <div className="flex items-center gap-2">
                                         <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                                         <span className="text-sm font-medium">
-                                            Deliver to: <span className="font-bold">{deliveryCity}</span>
+                                            Deliver to: <span className="font-bold">{deliveryCity}, {pdpAddress.state || 'Tamil Nadu'}</span>
                                             <span className="text-muted-foreground ml-1">- {deliveryPincode}</span>
                                         </span>
                                     </div>

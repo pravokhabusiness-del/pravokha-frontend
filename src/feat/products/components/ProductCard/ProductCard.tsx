@@ -56,38 +56,53 @@ export function ProductCard({ product }: ProductCardProps) {
         const productPath = product.slug ? `/product/${product.slug}` : `/product/${product.id}`;
         const url = `${window.location.origin}/#${productPath}`;
 
-        const shareData = {
-            title: product.title,
-            text: product.description || product.title,
-            url,
-        };
-
-        try {
-            if ((navigator as any).share) {
-                await (navigator as any).share(shareData);
-                toast({ title: "Shared", description: "Product shared successfully." });
+        // Try Web Share API on mobile devices first
+        if (typeof navigator !== 'undefined' && navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+            try {
+                await navigator.share({
+                    title: product.title,
+                    text: product.description || product.title,
+                    url,
+                });
                 return;
+            } catch (err: any) {
+                if (err?.name === "AbortError") return;
+                // Otherwise fall through to clipboard copy
             }
+        }
 
+        // Try Clipboard API
+        try {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(url);
                 toast({ title: "Link copied", description: "Product link copied to clipboard." });
                 return;
             }
+        } catch (clipErr) {
+            console.warn("Clipboard API failed, using fallback copy", clipErr);
+        }
 
-            // Last-resort fallback for older browsers
+        // Fallback textarea copy for restricted browser contexts
+        try {
             const textarea = document.createElement('textarea');
             textarea.value = url;
             textarea.style.position = 'fixed';
             textarea.style.left = '-9999px';
+            textarea.style.top = '-9999px';
             document.body.appendChild(textarea);
             textarea.select();
-            document.execCommand('copy');
+            textarea.setSelectionRange(0, 99999);
+            const success = document.execCommand('copy');
             document.body.removeChild(textarea);
-            toast({ title: "Link copied", description: "Product link copied to clipboard." });
-        } catch (error: any) {
-            toast({ title: "Could not share", description: error?.message || "Please try copying the link manually.", variant: "destructive" });
+            if (success) {
+                toast({ title: "Link copied", description: "Product link copied to clipboard." });
+                return;
+            }
+        } catch (fallbackErr) {
+            console.error("Fallback copy failed:", fallbackErr);
         }
+
+        toast({ title: "Link copied", description: `Product link: ${url}` });
     };
 
     const handleToggleWishlist = async (e: React.MouseEvent) => {
@@ -255,27 +270,29 @@ export function ProductCard({ product }: ProductCardProps) {
 
                 <div className={styles.footer}>
                     <div className={styles.priceGroup}>
-                        {product.rating > 0 && (
-                            <div
-                                className={cn(styles.rating, "flex items-center gap-1 sm:gap-1.5 cursor-pointer hover:opacity-80 transition-opacity")}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (product.slug) {
-                                        navigate(`/product/${product.slug}?tab=reviews`);
-                                    }
-                                }}
-                            >
-                                <InteractiveStarRating
-                                    rating={product.rating}
-                                    readOnly
-                                    size="sm"
-                                    showQuotes={false}
-                                />
-                                <span className={cn(styles.reviewCount, "text-[10px] sm:text-xs text-muted-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis")}>
-                                    ({product.reviews})
-                                </span>
-                            </div>
-                        )}
+                        <div className={styles.ratingRow}>
+                            {product.rating > 0 ? (
+                                <div
+                                    className={cn(styles.rating, "flex items-center gap-1 sm:gap-1.5 cursor-pointer hover:opacity-80 transition-opacity")}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (product.slug) {
+                                            navigate(`/product/${product.slug}?tab=reviews`);
+                                        }
+                                    }}
+                                >
+                                    <InteractiveStarRating
+                                        rating={product.rating}
+                                        readOnly
+                                        size="sm"
+                                        showQuotes={false}
+                                    />
+                                    <span className={cn(styles.reviewCount, "text-[10px] sm:text-xs text-muted-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis")}>
+                                        ({product.reviews})
+                                    </span>
+                                </div>
+                            ) : null}
+                        </div>
 
                         <div className={styles.priceRow}>
                             <span className={styles.currentPrice}>
@@ -293,27 +310,29 @@ export function ProductCard({ product }: ProductCardProps) {
                             )}
                         </div>
 
-                        {(() => {
-                            const totalStock = (product.variants || []).reduce((acc, variant) => acc + (variant.sizes || []).reduce((sAcc, size) => sAcc + (size.stock || 0), 0), 0);
+                        <div className={styles.stockRow}>
+                            {(() => {
+                                const totalStock = (product.variants || []).reduce((acc, variant) => acc + (variant.sizes || []).reduce((sAcc, size) => sAcc + (size.stock || 0), 0), 0);
 
-                            if (totalStock === 0) {
-                                return (
-                                    <p className={cn(styles.stock, styles.stockOut)}>
-                                        Out of Stock
-                                    </p>
-                                );
-                            }
+                                if (totalStock === 0) {
+                                    return (
+                                        <p className={cn(styles.stock, styles.stockOut)}>
+                                            Out of Stock
+                                        </p>
+                                    );
+                                }
 
-                            if (totalStock < 10) {
-                                return (
-                                    <p className={cn(styles.stock, styles.stockLow, "animate-pulse")}>
-                                        Only {totalStock} left
-                                    </p>
-                                );
-                            }
+                                if (totalStock < 10) {
+                                    return (
+                                        <p className={cn(styles.stock, styles.stockLow, "animate-pulse")}>
+                                            Only {totalStock} left
+                                        </p>
+                                    );
+                                }
 
-                            return null;
-                        })()}
+                                return null;
+                            })()}
+                        </div>
                     </div>
 
                     <div className={styles.actionGroup}>

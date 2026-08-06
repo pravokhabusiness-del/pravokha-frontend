@@ -8,11 +8,37 @@ import { Link } from "react-router-dom";
 import styles from "./CartDrawer.module.css";
 import { cn, getMediaUrl, getProductFallbackImage } from "@/lib/utils";
 
+function calculateWeightBasedShipping(cartTotal: number, items: any[]) {
+    if (cartTotal >= 1999) {
+        return { fee: 0, totalWeight: 0, isFree: true };
+    }
+
+    // Calculate total weight (default 0.25 kg / 250g per item if weight unspecified)
+    let totalWeight = items.reduce((sum, item) => {
+        const itemW = typeof item.weight === 'number' && item.weight > 0 ? item.weight : 0.25;
+        return sum + (item.quantity * itemW);
+    }, 0);
+
+    totalWeight = Math.max(totalWeight, 0.25); // Min 250g
+
+    // Weight tiers: Base ₹60 up to 0.5kg, ₹90 up to 1.0kg, +₹25 per extra 0.25kg slab
+    let fee = 60;
+    if (totalWeight > 0.50 && totalWeight <= 1.0) {
+        fee = 90;
+    } else if (totalWeight > 1.0) {
+        const extra = totalWeight - 1.0;
+        const extraSlabs = Math.ceil(extra / 0.25);
+        fee = 90 + (extraSlabs * 25);
+    }
+
+    return { fee, totalWeight: Number(totalWeight.toFixed(2)), isFree: false };
+}
+
 export function CartDrawer() {
     const { items, removeFromCart, updateQuantity, cartTotal, isCartOpen, setIsCartOpen, cartCount, clearCart } = useCart();
     
-    const shippingFee = cartTotal >= 999 ? 0 : 99;
-    const finalTotal = cartTotal + shippingFee;
+    const { fee: shippingFee, totalWeight, isFree: isFreeShipping } = calculateWeightBasedShipping(cartTotal, items);
+    const finalTotal = isFreeShipping ? cartTotal : cartTotal + shippingFee;
 
     return (
         <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
@@ -143,17 +169,21 @@ export function CartDrawer() {
                                     <span>₹{cartTotal}</span>
                                 </div>
                                 <div className={styles.summaryRow}>
-                                    <span className={styles.summaryLabel}>Shipping</span>
-                                    {shippingFee === 0 ? (
+                                    <span className={styles.summaryLabel}>Est. Weight</span>
+                                    <span className="text-xs font-mono text-muted-foreground">{totalWeight} kg</span>
+                                </div>
+                                <div className={styles.summaryRow}>
+                                    <span className={styles.summaryLabel}>Shipping (Weight Based)</span>
+                                    {isFreeShipping ? (
                                         <span className={styles.freeShipping}>Free</span>
                                     ) : (
-                                        <span>₹{shippingFee}</span>
+                                        <span className="font-semibold text-primary">₹{shippingFee}</span>
                                     )}
                                 </div>
                                 <Separator />
                                 <div className={styles.totalRow}>
                                     <span>Total</span>
-                                    <span>₹{finalTotal}</span>
+                                    <span className="font-bold text-lg">₹{finalTotal}</span>
                                 </div>
                             </div>
 
