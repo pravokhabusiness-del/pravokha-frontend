@@ -8,6 +8,7 @@ if (!import.meta.env.VITE_API_URL) {
 
 export const apiClient = axios.create({
     baseURL: API_URL,
+    timeout: 15000, // 15s global default — prevents cold-start hangs
     headers: {
         'Content-Type': 'application/json',
     },

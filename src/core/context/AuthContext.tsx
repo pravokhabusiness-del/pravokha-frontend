@@ -72,7 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>(null);
-  const [loading, setLoading] = useState(true);
+  // Start as false if no token — guests load instantly without any loading screen
+  const [loading, setLoading] = useState(() => !!localStorage.getItem('pravokha_auth_token'));
   const [authError, setAuthError] = useState<string | null>(null);
 
   // Helper to ensure CONSISTENT mapping from backend (camelCase) to frontend (snake_case)
@@ -125,14 +126,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const initializeAuth = async () => {
     const token = localStorage.getItem('pravokha_auth_token');
     if (!token) {
+      // No token — guest user, already loading=false from useState initializer
       setUser(null);
       setRole(null);
       setLoading(false);
       return;
     }
 
+    // Absolute safety-net: even if axios timeout fails, unblock the app after 8s
+    const safetyTimer = setTimeout(() => {
+      console.warn('[AuthContext] Safety timeout triggered — unblocking app');
+      setLoading(false);
+    }, 8000);
+
     try {
-      const response = await apiClient.get('/auth/me', { timeout: 6000 });
+      const response = await apiClient.get('/auth/me', { timeout: 5000 });
       const userData = response.data.user;
       const mappedUser = mapUserData(userData);
 
@@ -156,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRole(null);
       setAuthError(null);
     } finally {
+      clearTimeout(safetyTimer);
       setLoading(false);
     }
   };
