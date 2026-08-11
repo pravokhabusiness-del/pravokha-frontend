@@ -69,8 +69,8 @@
 
 /* ─── Blurred (inactive sibling) ────────────────────────────────── */
 .wrapper.blurred {
-    filter: blur(2.5px);
-    opacity: 0.55;
+    filter: blur(0.5px);
+    opacity: 0.88;
     transform: scale(0.97);
     z-index: 1;
 }

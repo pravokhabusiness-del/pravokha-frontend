@@ -33,7 +33,20 @@ export const SkeletonCard = () => (
     <div className={styles.productCard}>
         <div className={`${styles.skeleton} ${styles.productImage}`} />
         <div className={`${styles.skeleton} ${styles.productTitle}`} />
-        <div className={`${styles.skeleton} ${styles.productPrice}`} />
+        <div className="flex items-center gap-1 my-1">
+            <div className={`${styles.skeleton} h-3 w-16 rounded`} />
+            <div className={`${styles.skeleton} h-3 w-8 rounded`} />
+        </div>
+        <div className="flex items-center justify-between mt-auto pt-2">
+            <div className="flex items-center gap-1.5">
+                <div className={`${styles.skeleton} ${styles.productPrice}`} />
+                <div className={`${styles.skeleton} h-4 w-12 rounded-md`} />
+            </div>
+            <div className="flex items-center gap-1">
+                <div className={`${styles.skeleton} h-7 w-7 rounded-full`} />
+                <div className={`${styles.skeleton} h-8 w-8 rounded-full`} />
+            </div>
+        </div>
     </div>
 );
 

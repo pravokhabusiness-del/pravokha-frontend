@@ -100,7 +100,6 @@ export function Footer() {
                             <li><Link to="/shipping-returns" className="hover:underline hover:text-primary transition-colors">Shipping & Returns</Link></li>
                             <li><Link to="/faq" className="hover:underline hover:text-primary transition-colors">FAQ</Link></li>
                             <li><Link to="/tickets" className="hover:underline hover:text-primary transition-colors">Report</Link></li>
-                            <li><Link to="/size-guide" className="hover:underline hover:text-primary transition-colors">Size Guide</Link></li>
                             <li><Link to="/support" className="hover:underline hover:text-primary transition-colors">Support Center</Link></li>
                         </ul>
                     </div>

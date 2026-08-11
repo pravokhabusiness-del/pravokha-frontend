@@ -6,6 +6,7 @@ import { Toaster } from "@/ui/Toaster";
 import { AuthProvider, useAuth } from "@/core/context/AuthContext";
 import { AdminProvider } from "@/core/context/AdminContext";
 import { CartProvider } from "@/core/context/CartContext";
+import { WishlistProvider } from "@/core/context/WishlistContext";
 import { Navbar } from "@/layout/Navbar";
 import { Footer } from "@/layout/Footer";
 import { CartDrawer } from "@/feat/cart/components/CartDrawer";
@@ -204,7 +205,8 @@ export default function App() {
           <AuthProvider>
             <AdminProvider>
               <CartProvider>
-                <AuthLoadingGuard>
+                <WishlistProvider>
+                  <AuthLoadingGuard>
                   <GoogleAnalytics />
                   <div className="flex flex-col min-h-screen">
                     <ConditionalNavbar />
@@ -665,6 +667,7 @@ export default function App() {
                 </a>
 
                 <Toaster />
+                </WishlistProvider>
               </CartProvider>
             </AdminProvider>
           </AuthProvider>

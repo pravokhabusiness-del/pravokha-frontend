@@ -9,6 +9,7 @@ import { useCart } from "@/core/context/CartContext";
 import { Product } from "@/data/products";
 import { apiClient } from "@/infra/api/apiClient";
 import { toast } from "@/shared/hook/use-toast";
+import { useWishlist } from "@/core/context/WishlistContext";
 import styles from "./ProductCard.module.css";
 import { cn, getMediaUrl, getProductFallbackImage } from "@/lib/utils";
 import { useAuth } from "@/core/context/AuthContext";
@@ -22,32 +23,13 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
     const { addToCart } = useCart();
     const { user } = useAuth();
+    const { isInWishlist, toggleWishlist } = useWishlist();
     const navigate = useNavigate();
-    const [isInWishlist, setIsInWishlist] = useState(false);
+    const isWishlisted = isInWishlist(product.id);
     const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
     const [showBlinkAnimation, setShowBlinkAnimation] = useState(false);
-    const { recentlyViewed, addToRecentlyViewed } = useRecentlyViewed();
+    const { recentlyViewed } = useRecentlyViewed();
     const isRecentlyViewed = recentlyViewed.some(p => p.id === product.id);
-
-    useEffect(() => {
-        if (user) {
-            checkWishlistStatus();
-        } else {
-            setIsInWishlist(false);
-        }
-    }, [product.id, user]);
-
-    const checkWishlistStatus = async () => {
-        try {
-            const response = await apiClient.get(`/wishlist/check/${product.id}`);
-            if (response.data.success) {
-                setIsInWishlist(response.data.inWishlist);
-            }
-        } catch (error) {
-            // User not logged in or error occurred
-            setIsInWishlist(false);
-        }
-    };
 
     const handleShareClick = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -112,41 +94,9 @@ export function ProductCard({ product }: ProductCardProps) {
         setShowBlinkAnimation(true);
         setTimeout(() => setShowBlinkAnimation(false), 600);
 
-        const previousState = isInWishlist;
-        setIsInWishlist(!isInWishlist);
         setIsTogglingWishlist(true);
-
         try {
-            if (previousState) {
-                // Remove from wishlist
-                const response = await apiClient.delete(`/wishlist/${product.id}`);
-                if (!response.data.success) throw new Error('Failed to remove from wishlist');
-
-                toast({
-                    title: "Removed from wishlist",
-                    description: `${product.title} has been removed from your wishlist`,
-                });
-            } else {
-                // Add to wishlist
-                const response = await apiClient.post('/wishlist', { productId: product.id });
-                if (!response.data.success) throw new Error('Failed to add to wishlist');
-
-                toast({
-                    title: "Added to wishlist",
-                    description: `${product.title} has been added to your wishlist`,
-                });
-            }
-        } catch (error: any) {
-            setIsInWishlist(previousState);
-            if (error.response?.status === 401) {
-                navigate("/auth");
-                return;
-            }
-            toast({
-                title: "Error",
-                description: error.message || "Failed to update wishlist. Please try again.",
-                variant: "destructive",
-            });
+            await toggleWishlist(product);
         } finally {
             setIsTogglingWishlist(false);
         }
@@ -205,14 +155,9 @@ export function ProductCard({ product }: ProductCardProps) {
     return (
         <div
             onClick={(e) => {
-                // Prevent navigation if clicking on buttons/badges logic handled inside buttons
-                // But this div wraps everything. 
-                // Ensure we have a valid slug.
                 if (product.slug) {
                     navigate(`/product/${product.slug}`);
                 } else {
-                    console.error("Product has no slug:", product);
-                    // Fallback to ID if slug missing? or prevent nav
                     if (product.id) navigate(`/product/${product.id}`);
                 }
             }}
@@ -238,13 +183,13 @@ export function ProductCard({ product }: ProductCardProps) {
                     className={cn(
                         styles.wishlistButton,
                         showBlinkAnimation && "animate-ping-once",
-                        isInWishlist && styles.wishlistActive
+                        isWishlisted && styles.wishlistActive
                     )}
                 >
                     <TbHeartPlus
                         className={cn(
                             styles.wishlistIcon,
-                            isInWishlist && styles.wishlistIconActive,
+                            isWishlisted && styles.wishlistIconActive,
                             isTogglingWishlist && "animate-pulse"
                         )}
                     />
@@ -296,15 +241,15 @@ export function ProductCard({ product }: ProductCardProps) {
 
                         <div className={styles.priceRow}>
                             <span className={styles.currentPrice}>
-                                ₹{product.discountPrice || product.price}
+                                ₹{(product.discountPrice || product.price).toLocaleString('en-IN')}
                             </span>
                             {hasDiscount && (
                                 <>
                                     <span className={styles.originalPrice}>
-                                        ₹{product.price}
+                                        ₹{product.price.toLocaleString('en-IN')}
                                     </span>
-                                    <Badge variant="destructive" className="text-[10px] px-1 py-0 h-4 sm:h-5">
-                                        {discountPercent}% OFF
+                                    <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5 h-4 sm:h-5 font-bold uppercase rounded-md bg-emerald-600 dark:bg-emerald-500 text-white border-0 shadow-sm">
+                                        {discountPercent}% off
                                     </Badge>
                                 </>
                             )}

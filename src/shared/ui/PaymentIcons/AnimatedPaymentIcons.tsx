@@ -54,15 +54,14 @@ const paymentMethods = [
 
 export function AnimatedPaymentIcons() {
     return (
-        <div className={cn(styles.animatedFlex, "flex flex-wrap items-center gap-x-6 gap-y-3 justify-center md:justify-start")}>
-            <p className={cn(styles.label, "mr-2")}>We Accept:</p>
+        <div className={cn(styles.animatedFlex, "flex flex-wrap items-center gap-2.5 justify-start")}>
             {paymentMethods.map((method) => (
                 <div
                     key={method.name}
-                    className={cn(styles.animatedItem, "flex items-center gap-2 bg-white/5 dark:bg-white/10 px-2.5 py-1.5 rounded-xl border border-white/10 hover:border-white/20 transition-all shadow-sm duration-300 hover:scale-105")}
+                    title={`Pay with ${method.name}`}
+                    className={cn(styles.animatedItem, "flex items-center justify-center bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-all shadow-sm duration-300 hover:scale-110 cursor-pointer")}
                 >
-                    {method.renderLogo("h-3.5 w-auto flex-shrink-0")}
-                    <span className={styles.methodName}>{method.name}</span>
+                    {method.renderLogo("h-4 w-auto flex-shrink-0")}
                 </div>
             ))}
         </div>

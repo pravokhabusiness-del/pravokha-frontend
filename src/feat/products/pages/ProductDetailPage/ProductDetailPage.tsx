@@ -955,11 +955,6 @@ export function ProductDetailPage() {
                         <div>
                             <div className="flex items-center justify-between mb-3">
                                 <Label className="text-sm sm:text-base font-semibold">Size</Label>
-                                <Link to="/size-guide">
-                                    <Button variant="link" size="sm" className="h-auto p-0 hover:scale-105 transition-transform">
-                                        Size Guide
-                                    </Button>
-                                </Link>
                             </div>
                             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                                 {allUniqueSizes.map((size: string) => {

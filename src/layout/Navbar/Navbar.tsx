@@ -80,7 +80,7 @@ import { apiClient } from "@/infra/api/apiClient";
 import { MegaMenu } from "./MegaMenu";
 import { Skeleton } from "@/ui/Skeleton";
 import { APP_CONFIG } from "@/core/config/appConfig";
-
+import { PravokhaLogo } from "@/shared/ui/PravokhaLogo";
 
 interface SearchResult {
     id: string;
@@ -290,12 +290,7 @@ export function Navbar() {
                                     <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                                     <SheetDescription className="sr-only">Browse products and navigate the site</SheetDescription>
                                     <div className="flex items-center gap-2">
-                                        <img
-                                            key={resolvedTheme}
-                                            src={resolvedTheme === "dark" ? logoDark : logoLight}
-                                            alt="PRAVOKHA Logo"
-                                            className="h-10 w-auto sm:h-20 ml-4 object-contain transition-opacity duration-300"
-                                        />
+                                        <PravokhaLogo className="h-8 sm:h-9 w-auto" />
                                     </div>
                                 </SheetHeader>
                                 <ScrollArea className="flex-1 -mx-6 px-6">
@@ -395,13 +390,7 @@ export function Navbar() {
                         </Sheet>
 
                         <Link to="/" className="flex items-center flex-shrink-0">
-                            <img
-                                key={resolvedTheme}
-                                src={resolvedTheme === "dark" ? logoDark : logoLight}
-                                alt="PRAVOKHA Logo"
-                                className={styles.logo}
-                                loading="eager"
-                            />
+                            <PravokhaLogo className="h-8 sm:h-9 w-auto" />
                         </Link>
                     </div>
 

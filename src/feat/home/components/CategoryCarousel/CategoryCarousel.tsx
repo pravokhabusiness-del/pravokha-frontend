@@ -154,7 +154,7 @@ export function CategoryCarousel({
             // Immediate Left Layer
             return {
                 zIndex: 20,
-                opacity: 0.85,
+                opacity: 0.95,
                 transform: 'translate(var(--coverflow-left-translate, -128%), -50%) scale(var(--coverflow-side-scale, 0.88))',
             };
         }
@@ -163,7 +163,7 @@ export function CategoryCarousel({
             // Immediate Right Layer
             return {
                 zIndex: 20,
-                opacity: 0.85,
+                opacity: 0.95,
                 transform: 'translate(var(--coverflow-right-translate, 28%), -50%) scale(var(--coverflow-side-scale, 0.88))',
             };
         }
@@ -172,7 +172,7 @@ export function CategoryCarousel({
             // Far Left Layer
             return {
                 zIndex: 10,
-                opacity: 0.45,
+                opacity: 0.78,
                 transform: 'translate(var(--coverflow-far-left-translate, -195%), -50%) scale(var(--coverflow-far-scale, 0.72))',
             };
         }
@@ -181,7 +181,7 @@ export function CategoryCarousel({
             // Far Right Layer
             return {
                 zIndex: 10,
-                opacity: 0.45,
+                opacity: 0.78,
                 transform: 'translate(var(--coverflow-far-right-translate, 95%), -50%) scale(var(--coverflow-far-scale, 0.72))',
             };
         }

@@ -10,7 +10,10 @@ import { useCart } from "@/core/context/CartContext";
 import { Product } from "@/data/products";
 import { getMediaUrl } from "@/lib/utils";
 
+import { useWishlist } from "@/core/context/WishlistContext";
+
 export function WishlistPage() {
+    const { fetchWishlist: refreshGlobalWishlist } = useWishlist();
     // We store the full extended product object here
     const [wishlistItems, setWishlistItems] = useState<{ id: string; product: Product }[]>([]);
     const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -101,6 +104,7 @@ export function WishlistPage() {
         try {
             await apiClient.delete(`/wishlist/${wishlistId}`);
             setWishlistItems(prev => prev.filter(item => item.id !== wishlistId));
+            refreshGlobalWishlist();
             toast({
                 title: "Removed",
                 description: "Item removed from wishlist",
@@ -158,6 +162,7 @@ export function WishlistPage() {
         try {
             await apiClient.delete('/wishlist');
             setWishlistItems([]);
+            refreshGlobalWishlist();
             toast({
                 title: "Cleared",
                 description: "Wishlist has been cleared",

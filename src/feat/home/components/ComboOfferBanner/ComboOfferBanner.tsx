@@ -48,6 +48,61 @@ interface ComboOffer {
     imageUrl: string | null;
 }
 
+import { Calendar, Clock } from "lucide-react";
+
+// Interactive Live Countdown Timer component
+function ComboTimer({ endDateStr }: { endDateStr?: string | null }) {
+    const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({ hours: 23, minutes: 59, seconds: 59 });
+
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            let target: number;
+            if (endDateStr) {
+                target = new Date(endDateStr).getTime();
+            } else {
+                // Default to end of current day (midnight)
+                const now = new Date();
+                const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+                target = midnight.getTime();
+            }
+
+            const diff = target - Date.now();
+            if (diff <= 0) {
+                return { hours: 0, minutes: 0, seconds: 0 };
+            }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            return { hours, minutes, seconds };
+        };
+
+        setTimeLeft(calculateTimeLeft());
+        const timer = setInterval(() => {
+            setTimeLeft(calculateTimeLeft());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [endDateStr]);
+
+    const formatNum = (num: number) => String(num).padStart(2, "0");
+
+    return (
+        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-amber-500/40 text-amber-400 shadow-md">
+            <Clock className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-300 mr-1">Ends In:</span>
+            <div className="flex items-center gap-1 font-mono text-xs font-bold text-white">
+                <span className="bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300 border border-amber-500/30">{formatNum(timeLeft.hours)}h</span>
+                <span className="text-amber-400">:</span>
+                <span className="bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300 border border-amber-500/30">{formatNum(timeLeft.minutes)}m</span>
+                <span className="text-amber-400">:</span>
+                <span className="bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300 border border-amber-500/30">{formatNum(timeLeft.seconds)}s</span>
+            </div>
+        </div>
+    );
+}
+
 export function ComboOfferBanner() {
     const { addMultipleToCart } = useCart();
     const [offers, setOffers] = useState<ComboOffer[]>([]);
@@ -183,16 +238,25 @@ export function ComboOfferBanner() {
             <div className={styles.content}>
                 {/* Left Column: Details & CTA */}
                 <div className={styles.leftColumn}>
-                    <div className="flex items-center gap-2 flex-wrap justify-center lg:justify-start">
-                        <Badge className="bg-amber-500 text-white border-0 text-xs font-bold px-2.5 py-0.5 animate-pulse">
+                    <div className="flex items-center gap-2 flex-wrap justify-center lg:justify-start mb-2">
+                        <Badge className="bg-amber-500 text-white border-0 text-xs font-bold px-2.5 py-1 animate-pulse shadow-md">
                             <Zap className="h-3 w-3 mr-1 inline" />
                             LIMITED OFFER
                         </Badge>
                         {computedDiscountPercent > 0 && (
-                            <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2.5 py-0.5">
+                            <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2.5 py-1 shadow-md">
                                 {computedDiscountPercent}% OFF
                             </Badge>
                         )}
+                        {/* Attractive Combo Date & Time Badge */}
+                        <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 text-white text-xs font-semibold">
+                            <Calendar className="h-3.5 w-3.5 text-amber-300 shrink-0" />
+                            <span>
+                                {endDateText ? `Valid till ${endDateText}` : startDateText ? `Offer from ${startDateText}` : "Limited Time Deal"}
+                            </span>
+                        </div>
+                        {/* Live Timer Badge */}
+                        <ComboTimer endDateStr={offer.endDate} />
                     </div>
 
                     <div className={styles.titleGroup}>
