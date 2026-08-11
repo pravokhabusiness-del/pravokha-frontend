@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await apiClient.get('/auth/me');
+      const response = await apiClient.get('/auth/me', { timeout: 6000 });
       const userData = response.data.user;
       const mappedUser = mapUserData(userData);
 
@@ -154,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('pravokha_user_id');
       setUser(null);
       setRole(null);
-      setAuthError('Session expired. Please login again.');
+      setAuthError(null);
     } finally {
       setLoading(false);
     }
