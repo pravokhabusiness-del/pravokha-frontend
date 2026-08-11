@@ -1,2 +1,2 @@
 export { PravokhaLogo } from "./PravokhaLogo";
-export default PravokhaLogo;
+export { default } from "./PravokhaLogo";
