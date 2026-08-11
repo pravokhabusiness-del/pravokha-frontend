@@ -25,6 +25,8 @@ export function WishlistPage() {
     useEffect(() => {
         if (user) {
             fetchWishlist();
+        } else {
+            setLoading(false);
         }
     }, [user]);
 
