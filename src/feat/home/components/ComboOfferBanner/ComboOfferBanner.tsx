@@ -129,14 +129,7 @@ export function ComboOfferBanner() {
         fetchOffers();
     }, []);
 
-    // Rotate through offers if multiple
-    useEffect(() => {
-        if (offers.length <= 1) return;
-        const timer = setInterval(() => {
-            setActiveIndex(prev => (prev + 1) % offers.length);
-        }, 6000);
-        return () => clearInterval(timer);
-    }, [offers.length]);
+    // Offer rotation timer removed
 
     if (loading || offers.length === 0) return null;
 
@@ -328,10 +321,7 @@ export function ComboOfferBanner() {
                                                 <Package className="h-8 w-8 text-muted-foreground/30" />
                                             </div>
                                         )}
-                                        {/* Product number badge */}
-                                        <span className="absolute -top-1.5 -left-1.5 w-6 h-6 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center shadow-md">
-                                            {idx + 1}
-                                        </span>
+
                                     </div>
                                     <p className={styles.productTitle}>
                                         {product.title}

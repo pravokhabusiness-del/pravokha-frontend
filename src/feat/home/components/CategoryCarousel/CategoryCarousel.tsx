@@ -87,18 +87,7 @@ export function CategoryCarousel({
         setCurrentIndex((prev) => (prev > 0 ? prev - 1 : total - 1));
     }, [total]);
 
-    /* ── Autoplay — Pause on hover ─────────────────────────── */
-    useEffect(() => {
-        if (total <= 1 || isContainerHovered) {
-            if (autoplayRef.current) clearInterval(autoplayRef.current);
-            return;
-        }
-
-        autoplayRef.current = setInterval(goNext, 3500);
-        return () => {
-            if (autoplayRef.current) clearInterval(autoplayRef.current);
-        };
-    }, [total, isContainerHovered, goNext]);
+    /* ── Autoplay Disabled ─────────────────────────────────── */
 
     /* ── Scroll Pill into view when index changes ──────────── */
     useEffect(() => {

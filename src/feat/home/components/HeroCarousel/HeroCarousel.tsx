@@ -44,7 +44,6 @@ const staticSlides: Slide[] = [
 
 export function HeroCarousel() {
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
     const [slides, setSlides] = useState<Slide[]>([...staticSlides, whatsappSlide]);
 
     useEffect(() => { fetchAllBanners(); }, []);
@@ -95,17 +94,10 @@ export function HeroCarousel() {
 
     const goToSlide = useCallback((index: number) => {
         setCurrentSlide(index);
-        setIsAutoPlaying(false);
     }, []);
 
     const prev = useCallback(() => setCurrentSlide(c => (c - 1 + slides.length) % slides.length), [slides.length]);
     const next = useCallback(() => setCurrentSlide(c => (c + 1) % slides.length), [slides.length]);
-
-    useEffect(() => {
-        if (!isAutoPlaying) return;
-        const t = setInterval(next, 5000);
-        return () => clearInterval(t);
-    }, [isAutoPlaying, next]);
 
     const slide = slides[currentSlide];
 
@@ -136,7 +128,7 @@ export function HeroCarousel() {
     };
 
     return (
-        <section className={styles.section} onMouseEnter={() => setIsAutoPlaying(false)} onMouseLeave={() => setIsAutoPlaying(true)}>
+        <section className={styles.section}>
             <div className={styles.grid}>
                 {slides.map((s, i) => (
                     <div key={s.id || i} className={cn(styles.slide, i === currentSlide && styles.slideActive)} aria-hidden={i !== currentSlide}>

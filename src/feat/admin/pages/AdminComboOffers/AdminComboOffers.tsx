@@ -560,10 +560,7 @@ export default function AdminComboOffers() {
                               </div>
                             </div>
                           </div>
-                          {/* Product index badge */}
-                          <div className="absolute top-1.5 left-1.5">
-                            <span className="bg-black/40 text-white text-[8px] font-bold px-1 py-0.5 rounded">{idx + 1}</span>
-                          </div>
+
                         </a>
                       ))}
                       {/* If more than 3 products, show overflow indicator */}

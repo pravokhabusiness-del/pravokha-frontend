@@ -45,21 +45,9 @@ const banners: BannerSlide[] = [
 
 export function BottomBannerCarousel() {
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-
-    useEffect(() => {
-        if (!isAutoPlaying) return;
-
-        const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % banners.length);
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [isAutoPlaying]);
 
     const goToSlide = (index: number) => {
         setCurrentSlide(index);
-        setIsAutoPlaying(false);
     };
 
     return (
