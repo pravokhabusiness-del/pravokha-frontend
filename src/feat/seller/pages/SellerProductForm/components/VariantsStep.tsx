@@ -31,60 +31,103 @@ export const VariantsStep: React.FC<VariantsStepProps> = ({
                 </div>
 
                 {/* Add New Color */}
-                <div className="flex gap-2 mb-4 items-end">
-                    <div className="grid gap-1.5 flex-1">
-                        <Label className="text-xs text-muted-foreground">Color Name</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 items-end bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="sm:col-span-4 grid gap-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">Color Name *</Label>
                         <Input
                             placeholder="e.g. Midnight Blue"
                             id="new-color-name"
                         />
                     </div>
-                    <div className="grid gap-1.5 w-24">
-                        <Label className="text-xs text-muted-foreground">Hex Code</Label>
-                        <div className="relative">
-                            <Input
-                                type="color"
-                                id="new-color-hex"
-                                className="h-10 w-full p-1 cursor-pointer"
-                                defaultValue="#000000"
-                            />
-                        </div>
-                    </div>
-                    <Button
-                        type="button"
-                        onClick={() => {
-                            const nameInput = document.getElementById('new-color-name') as HTMLInputElement;
-                            const hexInput = document.getElementById('new-color-hex') as HTMLInputElement;
-                            const name = nameInput.value.trim();
-                            const hex = hexInput.value;
 
-                            if (name) {
-                                // Check for duplicates
-                                const exists = formData.selectedColors.some(
-                                    c => c.hex.toLowerCase() === hex.toLowerCase() || c.name.toLowerCase() === name.toLowerCase()
-                                );
+                    <div className="sm:col-span-4 grid gap-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">Hex / RGB Code</Label>
+                        <Input
+                            placeholder="#000000 or 255,0,0"
+                            id="new-color-text"
+                            defaultValue="#000000"
+                            onChange={(e) => {
+                                let val = e.target.value.trim();
+                                const colorPicker = document.getElementById('new-color-hex') as HTMLInputElement;
+                                if (!colorPicker) return;
 
-                                if (exists) {
-                                    toast({
-                                        title: "Duplicate Color",
-                                        description: "A color with this name or hex code already exists.",
-                                        variant: "destructive"
-                                    });
+                                // RGB format check rgb(r, g, b) or r,g,b
+                                const rgbMatch = val.match(/^rgba?\(?\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/i);
+                                if (rgbMatch) {
+                                    const r = Math.min(255, parseInt(rgbMatch[1])).toString(16).padStart(2, '0');
+                                    const g = Math.min(255, parseInt(rgbMatch[2])).toString(16).padStart(2, '0');
+                                    const b = Math.min(255, parseInt(rgbMatch[3])).toString(16).padStart(2, '0');
+                                    colorPicker.value = `#${r}${g}${b}`;
                                     return;
                                 }
 
-                                const newColor: ColorOption = {
-                                    id: crypto.randomUUID(),
-                                    name,
-                                    hex
-                                };
-                                toggleSelection(formData.selectedColors, newColor, 'selectedColors');
-                                nameInput.value = "";
-                            }
-                        }}
-                    >
-                        Add Color
-                    </Button>
+                                // Hex format check
+                                if (!val.startsWith('#')) val = `#${val}`;
+                                if (/^#[0-9A-F]{6}$/i.test(val)) {
+                                    colorPicker.value = val;
+                                }
+                            }}
+                        />
+                    </div>
+
+                    <div className="sm:col-span-2 grid gap-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">Picker</Label>
+                        <Input
+                            type="color"
+                            id="new-color-hex"
+                            className="h-10 w-full p-1 cursor-pointer bg-white"
+                            defaultValue="#000000"
+                            onChange={(e) => {
+                                const textInput = document.getElementById('new-color-text') as HTMLInputElement;
+                                if (textInput) textInput.value = e.target.value.toUpperCase();
+                            }}
+                        />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                        <Button
+                            type="button"
+                            className="w-full font-bold"
+                            onClick={() => {
+                                const nameInput = document.getElementById('new-color-name') as HTMLInputElement;
+                                const hexInput = document.getElementById('new-color-hex') as HTMLInputElement;
+                                const name = nameInput.value.trim();
+                                const hex = hexInput.value || "#000000";
+
+                                if (name) {
+                                    // Check for duplicates
+                                    const exists = formData.selectedColors.some(
+                                        c => c.hex.toLowerCase() === hex.toLowerCase() || c.name.toLowerCase() === name.toLowerCase()
+                                    );
+
+                                    if (exists) {
+                                        toast({
+                                            title: "Duplicate Color",
+                                            description: "A color with this name or hex code already exists.",
+                                            variant: "destructive"
+                                        });
+                                        return;
+                                    }
+
+                                    const newColor: ColorOption = {
+                                        id: crypto.randomUUID(),
+                                        name,
+                                        hex
+                                    };
+                                    toggleSelection(formData.selectedColors, newColor, 'selectedColors');
+                                    nameInput.value = "";
+                                } else {
+                                    toast({
+                                        title: "Color Name Required",
+                                        description: "Please enter a color name (e.g. Navy Blue).",
+                                        variant: "destructive"
+                                    });
+                                }
+                            }}
+                        >
+                            Add Color
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Selected Colors List */}

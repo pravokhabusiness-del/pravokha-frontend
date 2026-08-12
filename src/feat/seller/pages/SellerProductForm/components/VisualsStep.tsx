@@ -49,26 +49,31 @@ export const VisualsStep: React.FC<VisualsStepProps> = ({
                     {formData.selectedColors.map(color => {
                         const existing = formData.existingVariantImages[color.id] || [];
                         const previews = formData.variantPreviews[color.id] || [];
-                        const hasImages = existing.length + previews.length > 0;
+                        const totalCount = existing.length + previews.length;
 
                         return (
                             <div key={color.id} className="bg-card border rounded-xl overflow-hidden shadow-sm">
                                 <div className="px-5 py-4 border-b bg-gray-50/50 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div>
-                                            <h4 className="font-semibold text-sm">
-                                                {color.name}
+                                            <h4 className="font-semibold text-sm flex items-center gap-2">
+                                                <span>{color.name} Gallery</span>
+                                                <Badge variant="outline" className="text-[10px]">
+                                                    Min 4 - Max 8 images
+                                                </Badge>
                                             </h4>
-                                            <p className={cn("text-[10px] font-medium", (existing.length + previews.length) >= 4 ? "text-emerald-600" : "text-rose-500")}>
-                                                {(existing.length + previews.length) >= 4
-                                                    ? `${existing.length + previews.length} images (Ready)`
-                                                    : `${existing.length + previews.length}/4 images required`
+                                            <p className={cn("text-xs font-medium mt-0.5", totalCount >= 4 && totalCount <= 8 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400")}>
+                                                {totalCount < 4
+                                                    ? `${totalCount}/4 images uploaded (Need at least ${4 - totalCount} more)`
+                                                    : totalCount > 8
+                                                        ? `${totalCount}/8 images (Maximum limit is 8)`
+                                                        : `${totalCount} images uploaded (Ready)`
                                                 }
                                             </p>
                                         </div>
                                     </div>
-                                    {!hasImages && (
-                                        <Badge variant="destructive" className="text-[10px]">Required</Badge>
+                                    {totalCount < 4 && (
+                                        <Badge variant="destructive" className="text-[10px]">4 Min Required</Badge>
                                     )}
                                 </div>
 

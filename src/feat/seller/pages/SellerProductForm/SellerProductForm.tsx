@@ -482,23 +482,32 @@ export default function SellerProductForm() {
         // Validate Visuals (Step 3) - REQUIRE images for EACH variant
         if (step === 3) {
             if (formData.selectedColors.length === 0) {
-                // Technically this is caught in step 2 (Variants) usually, but good to check
                 toast({ title: "No Colors", description: "Please go back and add at least one color.", variant: "destructive" });
                 isValid = false;
             } else {
                 let missingImages = false;
+                let tooManyImages = false;
+
                 formData.selectedColors.forEach(color => {
                     const existing = formData.existingVariantImages[color.id] || [];
                     const newImgs = formData.variantImages[color.id] || [];
-                    if (existing.length + newImgs.length < 4) {
-                        missingImages = true;
-                    }
+                    const total = existing.length + newImgs.length;
+
+                    if (total < 4) missingImages = true;
+                    if (total > 8) tooManyImages = true;
                 });
 
                 if (missingImages) {
                     toast({
                         title: "Incomplete Gallery",
                         description: "Every color variant must have at least 4 images.",
+                        variant: "destructive"
+                    });
+                    isValid = false;
+                } else if (tooManyImages) {
+                    toast({
+                        title: "Image Limit Exceeded",
+                        description: "Color variants are capped at a maximum of 8 images each.",
                         variant: "destructive"
                     });
                     isValid = false;

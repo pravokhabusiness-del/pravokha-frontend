@@ -629,15 +629,25 @@ export function ProductDetailPage() {
 
                 if (relatedResponse?.data?.success) {
                     const sellerIds = new Set(finalSeller.map(p => p.id));
-                    const rawRelated = relatedResponse.data.products || [];
+                    let rawRelated = relatedResponse.data.products || [];
 
-                    // Try to deduplicate first
+                    // Resilient Fallback: If category filter returned 0 products, fetch general popular products
+                    if (rawRelated.length === 0) {
+                        try {
+                            const fallbackRes = await apiClient.get('/products', { params: { limit: 12, sort: 'rating' } });
+                            if (fallbackRes.data?.success) {
+                                rawRelated = fallbackRes.data.products || [];
+                            }
+                        } catch (e) {
+                            console.warn("Fallback related products query failed:", e);
+                        }
+                    }
+
+                    // Deduplicate against current product and seller products
                     let filteredRelated = rawRelated.filter((p: any) =>
                         p.id !== productData.id && !sellerIds.has(p.id)
                     );
 
-                    // Resilience Fallback: If deduplication leaves us empty, fallback to non-deduplicated list
-                    // This ensures the "You May Also Like" section always shows content for a "full" marketplace feel.
                     if (filteredRelated.length === 0 && rawRelated.length > 0) {
                         filteredRelated = rawRelated.filter((p: any) => p.id !== productData.id);
                     }
@@ -897,30 +907,32 @@ export function ProductDetailPage() {
                                         }, 100);
                                     }
                                 }}
-                                className="flex items-center gap-4 hover:opacity-80 transition-opacity group cursor-pointer w-fit"
+                                className="flex items-center gap-3 hover:opacity-80 transition-opacity group cursor-pointer w-fit"
                             >
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">
                                     <InteractiveStarRating
                                         rating={product.rating}
                                         readOnly
                                         size="sm"
                                         showQuotes={false}
                                     />
-                                    <span className="ml-2 font-bold text-lg">{product.rating}★</span>
+                                    <span className="ml-1 font-bold text-sm text-amber-700 dark:text-amber-300">{product.rating}★</span>
                                 </div>
-                                <span className="text-muted-foreground underline decoration-dotted underline-offset-4 group-hover:text-primary transition-colors">
-                                    ({product.reviews} reviews)
+                                <span className="text-sm text-muted-foreground underline decoration-dotted underline-offset-4 group-hover:text-primary transition-colors font-medium">
+                                    ({reviews.length > 0 ? reviews.length : product.reviews} verified reviews)
                                 </span>
                             </div>
                         )}
 
-                        <div className="flex items-center gap-3">
-                            <span className="text-3xl sm:text-4xl lg:text-5xl font-bold">₹{product.discountPrice || product.price}</span>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground">₹{product.discountPrice || product.price}</span>
                             {hasDiscount && (
-                                <>
-                                    <span className="text-xl sm:text-2xl text-muted-foreground line-through">₹{product.price}</span>
-                                    <Badge className="bg-accent text-accent-foreground text-xs sm:text-sm">{discountPercent}% OFF</Badge>
-                                </>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-lg sm:text-xl text-muted-foreground line-through font-semibold">₹{product.price}</span>
+                                    <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-2.5 py-0.5 shadow-sm animate-pulse">
+                                        {discountPercent}% OFF
+                                    </Badge>
+                                </div>
                             )}
                         </div>
 
@@ -1058,100 +1070,105 @@ export function ProductDetailPage() {
                                     <Plus className="h-4 w-4" />
                                 </Button>
                             </div>
-                        </div>
+                                               {/* Action Buttons */}
+                        <div className="space-y-3 pt-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <Button
+                                    size="lg"
+                                    className="w-full gap-2 hover:scale-[1.02] transition-transform font-bold text-base shadow-md"
+                                    onClick={handleAddToCart}
+                                >
+                                    Add to Cart
+                                </Button>
+                                <Button
+                                    size="lg"
+                                    variant="secondary"
+                                    className="w-full gap-2 hover:scale-[1.02] transition-transform font-bold text-base bg-amber-500 hover:bg-amber-600 text-white dark:bg-amber-600 dark:hover:bg-amber-700 shadow-md"
+                                    onClick={handleBuyNow}
+                                >
+                                    Buy Now
+                                </Button>
+                            </div>
 
-                        {/* Action Buttons */}
-                        <div className="grid grid-cols-2 gap-3 pt-4 lg:flex lg:flex-row">
-                            <Button
-                                size="lg"
-                                className="col-span-2 sm:col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform gsap-slide-left"
-                                onClick={handleAddToCart}
-                            >
-                                Add to Cart
-                            </Button>
-                            <Button
-                                size="lg"
-                                variant="secondary"
-                                className="col-span-2 sm:col-span-1 lg:flex-1 hover:scale-105 transition-transform gsap-slide-right"
-                                onClick={handleBuyNow}
-                            >
-                                Buy Now
-                            </Button>
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                className="col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform justify-center border-2 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground font-bold shadow-sm"
-                                onClick={handleShare}
-                                aria-label="Share product"
-                            >
-                                <Share2 className="h-5 w-5" />
-                                <span>Share</span>
-                            </Button>
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                className={cn(
-                                    "col-span-1 lg:flex-1 gap-2 hover:scale-105 transition-transform group justify-center gsap-scale-in border-2 font-bold shadow-sm",
-                                    isInWishlist 
-                                        ? "border-red-500 text-red-500 bg-red-500/10 hover:bg-red-600 hover:text-white" 
-                                        : "border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                                )}
-                                onClick={async () => {
-                                    if (!product) return;
+                            {/* Clean Single-Line Share & Wishlist Toolbar */}
+                            <div className="flex items-center gap-3 pt-1">
+                                <Button
+                                    size="default"
+                                    variant="outline"
+                                    className="flex-1 gap-2 hover:scale-[1.02] transition-transform justify-center border-border hover:border-primary text-foreground font-semibold shadow-sm rounded-xl h-11"
+                                    onClick={handleShare}
+                                    aria-label="Share product"
+                                >
+                                    <Share2 className="h-4 w-4 text-primary" />
+                                    <span>Share Product</span>
+                                </Button>
 
-                                    try {
-                                        if (isInWishlist) {
-                                            const response = await apiClient.delete(`/wishlist`, {
-                                                params: { productId: product.id }
-                                            });
-
-                                            if (response.data.success) {
-                                                setIsInWishlist(false);
-                                                toast({
-                                                    title: "Removed from wishlist",
-                                                    description: `${product.title} removed from your wishlist`,
-                                                });
-                                            }
-                                        } else {
-                                            const response = await apiClient.post(`/wishlist`, {
-                                                productId: product.id,
-                                            });
-
-                                            if (response.data.success) {
-                                                setIsInWishlist(true);
-                                                toast({
-                                                    title: "Added to wishlist",
-                                                    description: `${product.title} has been added to your wishlist`,
-                                                });
-                                            }
-                                        }
-                                    } catch (err: any) {
-                                        if (err.response?.status === 401) {
-                                            toast({
-                                                title: "Please login",
-                                                description: "You need to be logged in to manage your wishlist",
-                                                variant: "destructive",
-                                            });
-                                            navigate("/auth");
-                                        } else {
-                                            toast({
-                                                title: "Error",
-                                                description: "Failed to update wishlist",
-                                                variant: "destructive",
-                                            });
-                                        }
-                                    }
-                                }}
-                            >
-                                <Heart
+                                <Button
+                                    size="default"
+                                    variant="outline"
                                     className={cn(
-                                        "h-5 w-5 transition-colors",
-                                        isInWishlist ? "fill-red-500 text-red-500" : "group-hover:fill-red-500 group-hover:text-red-500"
+                                        "flex-1 gap-2 hover:scale-[1.02] transition-transform group justify-center border font-semibold shadow-sm rounded-xl h-11",
+                                        isInWishlist 
+                                            ? "border-red-500 text-red-600 bg-red-50 dark:bg-red-950/30 hover:bg-red-100" 
+                                            : "border-border hover:border-red-400 text-foreground"
                                     )}
-                                />
-                                {isInWishlist ? "In Wishlist" : "Wishlist"}
-                            </Button>
-                        </div>
+                                    onClick={async () => {
+                                        if (!product) return;
+
+                                        try {
+                                            if (isInWishlist) {
+                                                const response = await apiClient.delete(`/wishlist`, {
+                                                    params: { productId: product.id }
+                                                });
+
+                                                if (response.data.success) {
+                                                    setIsInWishlist(false);
+                                                    toast({
+                                                        title: "Removed from wishlist",
+                                                        description: `${product.title} removed from your wishlist`,
+                                                    });
+                                                }
+                                            } else {
+                                                const response = await apiClient.post(`/wishlist`, {
+                                                    productId: product.id,
+                                                });
+
+                                                if (response.data.success) {
+                                                    setIsInWishlist(true);
+                                                    toast({
+                                                        title: "Added to wishlist",
+                                                        description: `${product.title} has been added to your wishlist`,
+                                                    });
+                                                }
+                                            }
+                                        } catch (err: any) {
+                                            if (err.response?.status === 401) {
+                                                toast({
+                                                    title: "Please login",
+                                                    description: "You need to be logged in to manage your wishlist",
+                                                    variant: "destructive",
+                                                });
+                                                navigate("/auth");
+                                            } else {
+                                                toast({
+                                                    title: "Error",
+                                                    description: "Failed to update wishlist",
+                                                    variant: "destructive",
+                                                });
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <Heart
+                                        className={cn(
+                                            "h-4 w-4 transition-colors",
+                                            isInWishlist ? "fill-red-500 text-red-500" : "text-muted-foreground group-hover:text-red-500"
+                                        )}
+                                    />
+                                    <span>{isInWishlist ? "In Wishlist" : "Save to Wishlist"}</span>
+                                </Button>
+                            </div>
+                        </div>   </div>
 
                         {/* ─── Delivery Location Picker ────────────────────────── */}
                         <div className="border border-border/60 rounded-xl p-4 space-y-3 bg-muted/20">

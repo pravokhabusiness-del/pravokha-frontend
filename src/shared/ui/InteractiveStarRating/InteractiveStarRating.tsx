@@ -39,30 +39,42 @@ export const InteractiveStarRating = ({
     return (
         <div className={styles.container}>
             <div className={styles.starsWrapper}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                        key={star}
-                        type="button"
-                        className={cn(
-                            styles.starButton,
-                            readOnly && "cursor-default",
-                            !readOnly && styles.interactive
-                        )}
-                        onClick={() => !readOnly && onRatingChange?.(star)}
-                        onMouseEnter={() => !readOnly && setHoverRating(star)}
-                        onMouseLeave={() => !readOnly && setHoverRating(0)}
-                    >
-                        <Star
+                {[1, 2, 3, 4, 5].map((star) => {
+                    const isFull = star <= Math.floor(currentRating);
+                    const isHalf = !isFull && star === Math.ceil(currentRating) && (currentRating % 1 >= 0.25);
+
+                    return (
+                        <button
+                            key={star}
+                            type="button"
                             className={cn(
-                                iconSize,
-                                styles.starIcon,
-                                star <= currentRating
-                                    ? styles.filled
-                                    : styles.empty
+                                styles.starButton,
+                                readOnly && "cursor-default",
+                                !readOnly && styles.interactive
                             )}
-                        />
-                    </button>
-                ))}
+                            onClick={() => !readOnly && onRatingChange?.(star)}
+                            onMouseEnter={() => !readOnly && setHoverRating(star)}
+                            onMouseLeave={() => !readOnly && setHoverRating(0)}
+                        >
+                            {isHalf ? (
+                                <div className="relative inline-block">
+                                    <Star className={cn(iconSize, styles.empty)} />
+                                    <div className="absolute top-0 left-0 w-1/2 overflow-hidden pointer-events-none">
+                                        <Star className={cn(iconSize, styles.filled)} />
+                                    </div>
+                                </div>
+                            ) : (
+                                <Star
+                                    className={cn(
+                                        iconSize,
+                                        styles.starIcon,
+                                        isFull ? styles.filled : styles.empty
+                                    )}
+                                />
+                            )}
+                        </button>
+                    );
+                })}
             </div>
             {showQuotes && !readOnly && currentRating > 0 && (
                 <div className={styles.quoteWrapper}>
