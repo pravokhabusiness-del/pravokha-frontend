@@ -170,6 +170,17 @@ export function ProductCard({ product }: ProductCardProps) {
                     className={styles.image}
                     loading="lazy"
                 />
+
+                {/* Top-Left Share Button */}
+                <button
+                    onClick={handleShareClick}
+                    className={styles.topShareButton}
+                    aria-label="Share product"
+                    title="Share product"
+                >
+                    <Share2 className={styles.shareIcon} />
+                </button>
+
                 <div className={styles.badges}>
                     {isVerified && (
                         <Badge className={styles.badgeVerified}>
@@ -178,6 +189,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     )}
                 </div>
 
+                {/* Top-Right Wishlist Button */}
                 <button
                     onClick={handleToggleWishlist}
                     className={cn(
@@ -283,17 +295,10 @@ export function ProductCard({ product }: ProductCardProps) {
                     <div className={styles.actionGroup}>
                         <Button
                             size="icon"
-                            className={styles.shareButton}
-                            onClick={handleShareClick}
-                            aria-label="Share product"
-                        >
-                            <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                        </Button>
-
-                        <Button
-                            size="icon"
                             className={styles.cartButton}
                             onClick={handleQuickAdd}
+                            title="Add to Cart"
+                            aria-label="Add to Cart"
                             disabled={!product.variants || product.variants.length === 0 || product.variants.every(v => !v.sizes || v.sizes.every(s => s.stock === 0))}
                         >
                             <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
