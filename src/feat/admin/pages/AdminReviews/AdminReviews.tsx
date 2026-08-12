@@ -33,6 +33,7 @@ import {
   Search,
   Trash2,
   Eye,
+  Edit,
   RefreshCw,
   MessageSquare,
   AlertTriangle,
@@ -40,6 +41,8 @@ import {
   XCircle,
   ArrowLeft
 } from "lucide-react";
+import { Textarea } from "@/ui/Textarea";
+import { Label } from "@/ui/Label";
 import { apiClient } from "@/infra/api/apiClient";
 import { toast } from "@/shared/hook/use-toast";
 import { format } from "date-fns";
@@ -80,6 +83,73 @@ export default function AdminReviews() {
   const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+
+  // Edit Review Modal State
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    rating: 5,
+    title: "",
+    comment: "",
+    status: "approved"
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const handleOpenEditDialog = (review: Review) => {
+    setEditingReview(review);
+    setEditFormData({
+      rating: review.rating || 5,
+      title: review.title || "",
+      comment: review.comment || "",
+      status: review.status || "approved"
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingReview) return;
+
+    try {
+      setSavingEdit(true);
+
+      const [updateRes, statusRes] = await Promise.all([
+        apiClient.patch(`/reviews/${editingReview.id}`, {
+          rating: editFormData.rating,
+          title: editFormData.title.trim(),
+          comment: editFormData.comment.trim(),
+        }),
+        apiClient.patch(`/reviews/${editingReview.id}/status`, {
+          status: editFormData.status
+        })
+      ]);
+
+      if (updateRes.data.success || statusRes.data.success) {
+        toast({
+          title: "Review Updated",
+          description: "The review has been updated successfully.",
+        });
+
+        setReviews(prev => prev.map(r => r.id === editingReview.id ? {
+          ...r,
+          rating: editFormData.rating,
+          title: editFormData.title,
+          comment: editFormData.comment,
+          status: editFormData.status
+        } : r));
+
+        setShowEditDialog(false);
+      }
+    } catch (error: any) {
+      console.error("Error updating review:", error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update review",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   // CRITICAL: Authentication check to prevent unauthorized access
   useEffect(() => {
@@ -446,7 +516,7 @@ export default function AdminReviews() {
                           <TableCell>{format(new Date(review.created_at), "MMM d, yyyy")}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
-                              <Button
+                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => {
@@ -456,6 +526,14 @@ export default function AdminReviews() {
                                 title="View Review"
                               >
                                 <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleOpenEditDialog(review)}
+                                title="Edit Review"
+                              >
+                                <Edit className="h-4 w-4 text-blue-600" />
                               </Button>
                               {(!review.status || review.status === "pending") && (
                                 <>
@@ -567,6 +645,96 @@ export default function AdminReviews() {
                 </Button>
               </>
             )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Review Dialog */}
+      <AlertDialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-primary" />
+              Edit Customer Review
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          {editingReview && (
+            <div className="space-y-4 py-2">
+              <div>
+                <Label className="text-xs font-semibold text-muted-foreground">Product</Label>
+                <p className="text-sm font-bold text-foreground">{editingReview.product_title}</p>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold text-muted-foreground">Customer</Label>
+                <p className="text-sm font-medium text-foreground">{editingReview.user_name}</p>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-rating">Rating (1 to 5 Stars) *</Label>
+                <Select
+                  value={String(editFormData.rating)}
+                  onValueChange={(val) => setEditFormData(p => ({ ...p, rating: parseInt(val) }))}
+                >
+                  <SelectTrigger id="edit-rating" className="w-full mt-1">
+                    <SelectValue placeholder="Select Rating" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">⭐⭐⭐⭐⭐ (5 Stars)</SelectItem>
+                    <SelectItem value="4">⭐⭐⭐⭐ (4 Stars)</SelectItem>
+                    <SelectItem value="3">⭐⭐⭐ (3 Stars)</SelectItem>
+                    <SelectItem value="2">⭐⭐ (2 Stars)</SelectItem>
+                    <SelectItem value="1">⭐ (1 Star)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-title">Review Title *</Label>
+                <Input
+                  id="edit-title"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData(p => ({ ...p, title: e.target.value }))}
+                  placeholder="Review title"
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-comment">Review Comment *</Label>
+                <Textarea
+                  id="edit-comment"
+                  value={editFormData.comment}
+                  onChange={(e) => setEditFormData(p => ({ ...p, comment: e.target.value }))}
+                  rows={4}
+                  placeholder="Review feedback text"
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-status">Moderation Status *</Label>
+                <Select
+                  value={editFormData.status}
+                  onValueChange={(val) => setEditFormData(p => ({ ...p, status: val }))}
+                >
+                  <SelectTrigger id="edit-status" className="w-full mt-1">
+                    <SelectValue placeholder="Select Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="approved">Approved (Visible)</SelectItem>
+                    <SelectItem value="pending">Pending Review</SelectItem>
+                    <SelectItem value="rejected">Rejected (Hidden)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={savingEdit}>Cancel</AlertDialogCancel>
+            <Button onClick={handleSaveEdit} disabled={savingEdit} className="gap-2 font-bold">
+              {savingEdit ? "Saving..." : "Save Review Changes"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

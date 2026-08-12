@@ -291,7 +291,7 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
 
     return (
         <div className="space-y-8">
-            {user && user.role === "CUSTOMER" ? (
+            {user && (user.role === "CUSTOMER" || editingReview || ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'].includes(user.role || '')) ? (
                 <Card className={styles.formCard}>
                     <h3 className={styles.formTitle}>
                         {editingReview ? "Edit Your Review" : "Write a Review"}
@@ -522,21 +522,23 @@ export const ProductReviews = ({ productId, reviews, isLoading, onReviewAction }
                                             </span>
                                         )}
                                     </div>
-                                    {user && user.id === review.userId && (
+                                    {user && (user.id === review.userId || ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'].includes(user.role || '')) && (
                                         <div className="flex gap-2">
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => handleEditReview(review)}
+                                                title="Edit Review"
                                             >
-                                                <Edit className="h-4 w-4" />
+                                                <Edit className="h-4 w-4 text-primary" />
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => handleDeleteReview(review.id)}
+                                                title="Delete Review"
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
                                         </div>
                                     )}
